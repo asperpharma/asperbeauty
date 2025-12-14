@@ -19,6 +19,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const firstVariant = node.variants.edges[0]?.node;
   const firstImage = node.images.edges[0]?.node;
   const price = node.priceRange.minVariantPrice;
+  
+  // Check for badges based on tags
+  const tags = (node as any).tags || [];
+  const isBestseller = Array.isArray(tags) 
+    ? tags.some((tag: string) => tag.toLowerCase().includes('bestseller'))
+    : typeof tags === 'string' && tags.toLowerCase().includes('bestseller');
+  
+  // Check if product is new (created within last 30 days)
+  const createdAt = (node as any).createdAt;
+  const isNewArrival = createdAt 
+    ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
+    : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,6 +58,32 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Link to={`/product/${node.handle}`} className="group block">
       <div className="bg-cream border border-transparent hover:border-gold transition-all duration-500 overflow-hidden relative">
+        {/* Badges */}
+        {(isBestseller || isNewArrival) && (
+          <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+            {isBestseller && (
+              <div className="bg-gradient-to-r from-gold via-gold to-gold/90 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg shadow-gold/20 backdrop-blur-sm">
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                  </svg>
+                  Bestseller
+                </span>
+              </div>
+            )}
+            {isNewArrival && !isBestseller && (
+              <div className="bg-gradient-to-r from-maroon via-maroon to-maroon/90 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg shadow-maroon/20 backdrop-blur-sm border border-gold/30">
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+                  </svg>
+                  New
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        
         {/* Image Container with Fancy Effects */}
         <div className="aspect-[3/4] bg-gradient-to-b from-cream via-cream to-cream/80 overflow-hidden relative">
           {firstImage ? (
