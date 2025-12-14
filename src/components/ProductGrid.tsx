@@ -56,9 +56,9 @@ export const ProductGrid = () => {
           </div>
         )}
 
-        {/* Products Grid - 3 per row on desktop */}
+        {/* Products Grid - 2 large products per row for exclusive feel */}
         {!loading && products.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 max-w-5xl mx-auto">
             {products.map((product) => (
               <ProductCard key={product.node.id} product={product} />
             ))}
