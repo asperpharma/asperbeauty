@@ -1,108 +1,105 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
 
-  const footerLinks = {
-    shop: [
-      { name: "All Products", href: "/#products" },
-      { name: "New Arrivals", href: "/#products" },
-      { name: "Bestsellers", href: "/#products" },
-      { name: "Gift Sets", href: "/#products" },
-    ],
-    about: [
-      { name: "Our Story", href: "/#about" },
-      { name: "Philosophy", href: "/#about" },
-      { name: "Sustainability", href: "/#about" },
-      { name: "Press", href: "/#about" },
-    ],
-    support: [
-      { name: "Contact Us", href: "/#contact" },
-      { name: "Shipping", href: "/#contact" },
-      { name: "Returns", href: "/#contact" },
-      { name: "FAQ", href: "/#contact" },
-    ],
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle newsletter signup
+    setEmail("");
   };
 
   return (
-    <footer className="bg-primary border-t border-gold/20">
-      <div className="luxury-container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <Link to="/" className="inline-block mb-6">
-              <h3 className="font-display text-2xl tracking-wider text-gold">ASPER</h3>
-              <p className="luxury-subheading text-primary-foreground/60 -mt-1">Beauty Shop</p>
-            </Link>
-            <p className="font-body text-sm text-primary-foreground/70 leading-relaxed max-w-sm">
-              Curating premium beauty essentials for the discerning individual. 
-              Elevate your skincare ritual with our carefully selected collection.
+    <footer className="bg-primary py-16 md:py-20">
+      <div className="luxury-container">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-8">
+          {/* Navigation */}
+          <div>
+            <h3 className="font-display text-lg text-gold mb-6">Navigation</h3>
+            <ul className="space-y-3">
+              {["Home", "Collections", "New Arrivals", "Best Sellers", "Gift Sets"].map((item) => (
+                <li key={item}>
+                  <a
+                    href="#"
+                    className="font-body text-sm text-cream/70 hover:text-gold transition-colors"
+                  >
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Customer Care */}
+          <div>
+            <h3 className="font-display text-lg text-gold mb-6">Customer Care</h3>
+            <ul className="space-y-3">
+              {["Contact Us", "Shipping Info", "Returns & Exchanges", "Order Tracking", "FAQ"].map((item) => (
+                <li key={item}>
+                  <a
+                    href="#"
+                    className="font-body text-sm text-cream/70 hover:text-gold transition-colors"
+                  >
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="font-display text-lg text-gold mb-6">Legal</h3>
+            <ul className="space-y-3">
+              {["Privacy Policy", "Terms of Service", "Cookie Policy", "Accessibility"].map((item) => (
+                <li key={item}>
+                  <a
+                    href="#"
+                    className="font-body text-sm text-cream/70 hover:text-gold transition-colors"
+                  >
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter with gold border */}
+          <div>
+            <h3 className="font-display text-lg text-gold mb-6">Stay Connected</h3>
+            <p className="font-body text-sm text-cream/70 mb-4">
+              Subscribe to receive exclusive offers and updates.
             </p>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h4 className="luxury-subheading text-gold mb-6">Shop</h4>
-            <ul className="space-y-3">
-              {footerLinks.shop.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="font-body text-sm text-primary-foreground/70 hover:text-gold transition-colors"
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="luxury-subheading text-gold mb-6">About</h4>
-            <ul className="space-y-3">
-              {footerLinks.about.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="font-body text-sm text-primary-foreground/70 hover:text-gold transition-colors"
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="luxury-subheading text-gold mb-6">Support</h4>
-            <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="font-body text-sm text-primary-foreground/70 hover:text-gold transition-colors"
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your email"
+                className="w-full px-4 py-3 bg-transparent border border-gold text-cream font-body text-sm placeholder:text-cream/50 focus:outline-none focus:border-gold-light transition-colors"
+              />
+              <button
+                type="submit"
+                className="w-full px-6 py-3 bg-transparent border border-gold text-gold font-display text-sm tracking-wider hover:bg-gold hover:text-primary transition-colors"
+              >
+                Subscribe
+              </button>
+            </form>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="w-full h-px bg-gold/20 my-12" />
+
         {/* Bottom */}
-        <div className="mt-16 pt-8 border-t border-gold/20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="font-body text-xs text-primary-foreground/60">
-            © {currentYear} Asper Beauty Shop. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <a href="#" className="font-body text-xs text-primary-foreground/60 hover:text-gold transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="font-body text-xs text-primary-foreground/60 hover:text-gold transition-colors">
-              Terms of Service
-            </a>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-xl text-gold">ASPER</span>
+            <span className="font-body text-xs text-cream/50">Beauty Shop</span>
           </div>
+          <p className="font-body text-xs text-cream/50">
+            © {new Date().getFullYear()} Asper Beauty Shop. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

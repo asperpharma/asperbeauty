@@ -43,9 +43,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/product/${node.handle}`} className="group block">
-      <div className="luxury-card overflow-hidden">
+      <div className="bg-cream border border-transparent hover:border-gold transition-all duration-300 overflow-hidden">
         {/* Image */}
-        <div className="aspect-[3/4] bg-secondary overflow-hidden relative">
+        <div className="aspect-[3/4] bg-cream overflow-hidden relative">
           {firstImage ? (
             <img
               src={firstImage.url}
@@ -53,7 +53,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center bg-cream">
               <span className="text-muted-foreground font-body text-sm">No image</span>
             </div>
           )}
@@ -63,7 +63,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <Button
               variant="luxury"
               size="luxury"
-              className="w-full bg-background/95 backdrop-blur-sm text-foreground hover:bg-background"
+              className="w-full bg-cream/95 backdrop-blur-sm text-foreground border border-gold hover:bg-cream"
               onClick={handleAddToCart}
             >
               <ShoppingBag className="w-4 h-4 mr-2" />
@@ -73,14 +73,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 text-center">
-          <h3 className="font-display text-xl text-foreground mb-2 group-hover:text-accent transition-colors">
+        <div className="p-6 text-center bg-cream">
+          <h3 className="font-display text-xl text-foreground mb-2 group-hover:text-gold transition-colors">
             {node.title}
           </h3>
           <p className="font-body text-sm text-muted-foreground mb-3 line-clamp-2">
             {node.description || "Premium beauty product"}
           </p>
-          <p className="font-display text-lg text-foreground">
+          <p className="font-display text-lg text-gold">
             {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
           </p>
         </div>

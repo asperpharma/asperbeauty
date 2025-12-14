@@ -23,21 +23,20 @@ export const ProductGrid = () => {
   }, []);
 
   return (
-    <section id="products" className="py-24 bg-background">
+    <section id="products" className="py-24 bg-cream">
       <div className="luxury-container">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <p className="luxury-subheading text-accent mb-4">Our Collection</p>
           <h2 className="font-display text-4xl md:text-5xl text-foreground mb-6">
-            Curated Essentials
+            Featured Collections
           </h2>
-          <div className="luxury-divider" />
+          <div className="w-16 h-px bg-gold mx-auto" />
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <Loader2 className="w-8 h-8 animate-spin text-gold" />
           </div>
         )}
 
@@ -45,8 +44,8 @@ export const ProductGrid = () => {
         {!loading && products.length === 0 && (
           <div className="text-center py-20 px-6">
             <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
-                <span className="font-display text-3xl text-muted-foreground">∅</span>
+              <div className="w-20 h-20 rounded-full bg-cream-dark flex items-center justify-center mx-auto mb-6 border border-gold/30">
+                <span className="font-display text-3xl text-gold">∅</span>
               </div>
               <h3 className="font-display text-2xl text-foreground mb-4">No Products Yet</h3>
               <p className="text-muted-foreground font-body text-sm leading-relaxed">
@@ -57,9 +56,9 @@ export const ProductGrid = () => {
           </div>
         )}
 
-        {/* Products Grid */}
+        {/* Products Grid - 3 per row on desktop */}
         {!loading && products.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
               <ProductCard key={product.node.id} product={product} />
             ))}
