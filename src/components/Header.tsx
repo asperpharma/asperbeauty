@@ -1,8 +1,10 @@
-import { ShoppingBag, Menu, X, Search, ChevronDown } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, ChevronDown, Heart } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
 import { CartDrawer } from "./CartDrawer";
+import { WishlistDrawer, WishlistButton } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -132,6 +134,9 @@ export const Header = () => {
               <Search className="h-4 w-4" />
             </button>
 
+            {/* Wishlist Icon */}
+            <WishlistButton />
+
             {/* Cart Icon */}
             <button
               onClick={() => setCartOpen(true)}
@@ -215,6 +220,7 @@ export const Header = () => {
       </nav>
 
       <CartDrawer />
+      <WishlistDrawer />
     </header>
   );
 };

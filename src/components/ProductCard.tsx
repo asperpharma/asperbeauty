@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
 import { toast } from "sonner";
-import { ShoppingBag, Eye } from "lucide-react";
+import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
 
@@ -17,7 +18,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { node } = product;
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
+  const { toggleItem, isInWishlist } = useWishlistStore();
   const { t } = useLanguage();
+  
+  const isWishlisted = isInWishlist(node.id);
 
   const firstVariant = node.variants.edges[0]?.node;
   const firstImage = node.images.edges[0]?.node;
@@ -65,6 +69,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     });
 
     setCartOpen(true);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleItem(product);
+    
+    if (!isWishlisted) {
+      toast.success("Added to wishlist", {
+        description: node.title,
+        position: "top-center",
+      });
+    }
   };
 
   return (
@@ -133,15 +150,28 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Quick View Button */}
-          <div className="absolute top-4 right-4 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 z-30">
+          {/* Action Buttons - Quick View & Wishlist */}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 z-30">
+            {/* Wishlist Button - Always visible when wishlisted */}
+            <button
+              onClick={handleWishlistToggle}
+              className={`w-10 h-10 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 ${
+                isWishlisted 
+                  ? 'bg-gold border-gold text-cream' 
+                  : 'bg-cream/95 border-gold/50 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-gold hover:text-cream'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+            </button>
+            
+            {/* Quick View Button */}
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setIsQuickViewOpen(true);
               }}
-              className="w-10 h-10 rounded-full bg-cream/95 backdrop-blur-sm border border-gold/50 flex items-center justify-center hover:bg-gold hover:text-cream transition-all duration-300 shadow-lg hover:scale-110"
+              className="w-10 h-10 rounded-full bg-cream/95 backdrop-blur-sm border border-gold/50 flex items-center justify-center hover:bg-gold hover:text-cream transition-all duration-300 shadow-lg hover:scale-110 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
             >
               <Eye className="w-4 h-4" />
             </button>
