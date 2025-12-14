@@ -43,7 +43,7 @@ export const Header = () => {
 
           {/* Logo */}
           <Link to="/" className="text-center">
-            <h1 className="font-display text-2xl md:text-3xl tracking-wider text-foreground">
+            <h1 className="font-display text-2xl md:text-3xl tracking-wider text-gold">
               ASPER
             </h1>
             <p className="luxury-subheading text-muted-foreground -mt-1">
