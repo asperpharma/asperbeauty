@@ -67,6 +67,10 @@ export default {
           DEFAULT: "hsl(var(--cta-burgundy))",
           hover: "hsl(var(--cta-burgundy-hover))",
         },
+        "cta-emerald": {
+          DEFAULT: "hsl(var(--cta-emerald))",
+          hover: "hsl(var(--cta-emerald-hover))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
