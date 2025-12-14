@@ -31,7 +31,7 @@ export const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-primary border-b border-gold/20">
       <nav className="luxury-container">
         <div className="flex items-center justify-between h-20">
           {/* Logo - Left */}
@@ -48,7 +48,7 @@ export const Header = () => {
           <div className="hidden lg:flex items-center gap-6">
             <Link
               to="/"
-              className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
+              className="font-display text-sm tracking-wider text-cream hover:text-gold transition-colors"
             >
               {t.home}
             </Link>
@@ -59,7 +59,7 @@ export const Header = () => {
               onMouseEnter={() => setCollectionsOpen(true)}
               onMouseLeave={() => setCollectionsOpen(false)}
             >
-              <button className="flex items-center gap-1 font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors">
+              <button className="flex items-center gap-1 font-display text-sm tracking-wider text-cream hover:text-gold transition-colors">
                 {t.collections}
                 <ChevronDown className={`h-3 w-3 transition-transform ${collectionsOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -113,7 +113,7 @@ export const Header = () => {
               <Link
                 key={link.href}
                 to={link.href}
-                className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
+                className="font-display text-sm tracking-wider text-cream hover:text-gold transition-colors"
               >
                 {link.name}
               </Link>
@@ -122,8 +122,10 @@ export const Header = () => {
 
           {/* Icons - Right */}
           <div className="flex items-center gap-3">
-            {/* Language Switcher */}
-            <LanguageSwitcher />
+            {/* Language Switcher - Desktop */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* Search Icon */}
             <button className="p-2 text-gold border border-gold/30 rounded-full hover:bg-gold/10 transition-colors">
@@ -133,11 +135,11 @@ export const Header = () => {
             {/* Cart Icon */}
             <button
               onClick={() => setCartOpen(true)}
-              className="relative p-2 text-foreground hover:text-gold transition-colors"
+              className="relative p-2 text-gold hover:text-gold-light transition-colors"
             >
               <ShoppingBag className="h-5 w-5" />
               {totalItems > 0 && (
-                <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} h-5 w-5 rounded-full bg-gold text-primary text-xs flex items-center justify-center font-body font-medium`}>
+                <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} h-5 w-5 rounded-full bg-cream text-primary text-xs flex items-center justify-center font-body font-medium`}>
                   {totalItems}
                 </span>
               )}
@@ -155,12 +157,17 @@ export const Header = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-6 border-t border-border/50 animate-fade-in">
-            <div className="flex flex-col gap-2">
+          <div className="lg:hidden border-t border-gold/20 animate-fade-in bg-primary">
+            {/* Language Switcher - Mobile (Fixed at top of menu) */}
+            <div className="border-b border-gold/20">
+              <LanguageSwitcher variant="mobile" />
+            </div>
+            
+            <div className="flex flex-col gap-2 py-6">
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-display text-foreground hover:text-gold transition-colors py-2"
+                className="font-display text-cream hover:text-gold transition-colors py-2"
               >
                 {t.home}
               </Link>
@@ -169,7 +176,7 @@ export const Header = () => {
               <div>
                 <button
                   onClick={() => setMobileCollectionsOpen(!mobileCollectionsOpen)}
-                  className="flex items-center justify-between w-full font-display text-foreground hover:text-gold transition-colors py-2"
+                  className="flex items-center justify-between w-full font-display text-cream hover:text-gold transition-colors py-2"
                 >
                   {t.collections}
                   <ChevronDown className={`h-4 w-4 transition-transform ${mobileCollectionsOpen ? 'rotate-180' : ''}`} />
@@ -182,7 +189,7 @@ export const Header = () => {
                         key={collection.name}
                         to={collection.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 font-body text-sm text-foreground/80 hover:text-gold transition-colors py-2"
+                        className="flex items-center gap-2 font-body text-sm text-cream/80 hover:text-gold transition-colors py-2"
                       >
                         <span className="text-gold text-xs">{collection.icon}</span>
                         {collection.name}
@@ -197,7 +204,7 @@ export const Header = () => {
                   key={link.href}
                   to={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="font-display text-foreground hover:text-gold transition-colors py-2"
+                  className="font-display text-cream hover:text-gold transition-colors py-2"
                 >
                   {link.name}
                 </Link>
