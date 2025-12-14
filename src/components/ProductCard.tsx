@@ -31,6 +31,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const isNewArrival = createdAt 
     ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
     : false;
+    
+  // Check for sale/discount
+  const compareAtPrice = firstVariant?.compareAtPrice;
+  const currentPrice = parseFloat(firstVariant?.price?.amount || price.amount);
+  const originalPrice = compareAtPrice ? parseFloat(compareAtPrice.amount) : null;
+  const isOnSale = originalPrice && originalPrice > currentPrice;
+  const discountPercent = isOnSale 
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,8 +68,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     <Link to={`/product/${node.handle}`} className="group block">
       <div className="bg-cream border border-transparent hover:border-gold transition-all duration-500 overflow-hidden relative">
         {/* Badges */}
-        {(isBestseller || isNewArrival) && (
+        {(isBestseller || isNewArrival || isOnSale) && (
           <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+            {isOnSale && (
+              <div className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg shadow-red-500/30 backdrop-blur-sm animate-pulse" style={{ animationDuration: '2s' }}>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+                  </svg>
+                  -{discountPercent}%
+                </span>
+              </div>
+            )}
             {isBestseller && (
               <div className="bg-gradient-to-r from-gold via-gold to-gold/90 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg shadow-gold/20 backdrop-blur-sm">
                 <span className="flex items-center gap-1.5">
@@ -71,7 +90,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 </span>
               </div>
             )}
-            {isNewArrival && !isBestseller && (
+            {isNewArrival && !isBestseller && !isOnSale && (
               <div className="bg-gradient-to-r from-maroon via-maroon to-maroon/90 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg shadow-maroon/20 backdrop-blur-sm border border-gold/30">
                 <span className="flex items-center gap-1.5">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
@@ -146,9 +165,16 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <div className="w-12 h-px bg-gradient-to-l from-transparent via-gold/60 to-gold/40" />
           </div>
           
-          <p className="font-display text-xl text-gold font-medium tracking-wide">
-            {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
-          </p>
+          <div className="flex items-center justify-center gap-2">
+            {isOnSale && originalPrice && (
+              <p className="font-display text-sm text-muted-foreground line-through">
+                {price.currencyCode} {originalPrice.toFixed(2)}
+              </p>
+            )}
+            <p className={`font-display text-xl font-medium tracking-wide ${isOnSale ? 'text-red-600' : 'text-gold'}`}>
+              {price.currencyCode} {currentPrice.toFixed(2)}
+            </p>
+          </div>
         </div>
       </div>
     </Link>
