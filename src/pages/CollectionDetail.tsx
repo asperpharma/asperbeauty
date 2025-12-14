@@ -66,8 +66,8 @@ export default function CollectionDetail() {
             </p>
           </div>
 
-          {/* Products Grid - Will filter by collection in future */}
-          <ProductGrid />
+          {/* Products Grid with Filters */}
+          <ProductGrid showFilters />
         </div>
       </main>
 

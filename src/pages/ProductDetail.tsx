@@ -12,6 +12,8 @@ interface ProductData {
   title: string;
   description: string;
   handle: string;
+  vendor?: string;
+  productType?: string;
   priceRange: {
     minVariantPrice: {
       amount: string;
