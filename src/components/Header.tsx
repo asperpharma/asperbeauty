@@ -1,19 +1,31 @@
-import { ShoppingBag, Menu, X, Search } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { CartDrawer } from "./CartDrawer";
 
+const collections = [
+  { name: "Hair Care", href: "/collections/hair-care", icon: "✦" },
+  { name: "Body Care", href: "/collections/body-care", icon: "✦" },
+  { name: "Make Up", href: "/collections/make-up", icon: "✦" },
+  { name: "Skincare", href: "/collections/skincare", icon: "✦" },
+  { name: "Fragrances", href: "/collections/fragrances", icon: "✦" },
+  { name: "Tools & Devices", href: "/collections/tools-devices", icon: "✦" },
+];
+
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [mobileCollectionsOpen, setMobileCollectionsOpen] = useState(false);
   const totalItems = useCartStore((state) => state.getTotalItems());
   const setCartOpen = useCartStore((state) => state.setOpen);
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Collections", href: "/#products" },
-    { name: "About", href: "/#about" },
-    { name: "Contact", href: "/#contact" },
+    { name: "Brands", href: "/brands" },
+    { name: "Best Sellers", href: "/best-sellers" },
+    { name: "Offers", href: "/offers" },
+    { name: "Contact Us", href: "/contact" },
   ];
 
   return (
@@ -31,15 +43,76 @@ export const Header = () => {
           </Link>
 
           {/* Navigation Links - Center/Right (Desktop) */}
-          <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
+          <div className="hidden lg:flex items-center gap-6">
+            <Link
+              to="/"
+              className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
+            >
+              Home
+            </Link>
+
+            {/* Collections Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setCollectionsOpen(true)}
+              onMouseLeave={() => setCollectionsOpen(false)}
+            >
+              <button className="flex items-center gap-1 font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors">
+                Collections
+                <ChevronDown className={`h-3 w-3 transition-transform ${collectionsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Mega Menu Dropdown */}
+              {collectionsOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
+                  <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl min-w-[320px] overflow-hidden animate-fade-in">
+                    {/* Header */}
+                    <div className="bg-primary px-6 py-3 border-b border-gold/20">
+                      <h3 className="font-display text-gold text-sm tracking-widest">SHOP BY CATEGORY</h3>
+                    </div>
+                    
+                    {/* Categories */}
+                    <div className="p-4">
+                      {collections.map((collection, index) => (
+                        <div key={collection.name}>
+                          <Link
+                            to={collection.href}
+                            className="flex items-center gap-3 px-4 py-3 text-primary hover:bg-primary/5 rounded-md transition-colors group"
+                          >
+                            <span className="text-gold text-xs">{collection.icon}</span>
+                            <span className="font-display text-sm tracking-wide group-hover:text-gold transition-colors">
+                              {collection.name}
+                            </span>
+                          </Link>
+                          {index < collections.length - 1 && (
+                            <div className="mx-4 border-b border-gold/10" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="bg-primary/5 px-6 py-3 border-t border-gold/10">
+                      <Link
+                        to="/collections"
+                        className="font-display text-xs tracking-wider text-gold hover:text-gold/80 transition-colors"
+                      >
+                        VIEW ALL COLLECTIONS →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {navLinks.slice(1).map((link) => (
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -76,16 +149,51 @@ export const Header = () => {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-6 border-t border-border/50 animate-fade-in">
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-display text-foreground hover:text-gold transition-colors py-2"
+              >
+                Home
+              </Link>
+
+              {/* Mobile Collections Accordion */}
+              <div>
+                <button
+                  onClick={() => setMobileCollectionsOpen(!mobileCollectionsOpen)}
+                  className="flex items-center justify-between w-full font-display text-foreground hover:text-gold transition-colors py-2"
+                >
+                  Collections
+                  <ChevronDown className={`h-4 w-4 transition-transform ${mobileCollectionsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {mobileCollectionsOpen && (
+                  <div className="ml-4 mt-2 space-y-1 border-l-2 border-gold/30 pl-4">
+                    {collections.map((collection) => (
+                      <Link
+                        key={collection.name}
+                        to={collection.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 font-body text-sm text-foreground/80 hover:text-gold transition-colors py-2"
+                      >
+                        <span className="text-gold text-xs">{collection.icon}</span>
+                        {collection.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {navLinks.slice(1).map((link) => (
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="font-display text-foreground hover:text-gold transition-colors py-2"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
