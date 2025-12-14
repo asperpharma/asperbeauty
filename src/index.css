@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    /* Soft Ivory as main background - bright & luminous */
-    --background: 240 100% 99%;
+    /* Cream/Beige as main background */
+    --background: 60 56% 91%;
     --foreground: 0 0% 20%;
 
-    --card: 240 60% 98%;
+    --card: 60 50% 95%;
     --card-foreground: 0 0% 20%;
 
-    --popover: 240 60% 98%;
+    --popover: 60 50% 95%;
     --popover-foreground: 0 0% 20%;
 
     /* Warm beige/taupe as primary sections */
@@ -41,7 +41,7 @@
     --gold: 46 100% 50%;
     --gold-light: 46 100% 60%;
     --gold-glow: 46 100% 70%;
-    --cream: 240 100% 99%;
+    --cream: 60 56% 91%;
     --cream-dark: 60 38% 87%;
     --charcoal: 0 0% 20%;
     --charcoal-light: 0 0% 40%;
