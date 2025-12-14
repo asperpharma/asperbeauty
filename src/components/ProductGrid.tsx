@@ -3,12 +3,14 @@ import { fetchProducts, ShopifyProduct } from "@/lib/shopify";
 import { ProductCard } from "./ProductCard";
 import { ProductFilters, FilterState } from "./ProductFilters";
 import { Loader2 } from "lucide-react";
+import { categorizeProduct } from "@/lib/categoryMapping";
 
 interface ProductGridProps {
   showFilters?: boolean;
+  categorySlug?: string; // Filter by category
 }
 
-export const ProductGrid = ({ showFilters = false }: ProductGridProps) => {
+export const ProductGrid = ({ showFilters = false, categorySlug }: ProductGridProps) => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
@@ -43,23 +45,34 @@ export const ProductGrid = ({ showFilters = false }: ProductGridProps) => {
     loadProducts();
   }, []);
 
-  // Extract unique categories and brands
+  // First, filter products by category slug if provided (using categorization logic)
+  const categoryFilteredProducts = useMemo(() => {
+    if (!categorySlug) return products;
+    
+    return products.filter((product) => {
+      const { node } = product;
+      const productCategory = categorizeProduct(node.title, node.productType, node.vendor);
+      return productCategory === categorySlug;
+    });
+  }, [products, categorySlug]);
+
+  // Extract unique categories and brands from category-filtered products
   const { availableCategories, availableBrands, maxPrice } = useMemo(() => {
-    const categories = [...new Set(products.map((p) => p.node.productType).filter(Boolean))];
-    const brands = [...new Set(products.map((p) => p.node.vendor).filter(Boolean))];
-    const max = products.length > 0
-      ? Math.ceil(Math.max(...products.map((p) => parseFloat(p.node.priceRange.minVariantPrice.amount))))
+    const categories = [...new Set(categoryFilteredProducts.map((p) => p.node.productType).filter(Boolean))];
+    const brands = [...new Set(categoryFilteredProducts.map((p) => p.node.vendor).filter(Boolean))];
+    const max = categoryFilteredProducts.length > 0
+      ? Math.ceil(Math.max(...categoryFilteredProducts.map((p) => parseFloat(p.node.priceRange.minVariantPrice.amount))))
       : 1000;
     return { availableCategories: categories, availableBrands: brands, maxPrice: max };
-  }, [products]);
+  }, [categoryFilteredProducts]);
 
-  // Filter products
+  // Apply additional user filters
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return categoryFilteredProducts.filter((product) => {
       const { node } = product;
       const price = parseFloat(node.priceRange.minVariantPrice.amount);
 
-      // Category filter
+      // Category filter (product type)
       if (filters.categories.length > 0 && !filters.categories.includes(node.productType)) {
         return false;
       }
@@ -76,7 +89,7 @@ export const ProductGrid = ({ showFilters = false }: ProductGridProps) => {
 
       return true;
     });
-  }, [products, filters]);
+  }, [categoryFilteredProducts, filters]);
 
   return (
     <section id="products" className="py-24 bg-cream">
