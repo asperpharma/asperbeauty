@@ -1,16 +1,19 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Eye } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { QuickViewModal } from "./QuickViewModal";
 
 interface ProductCardProps {
   product: ShopifyProduct;
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const { node } = product;
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
@@ -130,6 +133,20 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+          {/* Quick View Button */}
+          <div className="absolute top-4 right-4 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 z-30">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsQuickViewOpen(true);
+              }}
+              className="w-10 h-10 rounded-full bg-cream/95 backdrop-blur-sm border border-gold/50 flex items-center justify-center hover:bg-gold hover:text-cream transition-all duration-300 shadow-lg hover:scale-110"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
+
           {/* Quick add button */}
           <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
             <Button
@@ -177,6 +194,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </div>
       </div>
+      
+      {/* Quick View Modal */}
+      <QuickViewModal 
+        product={product} 
+        isOpen={isQuickViewOpen} 
+        onClose={() => setIsQuickViewOpen(false)} 
+      />
     </Link>
   );
 };
