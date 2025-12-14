@@ -121,6 +121,20 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
   }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    font-family: 'Montserrat', 'Tajawal', sans-serif;
+  }
+
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4,
+  [dir="rtl"] h5,
+  [dir="rtl"] h6 {
+    font-family: 'Playfair Display', 'Tajawal', serif;
+  }
 }
 
 @layer components {

@@ -9,6 +9,7 @@ import {
 import { Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const CartDrawer = () => {
   const { 
@@ -23,6 +24,7 @@ export const CartDrawer = () => {
   } = useCartStore();
   
   const totalPrice = getTotalPrice();
+  const { t, isRTL } = useLanguage();
 
   const handleCheckout = async () => {
     try {
@@ -40,11 +42,14 @@ export const CartDrawer = () => {
 
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
-      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-background border-l border-border">
-        <SheetHeader className="flex-shrink-0 text-left">
-          <SheetTitle className="font-display text-2xl tracking-wide">Shopping Bag</SheetTitle>
+      <SheetContent 
+        className={`w-full sm:max-w-md flex flex-col h-full bg-background ${isRTL ? 'border-r border-l-0' : 'border-l'} border-border`}
+        side={isRTL ? 'left' : 'right'}
+      >
+        <SheetHeader className={`flex-shrink-0 ${isRTL ? 'text-right' : 'text-left'}`}>
+          <SheetTitle className="font-display text-2xl tracking-wide">{t.shoppingCart}</SheetTitle>
           <SheetDescription className="luxury-subheading">
-            {items.length === 0 ? "Your bag is empty" : `${items.length} item${items.length !== 1 ? 's' : ''} in your bag`}
+            {items.length === 0 ? t.cartEmpty : `${items.length} ${t.itemsInCart}`}
           </SheetDescription>
         </SheetHeader>
         
@@ -52,13 +57,12 @@ export const CartDrawer = () => {
           {items.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-muted-foreground font-body text-sm">Your shopping bag is empty</p>
-                <p className="text-muted-foreground/60 font-body text-xs mt-2">Discover our luxury beauty collection</p>
+                <p className="text-muted-foreground font-body text-sm">{t.cartEmpty}</p>
               </div>
             </div>
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto pr-2 min-h-0">
+              <div className="flex-1 overflow-y-auto pe-2 min-h-0">
                 <div className="space-y-6">
                   {items.map((item) => (
                     <div key={item.variantId} className="flex gap-4 pb-6 border-b border-border/50">
@@ -115,7 +119,7 @@ export const CartDrawer = () => {
               
               <div className="flex-shrink-0 space-y-6 pt-6 border-t border-border bg-background">
                 <div className="flex justify-between items-center">
-                  <span className="font-display text-lg">Total</span>
+                  <span className="font-display text-lg">{t.total}</span>
                   <span className="font-display text-xl">
                     {items[0]?.price.currencyCode || 'JOD'} {totalPrice.toFixed(2)}
                   </span>
@@ -130,19 +134,19 @@ export const CartDrawer = () => {
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                      {t.creatingCheckout}
                     </>
                   ) : (
                     <>
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Checkout
+                      <ExternalLink className="w-4 h-4 me-2" />
+                      {t.checkout}
                     </>
                   )}
                 </Button>
                 
                 <p className="text-center text-xs text-muted-foreground font-body">
-                  Secure checkout powered by Shopify
+                  {isRTL ? 'دفع آمن بواسطة شوبيفاي' : 'Secure checkout powered by Shopify'}
                 </p>
               </div>
             </>

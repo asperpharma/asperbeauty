@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Hero = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-primary">
       {/* Subtle background pattern */}
@@ -19,38 +22,37 @@ export const Hero = () => {
           
           {/* Main Heading - larger size */}
           <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-normal text-gold leading-tight opacity-0 animate-fade-up delay-100">
-            Unbox Pure Indulgence
+            {t.heroTitle}
           </h1>
 
           {/* Gold divider below headline */}
           <div className="w-32 h-px bg-gold mx-auto mt-8 mb-10 opacity-0 animate-fade-up delay-200" />
 
           {/* Description */}
-          <p className="font-body text-primary-foreground/80 text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-12 opacity-0 animate-fade-up delay-200">
-            Discover our curated collection of premium beauty boxes, 
-            crafted with the finest ingredients for discerning individuals.
+          <p className="font-body text-primary-foreground/80 text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-12 opacity-0 animate-fade-up delay-300">
+            {t.heroSubtitle}
           </p>
 
           {/* CTA Button - Cream with gold border */}
-          <div className="opacity-0 animate-fade-up delay-300">
+          <div className="opacity-0 animate-fade-up delay-400">
             <Button 
               variant="luxury-outline" 
               size="luxury-lg"
               onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
               className="bg-cream text-gold border-2 border-gold hover:bg-cream/90 font-display tracking-wider"
             >
-              Discover Collections
+              {t.discoverCollections}
             </Button>
           </div>
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-0 animate-fade-up delay-400">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-0 animate-fade-up delay-500">
           <a 
             href="#products"
             className="flex flex-col items-center gap-2 text-primary-foreground/60 hover:text-gold transition-colors"
           >
-            <span className="font-body text-xs tracking-widest uppercase">Scroll</span>
+            <span className="font-body text-xs tracking-widest uppercase">{t.scroll}</span>
             <ArrowDown className="w-4 h-4 animate-bounce" />
           </a>
         </div>

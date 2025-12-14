@@ -3,15 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { CartDrawer } from "./CartDrawer";
-
-const collections = [
-  { name: "Hair Care", href: "/collections/hair-care", icon: "✦" },
-  { name: "Body Care", href: "/collections/body-care", icon: "✦" },
-  { name: "Make Up", href: "/collections/make-up", icon: "✦" },
-  { name: "Skincare", href: "/collections/skincare", icon: "✦" },
-  { name: "Fragrances", href: "/collections/fragrances", icon: "✦" },
-  { name: "Tools & Devices", href: "/collections/tools-devices", icon: "✦" },
-];
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,13 +12,22 @@ export const Header = () => {
   const [mobileCollectionsOpen, setMobileCollectionsOpen] = useState(false);
   const totalItems = useCartStore((state) => state.getTotalItems());
   const setCartOpen = useCartStore((state) => state.setOpen);
+  const { t, isRTL } = useLanguage();
+
+  const collections = [
+    { name: t.hairCare, href: "/collections/hair-care", icon: "✦" },
+    { name: t.bodyCare, href: "/collections/body-care", icon: "✦" },
+    { name: t.makeUp, href: "/collections/make-up", icon: "✦" },
+    { name: t.skincare, href: "/collections/skincare", icon: "✦" },
+    { name: t.fragrances, href: "/collections/fragrances", icon: "✦" },
+    { name: t.toolsDevices, href: "/collections/tools-devices", icon: "✦" },
+  ];
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Brands", href: "/brands" },
-    { name: "Best Sellers", href: "/best-sellers" },
-    { name: "Offers", href: "/offers" },
-    { name: "Contact Us", href: "/contact" },
+    { name: t.brands, href: "/brands" },
+    { name: t.bestSellers, href: "/best-sellers" },
+    { name: t.offers, href: "/offers" },
+    { name: t.contactUs, href: "/contact" },
   ];
 
   return (
@@ -38,7 +40,7 @@ export const Header = () => {
               ASPER
             </h1>
             <span className="hidden sm:block font-display text-sm text-gold/80 tracking-widest">
-              Beauty Shop
+              {t.beautyShop}
             </span>
           </Link>
 
@@ -48,7 +50,7 @@ export const Header = () => {
               to="/"
               className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
             >
-              Home
+              {t.home}
             </Link>
 
             {/* Collections Dropdown */}
@@ -58,17 +60,19 @@ export const Header = () => {
               onMouseLeave={() => setCollectionsOpen(false)}
             >
               <button className="flex items-center gap-1 font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors">
-                Collections
+                {t.collections}
                 <ChevronDown className={`h-3 w-3 transition-transform ${collectionsOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Mega Menu Dropdown */}
               {collectionsOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
+                <div className={`absolute top-full ${isRTL ? 'right-0' : 'left-1/2 -translate-x-1/2'} pt-4 z-50`}>
                   <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl min-w-[320px] overflow-hidden animate-fade-in">
                     {/* Header */}
                     <div className="bg-primary px-6 py-3 border-b border-gold/20">
-                      <h3 className="font-display text-gold text-sm tracking-widest">SHOP BY CATEGORY</h3>
+                      <h3 className="font-display text-gold text-sm tracking-widest">
+                        {isRTL ? 'تسوق حسب الفئة' : 'SHOP BY CATEGORY'}
+                      </h3>
                     </div>
                     
                     {/* Categories */}
@@ -97,7 +101,7 @@ export const Header = () => {
                         to="/collections"
                         className="font-display text-xs tracking-wider text-gold hover:text-gold/80 transition-colors"
                       >
-                        VIEW ALL COLLECTIONS →
+                        {isRTL ? 'عرض جميع المجموعات ←' : 'VIEW ALL COLLECTIONS →'}
                       </Link>
                     </div>
                   </div>
@@ -105,9 +109,9 @@ export const Header = () => {
               )}
             </div>
 
-            {navLinks.slice(1).map((link) => (
+            {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.href}
                 to={link.href}
                 className="font-display text-sm tracking-wider text-foreground hover:text-gold transition-colors"
               >
@@ -118,6 +122,9 @@ export const Header = () => {
 
           {/* Icons - Right */}
           <div className="flex items-center gap-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Search Icon */}
             <button className="p-2 text-gold border border-gold/30 rounded-full hover:bg-gold/10 transition-colors">
               <Search className="h-4 w-4" />
@@ -130,7 +137,7 @@ export const Header = () => {
             >
               <ShoppingBag className="h-5 w-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-primary text-xs flex items-center justify-center font-body font-medium">
+                <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} h-5 w-5 rounded-full bg-gold text-primary text-xs flex items-center justify-center font-body font-medium`}>
                   {totalItems}
                 </span>
               )}
@@ -155,7 +162,7 @@ export const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="font-display text-foreground hover:text-gold transition-colors py-2"
               >
-                Home
+                {t.home}
               </Link>
 
               {/* Mobile Collections Accordion */}
@@ -164,12 +171,12 @@ export const Header = () => {
                   onClick={() => setMobileCollectionsOpen(!mobileCollectionsOpen)}
                   className="flex items-center justify-between w-full font-display text-foreground hover:text-gold transition-colors py-2"
                 >
-                  Collections
+                  {t.collections}
                   <ChevronDown className={`h-4 w-4 transition-transform ${mobileCollectionsOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {mobileCollectionsOpen && (
-                  <div className="ml-4 mt-2 space-y-1 border-l-2 border-gold/30 pl-4">
+                  <div className={`${isRTL ? 'mr-4 border-r-2 pr-4' : 'ml-4 border-l-2 pl-4'} mt-2 space-y-1 border-gold/30`}>
                     {collections.map((collection) => (
                       <Link
                         key={collection.name}
@@ -185,9 +192,9 @@ export const Header = () => {
                 )}
               </div>
 
-              {navLinks.slice(1).map((link) => (
+              {navLinks.map((link) => (
                 <Link
-                  key={link.name}
+                  key={link.href}
                   to={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="font-display text-foreground hover:text-gold transition-colors py-2"

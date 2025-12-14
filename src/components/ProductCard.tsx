@@ -4,6 +4,7 @@ import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { ShoppingBag } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -13,6 +14,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { node } = product;
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
+  const { t } = useLanguage();
 
   const firstVariant = node.variants.edges[0]?.node;
   const firstImage = node.images.edges[0]?.node;
@@ -33,7 +35,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       selectedOptions: firstVariant.selectedOptions,
     });
 
-    toast.success("Added to bag", {
+    toast.success(t.addedToBag, {
       description: node.title,
       position: "top-center",
     });
@@ -54,7 +56,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-cream">
-              <span className="text-muted-foreground font-body text-sm">No image</span>
+              <span className="text-muted-foreground font-body text-sm">{t.noImage}</span>
             </div>
           )}
 
@@ -66,8 +68,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               className="w-full bg-cream/95 backdrop-blur-sm text-foreground border border-gold hover:bg-cream"
               onClick={handleAddToCart}
             >
-              <ShoppingBag className="w-4 h-4 mr-2" />
-              Add to Bag
+              <ShoppingBag className="w-4 h-4 me-2" />
+              {t.addToBag}
             </Button>
           </div>
         </div>
@@ -78,7 +80,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {node.title}
           </h3>
           <p className="font-body text-sm text-muted-foreground mb-3 line-clamp-2">
-            {node.description || "Premium beauty product"}
+            {node.description || t.premiumProduct}
           </p>
           
           {/* Gold lotus separator */}
