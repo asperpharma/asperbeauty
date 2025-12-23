@@ -43,13 +43,13 @@ export const Hero = () => {
             {t.heroSubtitle}
           </p>
 
-          {/* CTA Button - Cream with gold border */}
+          {/* CTA Button - Ivory with gold border */}
           <div className="opacity-0 animate-fade-up delay-400">
             <Button 
               variant="luxury-outline" 
               size="luxury-lg"
               onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-cream text-gold border-2 border-gold hover:bg-gold hover:text-charcoal font-display tracking-wider shadow-lg shadow-gold/20"
+              className="bg-ivory text-gold border-2 border-gold hover:bg-gold hover:text-charcoal font-display tracking-wider shadow-lg shadow-gold/20"
             >
               {t.discoverCollections}
             </Button>

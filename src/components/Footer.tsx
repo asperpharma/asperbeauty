@@ -122,7 +122,7 @@ export const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t.yourEmail}
-                className="w-full px-4 py-3 bg-cream border border-gold/50 text-charcoal font-body text-sm placeholder:text-charcoal/50 focus:outline-none focus:border-gold transition-colors"
+                className="w-full px-4 py-3 bg-ivory border border-gold/50 text-charcoal font-body text-sm placeholder:text-charcoal/50 focus:outline-none focus:border-gold transition-colors"
                 dir={isRTL ? 'rtl' : 'ltr'}
               />
               <button

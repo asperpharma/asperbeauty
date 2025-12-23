@@ -56,16 +56,14 @@ export default {
           light: "hsl(var(--gold-light))",
           glow: "hsl(var(--gold-glow))",
         },
-        cream: {
-          DEFAULT: "hsl(var(--cream))",
-          dark: "hsl(var(--cream-dark))",
-        },
+        ivory: "hsl(var(--ivory))",
         charcoal: {
           DEFAULT: "hsl(var(--charcoal))",
           light: "hsl(var(--charcoal-light))",
         },
         taupe: {
           DEFAULT: "hsl(var(--taupe))",
+          light: "hsl(var(--taupe-light))",
           dark: "hsl(var(--taupe-dark))",
         },
         "cta-burgundy": {

@@ -4,27 +4,27 @@
 
 @layer base {
   :root {
-    /* Light cream/ivory background #FFF8E1 */
-    --background: 45 100% 94%;
+    /* Soft Ivory background #F8F8FF - clean, bright canvas */
+    --background: 240 100% 99%;
     --foreground: 0 0% 20%;
 
-    --card: 60 50% 95%;
+    --card: 240 60% 98%;
     --card-foreground: 0 0% 20%;
 
-    --popover: 60 50% 95%;
+    --popover: 240 60% 98%;
     --popover-foreground: 0 0% 20%;
 
-    /* Warm beige/taupe as primary sections */
+    /* Warm beige/taupe #EBEBD3 for sections */
     --primary: 60 38% 87%;
     --primary-foreground: 0 0% 20%;
 
     --secondary: 60 30% 92%;
-    --secondary-foreground: 0 0% 25%;
+    --secondary-foreground: 0 0% 20%;
 
     --muted: 60 20% 94%;
     --muted-foreground: 0 0% 40%;
 
-    /* Shiny Gold as accent - metallic luxury */
+    /* Shiny Gold #FFC300 as accent - metallic luxury */
     --accent: 46 100% 50%;
     --accent-foreground: 0 0% 15%;
 
@@ -37,16 +37,16 @@
 
     --radius: 0.25rem;
 
-    /* Custom luxury tokens - updated palette */
+    /* Custom luxury tokens - luminous palette */
     --gold: 46 100% 50%;
     --gold-light: 46 100% 60%;
     --gold-glow: 46 100% 70%;
-    --cream: 45 100% 94%;
-    --cream-dark: 60 38% 87%;
+    --ivory: 240 100% 99%;
+    --taupe: 60 38% 87%;
+    --taupe-light: 60 30% 92%;
+    --taupe-dark: 60 30% 80%;
     --charcoal: 0 0% 20%;
     --charcoal-light: 0 0% 40%;
-    --taupe: 60 38% 87%;
-    --taupe-dark: 60 30% 80%;
     --cta-burgundy: 345 80% 22%;
     --cta-burgundy-hover: 345 85% 28%;
     --cta-emerald: 160 84% 25%;
