@@ -4,8 +4,9 @@ import { fetchProductByHandle } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield } from "lucide-react";
+import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { summarizeDescription, extractKeyBenefits, getProductCategory } from "@/lib/productUtils";
 
 interface ProductData {
   id: string;
@@ -216,8 +217,16 @@ const ProductDetail = () => {
 
             {/* Right Side - Purchase Info */}
             <div className="w-full lg:w-[35%] lg:pl-10">
-              {/* Brand */}
-              <p className="font-body text-xs tracking-widest uppercase text-gold mb-3">Asper Beauty</p>
+              {/* Brand & Category */}
+              <div className="flex items-center gap-2 mb-3">
+                <p className="font-body text-xs tracking-widest uppercase text-gold">
+                  {product.vendor || "Asper Beauty"}
+                </p>
+                <span className="w-1 h-1 rounded-full bg-gold/50" />
+                <p className="font-body text-xs tracking-widest uppercase text-cream/50">
+                  {getProductCategory(product.productType, product.vendor)}
+                </p>
+              </div>
               
               {/* Title */}
               <h1 className="font-display text-2xl md:text-3xl lg:text-4xl text-cream mb-4 leading-tight">
@@ -232,9 +241,32 @@ const ProductDetail = () => {
               {/* Gold divider */}
               <div className="w-12 h-px bg-gold mb-6" />
 
-              {/* Description */}
-              <p className="font-body text-cream/60 leading-relaxed text-sm mb-8">
-                {product.description || "A premium beauty product from our curated collection, crafted with the finest ingredients for discerning individuals."}
+              {/* Key Benefits */}
+              {(() => {
+                const benefits = extractKeyBenefits(product.description);
+                return benefits.length > 0 ? (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-4 h-4 text-gold" />
+                      <span className="font-body text-xs tracking-widest uppercase text-cream">Key Benefits</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {benefits.map((benefit, idx) => (
+                        <span 
+                          key={idx}
+                          className="px-3 py-1.5 bg-gold/10 border border-gold/30 text-cream/80 font-body text-xs rounded-full"
+                        >
+                          {benefit}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Summarized Description */}
+              <p className="font-body text-cream/70 leading-relaxed text-sm mb-8">
+                {summarizeDescription(product.description, 200) || "A premium beauty product from our curated collection, crafted with the finest ingredients for discerning individuals."}
               </p>
 
               {/* Options */}
