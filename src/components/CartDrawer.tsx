@@ -10,6 +10,7 @@ import { Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { translateTitle } from "@/lib/productUtils";
 
 export const CartDrawer = () => {
   const { 
@@ -24,7 +25,7 @@ export const CartDrawer = () => {
   } = useCartStore();
   
   const totalPrice = getTotalPrice();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
 
   const handleCheckout = async () => {
     try {
@@ -77,7 +78,9 @@ export const CartDrawer = () => {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-display text-lg truncate">{item.product.node.title}</h4>
+                        <h4 className="font-display text-lg truncate">
+                          {translateTitle(item.product.node.title, language)}
+                        </h4>
                         {item.variantTitle !== "Default Title" && (
                           <p className="text-xs text-muted-foreground font-body mt-1">
                             {item.selectedOptions.map(option => option.value).join(' / ')}

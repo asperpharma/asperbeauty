@@ -11,12 +11,13 @@ import { useWishlistStore } from "@/stores/wishlistStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { translateTitle } from "@/lib/productUtils";
 
 export const WishlistDrawer = () => {
   const { items, isOpen, setOpen, removeItem } = useWishlistStore();
   const addToCart = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
-  const { t } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
 
   const handleAddToCart = (product: typeof items[0]) => {
     const firstVariant = product.node.variants.edges[0]?.node;
@@ -43,11 +44,14 @@ export const WishlistDrawer = () => {
 
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
-      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-cream border-l border-gold/20">
+      <SheetContent 
+        className={`w-full sm:max-w-md flex flex-col h-full bg-cream ${isRTL ? 'border-r border-l-0' : 'border-l'} border-gold/20`}
+        side={isRTL ? 'left' : 'right'}
+      >
         <SheetHeader className="flex-shrink-0 border-b border-gold/20 pb-4">
           <SheetTitle className="font-display text-2xl text-foreground flex items-center gap-2">
             <Heart className="w-5 h-5 text-gold fill-gold" />
-            My Wishlist
+            {language === 'ar' ? 'قائمة الرغبات' : 'My Wishlist'}
           </SheetTitle>
         </SheetHeader>
 
@@ -58,17 +62,17 @@ export const WishlistDrawer = () => {
                 <Heart className="w-10 h-10 text-gold" />
               </div>
               <h3 className="font-display text-xl text-foreground mb-2">
-                Your wishlist is empty
+                {language === 'ar' ? 'قائمة الرغبات فارغة' : 'Your wishlist is empty'}
               </h3>
               <p className="font-body text-muted-foreground mb-6">
-                Save your favorite products to purchase them later
+                {language === 'ar' ? 'احفظي منتجاتك المفضلة لشرائها لاحقاً' : 'Save your favorite products to purchase them later'}
               </p>
               <Button
                 variant="outline"
                 className="border-gold/30 hover:border-gold"
                 onClick={() => setOpen(false)}
               >
-                Continue Shopping
+                {language === 'ar' ? 'متابعة التسوق' : 'Continue Shopping'}
               </Button>
             </div>
           ) : (
@@ -101,30 +105,30 @@ export const WishlistDrawer = () => {
                       )}
                     </Link>
 
-                    {/* Details */}
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      <Link
-                        to={`/product/${product.node.handle}`}
-                        onClick={() => setOpen(false)}
-                        className="font-display text-sm text-foreground hover:text-gold transition-colors line-clamp-2 mb-1"
-                      >
-                        {product.node.title}
-                      </Link>
-                      <p className="font-display text-gold text-sm mb-auto">
-                        {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
-                      </p>
-
-                      {/* Actions */}
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-8 text-xs border-gold/30 hover:bg-gold hover:text-cream hover:border-gold"
-                          onClick={() => handleAddToCart(product)}
+                      {/* Details */}
+                      <div className="flex-1 min-w-0 flex flex-col">
+                        <Link
+                          to={`/product/${product.node.handle}`}
+                          onClick={() => setOpen(false)}
+                          className="font-display text-sm text-foreground hover:text-gold transition-colors line-clamp-2 mb-1"
                         >
-                          <ShoppingBag className="w-3 h-3 me-1" />
-                          Add to Bag
-                        </Button>
+                          {translateTitle(product.node.title, language)}
+                        </Link>
+                        <p className="font-display text-gold text-sm mb-auto">
+                          {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
+                        </p>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-8 text-xs border-gold/30 hover:bg-gold hover:text-cream hover:border-gold"
+                            onClick={() => handleAddToCart(product)}
+                          >
+                            <ShoppingBag className="w-3 h-3 me-1" />
+                            {language === 'ar' ? 'أضف للحقيبة' : 'Add to Bag'}
+                          </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -145,14 +149,16 @@ export const WishlistDrawer = () => {
         {items.length > 0 && (
           <div className="flex-shrink-0 border-t border-gold/20 pt-4 space-y-3">
             <p className="font-body text-sm text-muted-foreground text-center">
-              {items.length} item{items.length !== 1 ? 's' : ''} saved
+              {language === 'ar' 
+                ? `${items.length} ${items.length === 1 ? 'منتج محفوظ' : 'منتجات محفوظة'}`
+                : `${items.length} item${items.length !== 1 ? 's' : ''} saved`}
             </p>
             <Button
               variant="outline"
               className="w-full border-gold/30 hover:border-gold"
               onClick={() => setOpen(false)}
             >
-              Continue Shopping
+              {language === 'ar' ? 'متابعة التسوق' : 'Continue Shopping'}
             </Button>
           </div>
         )}

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
-import { getLocalizedDescription } from "@/lib/productUtils";
+import { getLocalizedDescription, translateTitle } from "@/lib/productUtils";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -190,7 +190,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           
           <h3 className="font-display text-lg text-cream mb-2 group-hover:text-gold transition-colors duration-300 line-clamp-2">
-            {node.title}
+            {translateTitle(node.title, language)}
           </h3>
           <p className="font-body text-sm text-cream/50 mb-4 line-clamp-2 leading-relaxed">
             {getLocalizedDescription(node.description, language, 80) || t.premiumProduct}
