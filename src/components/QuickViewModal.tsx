@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ShoppingBag, Minus, Plus, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
+import { translateTitle, getLocalizedDescription } from "@/lib/productUtils";
 
 interface QuickViewModalProps {
   product: ShopifyProduct;
@@ -16,7 +17,7 @@ interface QuickViewModalProps {
 
 export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps) => {
   const { node } = product;
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
   
@@ -129,7 +130,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
           <div className="p-8 flex flex-col">
             <DialogHeader className="text-start mb-6">
               <DialogTitle className="font-display text-2xl md:text-3xl text-foreground leading-tight">
-                {node.title}
+                {translateTitle(node.title, language)}
               </DialogTitle>
             </DialogHeader>
             
@@ -147,7 +148,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
             
             {/* Description */}
             <p className="font-body text-muted-foreground mb-6 leading-relaxed flex-grow">
-              {node.description || t.premiumProduct}
+              {getLocalizedDescription(node.description, language, 150) || t.premiumProduct}
             </p>
             
             {/* Variant Selection */}
@@ -177,7 +178,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
             {/* Quantity */}
             <div className="mb-6">
               <label className="font-display text-sm text-foreground mb-2 block">
-                Quantity
+                {language === 'ar' ? 'الكمية' : 'Quantity'}
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -224,7 +225,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                   className="w-full border-gold/30 hover:border-gold hover:bg-gold/5"
                 >
                   <Eye className="w-4 h-4 me-2" />
-                  View Full Details
+                  {language === 'ar' ? 'عرض التفاصيل الكاملة' : 'View Full Details'}
                 </Button>
               </Link>
             </div>

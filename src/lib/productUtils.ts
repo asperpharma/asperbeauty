@@ -31,14 +31,31 @@ export function summarizeDescription(description: string, maxLength: number = 15
  * Arabic translations for common beauty product terms
  */
 const arabicTranslations: Record<string, string> = {
+  // Brand names (keep as-is but can add Arabic if needed)
+  'vichy': 'فيشي',
+  'eucerin': 'يوسيرين',
+  'cetaphil': 'سيتافيل',
+  'bioten': 'بيوتين',
+  'bourjois': 'بورجوا',
+  'isadora': 'إيزادورا',
+  'essence': 'إسنس',
+  'svr': 'إس في آر',
+  'bepanthen': 'بيبانثين',
+  'mavala': 'مافالا',
+  'smilest': 'سمايلست',
+  'raghad': 'رغد',
+  'bio balance': 'بيو بالانس',
+  
   // Product types
   'mascara': 'ماسكارا',
   'lipstick': 'أحمر شفاه',
   'lip tint': 'صبغة شفاه',
+  'lip gloss': 'ملمع شفاه',
   'cream': 'كريم',
   'lotion': 'لوشن',
   'serum': 'سيروم',
   'cleanser': 'منظف',
+  'cleansing': 'تنظيف',
   'toner': 'تونر',
   'sunscreen': 'واقي شمس',
   'moisturizer': 'مرطب',
@@ -63,18 +80,44 @@ const arabicTranslations: Record<string, string> = {
   'hydrating': 'مرطب',
   'nourishing': 'مغذي',
   'gel': 'جل',
+  'oil': 'زيت',
+  'mask': 'قناع',
+  'spray': 'بخاخ',
+  'balm': 'بلسم',
+  'mist': 'رذاذ',
+  'essence product': 'منتج إسنس',
+  'ampoule': 'أمبول',
+  'treatment': 'علاج',
+  'scrub': 'مقشر',
+  'exfoliant': 'مقشر',
+  'primer': 'برايمر',
+  'setting': 'مثبت',
+  'bronzer': 'برونزر',
+  'highlighter': 'هايلايتر',
+  'contour': 'كونتور',
+  'brow': 'حاجب',
+  'liner': 'محدد',
+  'palette': 'باليت',
+  'kit': 'مجموعة',
+  'set': 'طقم',
   
-  // Common words
+  // Descriptive words
   'volume': 'كثافة',
   'extreme': 'فائق',
   'bold': 'جريء',
   'big': 'كبير',
   'black': 'أسود',
+  'brown': 'بني',
+  'nude': 'نود',
+  'pink': 'وردي',
+  'red': 'أحمر',
+  'gold': 'ذهبي',
   'natural': 'طبيعي',
   'organic': 'عضوي',
   'vitamin': 'فيتامين',
   'skin': 'بشرة',
   'face': 'وجه',
+  'facial': 'للوجه',
   'body': 'جسم',
   'hair': 'شعر',
   'lash': 'رموش',
@@ -91,6 +134,7 @@ const arabicTranslations: Record<string, string> = {
   'dry': 'جاف',
   'oily': 'دهني',
   'combination': 'مختلط',
+  'normal': 'عادي',
   'all skin types': 'جميع أنواع البشرة',
   'protection': 'حماية',
   'repair': 'إصلاح',
@@ -98,19 +142,76 @@ const arabicTranslations: Record<string, string> = {
   'smooth': 'ناعم',
   'soft': 'رقيق',
   'bright': 'مشرق',
+  'brightening': 'تفتيح',
   'glow': 'توهج',
+  'glowing': 'متوهج',
   'radiant': 'مشع',
   'clear': 'صافي',
   'fresh': 'منعش',
   'lightweight': 'خفيف',
   'intensive': 'مكثف',
+  'intense': 'مكثف',
   'daily': 'يومي',
+  'night': 'ليلي',
+  'day': 'نهاري',
+  'deep': 'عميق',
+  'ultra': 'فائق',
+  'super': 'سوبر',
+  'pro': 'برو',
+  'professional': 'احترافي',
+  'advanced': 'متقدم',
+  'original': 'أصلي',
+  'classic': 'كلاسيكي',
+  'new': 'جديد',
+  'mini': 'ميني',
+  'travel': 'للسفر',
+  'size': 'حجم',
+  'ml': 'مل',
+  'spf': 'عامل حماية',
+  'sun': 'شمس',
+  'uv': 'أشعة',
+  'waterproof': 'مقاوم للماء',
+  'long-lasting': 'طويل الأمد',
+  'matte': 'مات',
+  'glossy': 'لامع',
+  'shiny': 'لامع',
+  'dewy': 'ندي',
+  'satin': 'ساتان',
+  'velvet': 'مخملي',
+  'silk': 'حريري',
+  'silky smooth': 'ناعم حريري',
+  'rich': 'غني',
+  'creamy': 'كريمي',
+  'light': 'خفيف',
+  'full': 'كامل',
+  'coverage': 'تغطية',
+  'sheer': 'شفاف',
+  'formula': 'تركيبة',
+  'infused': 'مشبع',
+  'enriched': 'معزز',
+  'extract': 'مستخلص',
+  'complex': 'مركب',
+  'technology': 'تقنية',
+  'innovation': 'ابتكار',
+  'solution': 'حل',
+  'system': 'نظام',
+  'routine': 'روتين',
+  'step': 'خطوة',
+  'normaderm': 'نورماديرم',
+  'phytosolution': 'فيتوسوليوشن',
+  
+  // Connectors
   'for': 'لـ',
   'with': 'مع',
   'and': 'و',
   'the': '',
   'a': '',
   'an': '',
+  'of': 'من',
+  'in': 'في',
+  'by': 'من',
+  'to': 'إلى',
+  'on': 'على',
 };
 
 /**
@@ -138,6 +239,14 @@ export function translateToArabic(text: string): string {
 }
 
 /**
+ * Translates product title to Arabic
+ */
+export function translateTitle(title: string, language: 'en' | 'ar'): string {
+  if (!title || language === 'en') return title;
+  return translateToArabic(title);
+}
+
+/**
  * Gets localized description based on language
  */
 export function getLocalizedDescription(description: string, language: 'en' | 'ar', maxLength?: number): string {
@@ -148,6 +257,44 @@ export function getLocalizedDescription(description: string, language: 'en' | 'a
   }
   
   return summarized;
+}
+
+/**
+ * Category translations
+ */
+const categoryTranslations: Record<string, string> = {
+  'Skin Care': 'العناية بالبشرة',
+  'Hair Care': 'العناية بالشعر',
+  'Make Up': 'المكياج',
+  'Body Care': 'العناية بالجسم',
+  'Fragrances': 'العطور',
+  'Tools & Devices': 'الأدوات والأجهزة',
+  'Beauty': 'الجمال',
+  'Skincare': 'العناية بالبشرة',
+  'Makeup': 'المكياج',
+  'Cosmetics': 'مستحضرات التجميل',
+  'Face': 'الوجه',
+  'Eyes': 'العيون',
+  'Lips': 'الشفاه',
+  'Nails': 'الأظافر',
+  'Hair': 'الشعر',
+  'Body': 'الجسم',
+  'Sun Care': 'العناية من الشمس',
+  'Anti-Aging': 'مضاد للشيخوخة',
+  'Acne': 'حب الشباب',
+  'Moisturizers': 'المرطبات',
+  'Cleansers': 'المنظفات',
+  'Serums': 'الأمصال',
+  'Masks': 'الأقنعة',
+  'Treatments': 'العلاجات',
+};
+
+/**
+ * Translates product category/type to Arabic
+ */
+export function getLocalizedCategory(category: string, language: 'en' | 'ar'): string {
+  if (!category || language === 'en') return category;
+  return categoryTranslations[category] || translateToArabic(category);
 }
 
 /**

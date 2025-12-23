@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { getLocalizedDescription, extractKeyBenefits, getProductCategory } from "@/lib/productUtils";
+import { getLocalizedDescription, extractKeyBenefits, getLocalizedCategory, translateTitle } from "@/lib/productUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProductData {
@@ -222,17 +222,17 @@ const ProductDetail = () => {
               {/* Brand & Category */}
               <div className="flex items-center gap-2 mb-3">
                 <p className="font-body text-xs tracking-widest uppercase text-gold">
-                  {product.vendor || "Asper Beauty"}
+                  {product.vendor || (language === 'ar' ? 'آسبر بيوتي' : 'Asper Beauty')}
                 </p>
                 <span className="w-1 h-1 rounded-full bg-gold/50" />
                 <p className="font-body text-xs tracking-widest uppercase text-cream/50">
-                  {getProductCategory(product.productType, product.vendor)}
+                  {getLocalizedCategory(product.productType || product.vendor || 'Beauty', language)}
                 </p>
               </div>
               
               {/* Title */}
               <h1 className="font-display text-2xl md:text-3xl lg:text-4xl text-cream mb-4 leading-tight">
-                {product.title}
+                {translateTitle(product.title, language)}
               </h1>
               
               {/* Price */}
