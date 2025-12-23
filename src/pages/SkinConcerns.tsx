@@ -5,12 +5,15 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchProducts, type ShopifyProduct } from "@/lib/shopify";
-import { Loader2, Sparkles, Droplets, Shield, Sun } from "lucide-react";
+import { Loader2, Sparkles, Droplets, Shield, Sun, Heart, Umbrella, Eye } from "lucide-react";
 
 import antiAgingImage from "@/assets/concerns/anti-aging.jpg";
 import hydrationImage from "@/assets/concerns/hydration.jpg";
 import acneImage from "@/assets/concerns/acne.jpg";
 import brighteningImage from "@/assets/concerns/brightening.jpg";
+import sensitivityImage from "@/assets/concerns/sensitivity.jpg";
+import sunProtectionImage from "@/assets/concerns/sun-protection.jpg";
+import darkCirclesImage from "@/assets/concerns/dark-circles.jpg";
 
 const skinConcerns = [
   {
@@ -56,6 +59,39 @@ const skinConcerns = [
     icon: Sun,
     keywords: ["bright", "vitamin c", "radiance", "glow", "dark spot", "b3", "luminous"],
     color: "from-yellow-500/20 to-orange-400/20",
+  },
+  {
+    id: "sensitivity",
+    nameEn: "Sensitivity",
+    nameAr: "البشرة الحساسة",
+    descriptionEn: "Gentle, soothing formulas designed for delicate and reactive skin types.",
+    descriptionAr: "تركيبات لطيفة ومهدئة مصممة للبشرة الحساسة والمتفاعلة.",
+    image: sensitivityImage,
+    icon: Heart,
+    keywords: ["sensitive", "soothing", "calming", "gentle", "redness", "irritat", "dermatolog"],
+    color: "from-pink-400/20 to-rose-400/20",
+  },
+  {
+    id: "sun-protection",
+    nameEn: "Sun Protection",
+    nameAr: "الحماية من الشمس",
+    descriptionEn: "Shield your skin from harmful UV rays with advanced SPF protection.",
+    descriptionAr: "احمي بشرتك من أشعة الشمس الضارة مع حماية متقدمة.",
+    image: sunProtectionImage,
+    icon: Umbrella,
+    keywords: ["spf", "sun", "uv", "protect", "sunscreen", "broad spectrum"],
+    color: "from-yellow-400/20 to-amber-400/20",
+  },
+  {
+    id: "dark-circles",
+    nameEn: "Dark Circles",
+    nameAr: "الهالات السوداء",
+    descriptionEn: "Target under-eye concerns with specialized eye care treatments.",
+    descriptionAr: "عالجي مشاكل منطقة العين مع علاجات متخصصة للعناية بالعين.",
+    image: darkCirclesImage,
+    icon: Eye,
+    keywords: ["eye", "dark circle", "puff", "under-eye", "eye care", "eye cream"],
+    color: "from-purple-400/20 to-violet-400/20",
   },
 ];
 
@@ -126,7 +162,7 @@ export default function SkinConcerns() {
 
         {/* Skin Concerns Grid */}
         <section className="py-12 luxury-container">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {skinConcerns.map((concern) => {
               const IconComponent = concern.icon;
               const isActive = selectedConcern === concern.id;
