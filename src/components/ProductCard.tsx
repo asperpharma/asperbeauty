@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
+import { summarizeDescription } from "@/lib/productUtils";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -192,7 +193,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {node.title}
           </h3>
           <p className="font-body text-sm text-cream/50 mb-4 line-clamp-2 leading-relaxed">
-            {node.description || t.premiumProduct}
+            {summarizeDescription(node.description, 80) || t.premiumProduct}
           </p>
           
           {/* Gold Lotus Separator */}
