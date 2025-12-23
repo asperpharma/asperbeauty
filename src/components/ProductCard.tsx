@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
-import { summarizeDescription } from "@/lib/productUtils";
+import { getLocalizedDescription } from "@/lib/productUtils";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -20,7 +20,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
   const { toggleItem, isInWishlist } = useWishlistStore();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const isWishlisted = isInWishlist(node.id);
 
@@ -193,7 +193,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {node.title}
           </h3>
           <p className="font-body text-sm text-cream/50 mb-4 line-clamp-2 leading-relaxed">
-            {summarizeDescription(node.description, 80) || t.premiumProduct}
+            {getLocalizedDescription(node.description, language, 80) || t.premiumProduct}
           </p>
           
           {/* Gold Lotus Separator */}

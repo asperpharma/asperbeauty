@@ -6,7 +6,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { summarizeDescription, extractKeyBenefits, getProductCategory } from "@/lib/productUtils";
+import { getLocalizedDescription, extractKeyBenefits, getProductCategory } from "@/lib/productUtils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProductData {
   id: string;
@@ -54,6 +55,7 @@ interface ProductData {
 
 const ProductDetail = () => {
   const { handle } = useParams<{ handle: string }>();
+  const { language, t } = useLanguage();
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<ProductData["variants"]["edges"][0]["node"] | null>(null);
@@ -243,12 +245,14 @@ const ProductDetail = () => {
 
               {/* Key Benefits */}
               {(() => {
-                const benefits = extractKeyBenefits(product.description);
+                const benefits = extractKeyBenefits(product.description, language);
                 return benefits.length > 0 ? (
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles className="w-4 h-4 text-gold" />
-                      <span className="font-body text-xs tracking-widest uppercase text-cream">Key Benefits</span>
+                      <span className="font-body text-xs tracking-widest uppercase text-cream">
+                        {language === 'ar' ? 'الفوائد الرئيسية' : 'Key Benefits'}
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {benefits.map((benefit, idx) => (
@@ -266,7 +270,7 @@ const ProductDetail = () => {
 
               {/* Summarized Description */}
               <p className="font-body text-cream/70 leading-relaxed text-sm mb-8">
-                {summarizeDescription(product.description, 200) || "A premium beauty product from our curated collection, crafted with the finest ingredients for discerning individuals."}
+                {getLocalizedDescription(product.description, language, 200) || (language === 'ar' ? 'منتج تجميل فاخر من مجموعتنا المختارة، مصنوع بأجود المكونات.' : 'A premium beauty product from our curated collection, crafted with the finest ingredients for discerning individuals.')}
               </p>
 
               {/* Options */}

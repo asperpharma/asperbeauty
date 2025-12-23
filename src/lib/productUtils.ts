@@ -28,39 +28,163 @@ export function summarizeDescription(description: string, maxLength: number = 15
 }
 
 /**
+ * Arabic translations for common beauty product terms
+ */
+const arabicTranslations: Record<string, string> = {
+  // Product types
+  'mascara': 'ماسكارا',
+  'lipstick': 'أحمر شفاه',
+  'lip tint': 'صبغة شفاه',
+  'cream': 'كريم',
+  'lotion': 'لوشن',
+  'serum': 'سيروم',
+  'cleanser': 'منظف',
+  'toner': 'تونر',
+  'sunscreen': 'واقي شمس',
+  'moisturizer': 'مرطب',
+  'eye cream': 'كريم العين',
+  'day cream': 'كريم نهاري',
+  'night cream': 'كريم ليلي',
+  'hair treatment': 'علاج الشعر',
+  'hair oil': 'زيت الشعر',
+  'shampoo': 'شامبو',
+  'conditioner': 'بلسم',
+  'foundation': 'كريم أساس',
+  'concealer': 'كونسيلر',
+  'powder': 'بودرة',
+  'blush': 'أحمر خدود',
+  'eyeshadow': 'ظلال العيون',
+  'eyeliner': 'محدد العيون',
+  'hand cream': 'كريم اليدين',
+  'body lotion': 'لوشن الجسم',
+  'face wash': 'غسول الوجه',
+  'whitening': 'تبييض',
+  'anti-aging': 'مضاد للشيخوخة',
+  'hydrating': 'مرطب',
+  'nourishing': 'مغذي',
+  'gel': 'جل',
+  
+  // Common words
+  'volume': 'كثافة',
+  'extreme': 'فائق',
+  'bold': 'جريء',
+  'big': 'كبير',
+  'black': 'أسود',
+  'natural': 'طبيعي',
+  'organic': 'عضوي',
+  'vitamin': 'فيتامين',
+  'skin': 'بشرة',
+  'face': 'وجه',
+  'body': 'جسم',
+  'hair': 'شعر',
+  'lash': 'رموش',
+  'lashes': 'رموش',
+  'double': 'مضاعف',
+  'long': 'طويل',
+  'lasting': 'ثابت',
+  'care': 'عناية',
+  'beauty': 'جمال',
+  'premium': 'فاخر',
+  'luxury': 'فخم',
+  'gentle': 'لطيف',
+  'sensitive': 'حساس',
+  'dry': 'جاف',
+  'oily': 'دهني',
+  'combination': 'مختلط',
+  'all skin types': 'جميع أنواع البشرة',
+  'protection': 'حماية',
+  'repair': 'إصلاح',
+  'strengthen': 'تقوية',
+  'smooth': 'ناعم',
+  'soft': 'رقيق',
+  'bright': 'مشرق',
+  'glow': 'توهج',
+  'radiant': 'مشع',
+  'clear': 'صافي',
+  'fresh': 'منعش',
+  'lightweight': 'خفيف',
+  'intensive': 'مكثف',
+  'daily': 'يومي',
+  'for': 'لـ',
+  'with': 'مع',
+  'and': 'و',
+  'the': '',
+  'a': '',
+  'an': '',
+};
+
+/**
+ * Translates product description to Arabic
+ */
+export function translateToArabic(text: string): string {
+  if (!text) return "";
+  
+  let translated = text.toLowerCase();
+  
+  // Sort keys by length (longest first) to avoid partial replacements
+  const sortedKeys = Object.keys(arabicTranslations).sort((a, b) => b.length - a.length);
+  
+  for (const english of sortedKeys) {
+    const arabic = arabicTranslations[english];
+    const regex = new RegExp(`\\b${english}\\b`, 'gi');
+    translated = translated.replace(regex, arabic);
+  }
+  
+  // Capitalize first letter of remaining English words (that weren't translated)
+  // and clean up spacing
+  translated = translated.replace(/\s+/g, ' ').trim();
+  
+  return translated;
+}
+
+/**
+ * Gets localized description based on language
+ */
+export function getLocalizedDescription(description: string, language: 'en' | 'ar', maxLength?: number): string {
+  const summarized = summarizeDescription(description, maxLength);
+  
+  if (language === 'ar' && summarized) {
+    return translateToArabic(summarized);
+  }
+  
+  return summarized;
+}
+
+/**
  * Extracts key benefits/features from product description
  */
-export function extractKeyBenefits(description: string): string[] {
+export function extractKeyBenefits(description: string, language: 'en' | 'ar' = 'en'): string[] {
   if (!description) return [];
   
   const benefits: string[] = [];
   const cleanText = description.replace(/<[^>]*>/g, '').toLowerCase();
   
-  // Common benefit keywords in beauty products
+  // Common benefit keywords in beauty products with Arabic translations
   const benefitPatterns = [
-    { pattern: /hydrat/i, benefit: "Deep Hydration" },
-    { pattern: /moistur/i, benefit: "Intense Moisture" },
-    { pattern: /anti[- ]?aging|wrinkle/i, benefit: "Anti-Aging" },
-    { pattern: /vitamin\s*c|brightening/i, benefit: "Brightening" },
-    { pattern: /spf|sun\s*protect/i, benefit: "Sun Protection" },
-    { pattern: /natural|organic/i, benefit: "Natural Ingredients" },
-    { pattern: /gentle|sensitive/i, benefit: "Gentle Formula" },
-    { pattern: /repair|restor/i, benefit: "Repair & Restore" },
-    { pattern: /firm|lift/i, benefit: "Firming & Lifting" },
-    { pattern: /smooth|soft/i, benefit: "Smooth & Soft" },
-    { pattern: /volumiz|volume/i, benefit: "Volume Boost" },
-    { pattern: /long[- ]?lasting|24[- ]?hour/i, benefit: "Long-Lasting" },
-    { pattern: /nourish/i, benefit: "Nourishing" },
-    { pattern: /protect/i, benefit: "Protective" },
-    { pattern: /strength|strong/i, benefit: "Strengthening" },
-    { pattern: /clean|cleans/i, benefit: "Deep Cleansing" },
-    { pattern: /sooth/i, benefit: "Soothing" },
-    { pattern: /whiten|whitening/i, benefit: "Whitening" },
-    { pattern: /lash|mascara/i, benefit: "Lash Enhancement" },
-    { pattern: /color|pigment/i, benefit: "Rich Color" },
+    { pattern: /hydrat/i, en: "Deep Hydration", ar: "ترطيب عميق" },
+    { pattern: /moistur/i, en: "Intense Moisture", ar: "ترطيب مكثف" },
+    { pattern: /anti[- ]?aging|wrinkle/i, en: "Anti-Aging", ar: "مضاد للشيخوخة" },
+    { pattern: /vitamin\s*c|brightening/i, en: "Brightening", ar: "تفتيح" },
+    { pattern: /spf|sun\s*protect/i, en: "Sun Protection", ar: "حماية من الشمس" },
+    { pattern: /natural|organic/i, en: "Natural Ingredients", ar: "مكونات طبيعية" },
+    { pattern: /gentle|sensitive/i, en: "Gentle Formula", ar: "تركيبة لطيفة" },
+    { pattern: /repair|restor/i, en: "Repair & Restore", ar: "إصلاح وتجديد" },
+    { pattern: /firm|lift/i, en: "Firming & Lifting", ar: "شد ورفع" },
+    { pattern: /smooth|soft/i, en: "Smooth & Soft", ar: "ناعم ورقيق" },
+    { pattern: /volumiz|volume/i, en: "Volume Boost", ar: "زيادة الكثافة" },
+    { pattern: /long[- ]?lasting|24[- ]?hour/i, en: "Long-Lasting", ar: "طويل الأمد" },
+    { pattern: /nourish/i, en: "Nourishing", ar: "مغذي" },
+    { pattern: /protect/i, en: "Protective", ar: "حماية" },
+    { pattern: /strength|strong/i, en: "Strengthening", ar: "تقوية" },
+    { pattern: /clean|cleans/i, en: "Deep Cleansing", ar: "تنظيف عميق" },
+    { pattern: /sooth/i, en: "Soothing", ar: "مهدئ" },
+    { pattern: /whiten|whitening/i, en: "Whitening", ar: "تبييض" },
+    { pattern: /lash|mascara/i, en: "Lash Enhancement", ar: "تعزيز الرموش" },
+    { pattern: /color|pigment/i, en: "Rich Color", ar: "لون غني" },
   ];
   
-  for (const { pattern, benefit } of benefitPatterns) {
+  for (const { pattern, en, ar } of benefitPatterns) {
+    const benefit = language === 'ar' ? ar : en;
     if (pattern.test(cleanText) && !benefits.includes(benefit)) {
       benefits.push(benefit);
     }
