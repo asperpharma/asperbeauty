@@ -4,112 +4,130 @@
 
 @layer base {
   :root {
-    /* Deep Burgundy/Maroon - Rich, elegant base */
-    --background: 345 55% 12%;
-    --foreground: 35 40% 92%;
+    /* Asper Beauty High-Performance Palette */
+    /* Maroon #800020 = HSL 345 100% 25% */
+    --maroon: 345 100% 25%;
+    --maroon-light: 345 80% 35%;
+    --maroon-dark: 345 100% 18%;
+    
+    /* Soft Ivory #F8F8FF = HSL 240 100% 99% */
+    --soft-ivory: 240 100% 99%;
+    --soft-ivory-dark: 240 20% 95%;
+    
+    /* Shiny Gold #FFC300 = HSL 45 100% 50% */
+    --shiny-gold: 45 100% 50%;
+    --shiny-gold-light: 45 100% 65%;
+    --shiny-gold-dark: 45 100% 40%;
+    
+    /* Dark Charcoal #333333 = HSL 0 0% 20% */
+    --dark-charcoal: 0 0% 20%;
+    --dark-charcoal-light: 0 0% 40%;
+    
+    /* Primary backgrounds - Soft Ivory base */
+    --background: 240 100% 99%;
+    --foreground: 0 0% 20%;
 
-    --card: 345 50% 15%;
-    --card-foreground: 35 40% 92%;
+    --card: 240 20% 97%;
+    --card-foreground: 0 0% 20%;
 
-    --popover: 345 50% 15%;
-    --popover-foreground: 35 40% 92%;
+    --popover: 240 100% 99%;
+    --popover-foreground: 0 0% 20%;
 
-    /* Cream/Beige for primary surfaces */
-    --primary: 35 40% 92%;
-    --primary-foreground: 345 55% 12%;
+    /* Maroon for primary accent surfaces */
+    --primary: 345 100% 25%;
+    --primary-foreground: 240 100% 99%;
 
-    --secondary: 345 45% 18%;
-    --secondary-foreground: 35 40% 92%;
+    /* Warm Beige/Taupe for secondary surfaces */
+    --secondary: 50 25% 91%;
+    --secondary-foreground: 0 0% 20%;
 
-    --muted: 345 40% 20%;
-    --muted-foreground: 35 25% 70%;
+    --muted: 50 20% 88%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Gold accent - luxurious highlight */
-    --accent: 38 50% 58%;
-    --accent-foreground: 345 55% 12%;
+    /* Shiny Gold accent */
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 345 40% 22%;
-    --input: 345 40% 22%;
-    --ring: 38 50% 58%;
+    --border: 50 20% 85%;
+    --input: 50 20% 85%;
+    --ring: 45 100% 50%;
 
     --radius: 0.25rem;
 
-    /* Custom luxury tokens - Asper Beauty palette */
-    --burgundy: 345 55% 12%;
-    --burgundy-light: 345 50% 18%;
-    --burgundy-dark: 345 60% 8%;
-    --cream: 35 40% 92%;
-    --cream-dark: 35 30% 85%;
-    --gold: 38 50% 58%;
-    --gold-light: 38 55% 68%;
-    --gold-glow: 38 60% 75%;
+    /* Legacy token mappings for compatibility */
+    --burgundy: 345 100% 25%;
+    --burgundy-light: 345 80% 35%;
+    --burgundy-dark: 345 100% 18%;
+    --cream: 240 100% 99%;
+    --cream-dark: 240 20% 95%;
+    --gold: 45 100% 50%;
+    --gold-light: 45 100% 65%;
+    --gold-glow: 45 100% 70%;
     --rose: 350 45% 55%;
     --rose-light: 350 50% 65%;
-    
-    /* New header colors */
-    --shiny-gold: 45 100% 50%;
-    --soft-ivory: 240 100% 99%;
-    --dark-charcoal: 0 0% 20%;
 
     --font-display: 'Playfair Display', serif;
     --font-body: 'Montserrat', sans-serif;
 
-    --sidebar-background: 345 55% 12%;
-    --sidebar-foreground: 35 40% 92%;
-    --sidebar-primary: 35 40% 92%;
-    --sidebar-primary-foreground: 345 55% 12%;
-    --sidebar-accent: 345 45% 18%;
-    --sidebar-accent-foreground: 35 40% 92%;
-    --sidebar-border: 345 40% 22%;
-    --sidebar-ring: 38 50% 58%;
+    --sidebar-background: 345 100% 25%;
+    --sidebar-foreground: 240 100% 99%;
+    --sidebar-primary: 240 100% 99%;
+    --sidebar-primary-foreground: 345 100% 25%;
+    --sidebar-accent: 345 80% 35%;
+    --sidebar-accent-foreground: 240 100% 99%;
+    --sidebar-border: 345 80% 30%;
+    --sidebar-ring: 45 100% 50%;
   }
 
   .dark {
-    --background: 345 60% 8%;
-    --foreground: 35 40% 92%;
+    /* Dark mode with Maroon base */
+    --background: 345 100% 12%;
+    --foreground: 240 100% 99%;
 
-    --card: 345 55% 10%;
-    --card-foreground: 35 40% 92%;
+    --card: 345 100% 15%;
+    --card-foreground: 240 100% 99%;
 
-    --popover: 345 55% 10%;
-    --popover-foreground: 35 40% 92%;
+    --popover: 345 100% 15%;
+    --popover-foreground: 240 100% 99%;
 
-    --primary: 35 40% 92%;
-    --primary-foreground: 345 60% 8%;
+    --primary: 240 100% 99%;
+    --primary-foreground: 345 100% 12%;
 
-    --secondary: 345 50% 14%;
-    --secondary-foreground: 35 40% 92%;
+    --secondary: 345 80% 20%;
+    --secondary-foreground: 240 100% 99%;
 
-    --muted: 345 45% 16%;
-    --muted-foreground: 35 25% 65%;
+    --muted: 345 60% 22%;
+    --muted-foreground: 240 20% 75%;
 
-    --accent: 38 50% 55%;
-    --accent-foreground: 345 60% 8%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 345 100% 12%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 35 40% 95%;
+    --destructive-foreground: 240 100% 99%;
 
-    --border: 345 45% 18%;
-    --input: 345 45% 18%;
-    --ring: 38 50% 55%;
+    --border: 345 60% 25%;
+    --input: 345 60% 25%;
+    --ring: 45 100% 50%;
 
-    --burgundy: 345 60% 8%;
-    --burgundy-light: 345 55% 12%;
-    --cream: 35 40% 92%;
-    --gold: 38 50% 55%;
-    --gold-light: 38 55% 65%;
+    --maroon: 345 100% 12%;
+    --maroon-light: 345 80% 20%;
+    --burgundy: 345 100% 12%;
+    --burgundy-light: 345 80% 20%;
+    --cream: 240 100% 99%;
+    --gold: 45 100% 50%;
+    --gold-light: 45 100% 60%;
 
-    --sidebar-background: 345 60% 8%;
-    --sidebar-foreground: 35 40% 92%;
-    --sidebar-primary: 35 40% 92%;
-    --sidebar-primary-foreground: 345 60% 8%;
-    --sidebar-accent: 345 50% 14%;
-    --sidebar-accent-foreground: 35 40% 92%;
-    --sidebar-border: 345 45% 18%;
-    --sidebar-ring: 38 50% 55%;
+    --sidebar-background: 345 100% 12%;
+    --sidebar-foreground: 240 100% 99%;
+    --sidebar-primary: 240 100% 99%;
+    --sidebar-primary-foreground: 345 100% 12%;
+    --sidebar-accent: 345 80% 20%;
+    --sidebar-accent-foreground: 240 100% 99%;
+    --sidebar-border: 345 60% 25%;
+    --sidebar-ring: 45 100% 50%;
   }
 }
 

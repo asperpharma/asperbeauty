@@ -87,19 +87,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/product/${node.handle}`} className="group block">
-      <div className="bg-secondary border border-gold/20 hover:border-gold/50 hover:shadow-2xl hover:shadow-gold/10 transition-all duration-500 overflow-hidden relative">
+      <div className="bg-soft-ivory border border-border hover:border-shiny-gold/50 hover:shadow-xl hover:shadow-shiny-gold/5 transition-all duration-500 overflow-hidden relative rounded-sm">
         {/* Badges */}
         {(isBestseller || isNewArrival || isOnSale) && (
           <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
             {isOnSale && (
-              <div className="bg-rose text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
+              <div className="bg-primary text-primary-foreground px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
                 <span className="flex items-center gap-1.5">
                   -{discountPercent}%
                 </span>
               </div>
             )}
             {isBestseller && (
-              <div className="bg-gold text-background px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
+              <div className="bg-shiny-gold text-dark-charcoal px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
                 <span className="flex items-center gap-1.5">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
@@ -109,7 +109,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </div>
             )}
             {isNewArrival && !isBestseller && !isOnSale && (
-              <div className="bg-background text-gold border border-gold/40 px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
+              <div className="bg-primary text-primary-foreground border border-shiny-gold/40 px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
                 New
               </div>
             )}
@@ -117,54 +117,49 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         )}
         
         {/* Image Container */}
-        <div className="aspect-[3/4] bg-muted overflow-hidden relative">
+        <div className="aspect-[3/4] bg-secondary overflow-hidden relative">
           {firstImage ? (
             <>
-              {/* Main Image */}
               <img
                 src={firstImage.url}
                 alt={firstImage.altText || node.title}
-                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                loading="lazy"
               />
-              {/* Elegant Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              {/* Shimmer Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-charcoal/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
+            <div className="w-full h-full flex items-center justify-center bg-secondary">
               <span className="text-muted-foreground font-body text-sm">{t.noImage}</span>
             </div>
           )}
 
-          {/* Elegant Corner Accents */}
-          <div className="absolute top-3 left-3 w-6 h-6 border-t border-l border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute top-3 right-3 w-6 h-6 border-t border-r border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute bottom-3 left-3 w-6 h-6 border-b border-l border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute bottom-3 right-3 w-6 h-6 border-b border-r border-gold/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Corner Accents */}
+          <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-shiny-gold/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-shiny-gold/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-shiny-gold/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-shiny-gold/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Action Buttons */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 z-30">
-            {/* Wishlist Button */}
             <button
               onClick={handleWishlistToggle}
               className={`w-10 h-10 rounded-full backdrop-blur-sm border flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 ${
                 isWishlisted 
-                  ? 'bg-gold border-gold text-background' 
-                  : 'bg-background/90 border-gold/40 text-gold opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-gold hover:text-background'
+                  ? 'bg-shiny-gold border-shiny-gold text-dark-charcoal' 
+                  : 'bg-soft-ivory/90 border-shiny-gold/40 text-shiny-gold opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-shiny-gold hover:text-dark-charcoal'
               }`}
             >
               <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
             
-            {/* Quick View Button */}
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setIsQuickViewOpen(true);
               }}
-              className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-background transition-all duration-300 shadow-lg hover:scale-110 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+              className="w-10 h-10 rounded-full bg-soft-ivory/90 backdrop-blur-sm border border-shiny-gold/40 flex items-center justify-center text-shiny-gold hover:bg-shiny-gold hover:text-dark-charcoal transition-all duration-300 shadow-lg hover:scale-110 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -175,7 +170,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <Button
               variant="luxury"
               size="luxury"
-              className="w-full bg-background/95 backdrop-blur-md text-gold border border-gold hover:bg-gold hover:text-background shadow-lg"
+              className="w-full bg-soft-ivory/95 backdrop-blur-md text-primary border border-shiny-gold hover:bg-shiny-gold hover:text-dark-charcoal shadow-lg"
               onClick={handleAddToCart}
             >
               <ShoppingBag className="w-4 h-4 me-2" />
@@ -185,41 +180,37 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 text-center bg-secondary relative">
-          {/* Top decorative line */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        <div className="p-5 text-center bg-soft-ivory relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-px bg-gradient-to-r from-transparent via-shiny-gold/50 to-transparent" />
           
-          <h3 className="font-display text-lg text-cream mb-2 group-hover:text-gold transition-colors duration-300 line-clamp-2">
+          <h3 className="font-display text-base text-dark-charcoal mb-1.5 group-hover:text-primary transition-colors duration-300 line-clamp-2">
             {translateTitle(node.title, language)}
           </h3>
-          <p className="font-body text-sm text-cream/50 mb-4 line-clamp-2 leading-relaxed">
-            {getLocalizedDescription(node.description, language, 80) || t.premiumProduct}
+          <p className="font-body text-xs text-muted-foreground mb-3 line-clamp-1 leading-relaxed">
+            {getLocalizedDescription(node.description, language, 60) || t.premiumProduct}
           </p>
           
-          {/* Gold Lotus Separator */}
-          <div className="flex items-center justify-center gap-3 my-4">
-            <div className="w-10 h-px bg-gradient-to-r from-transparent via-gold/60 to-gold/30" />
-            <svg className="w-4 h-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C12 2 9 6 9 9C9 11 10.5 12.5 12 12.5C13.5 12.5 15 11 15 9C15 6 12 2 12 2ZM6 8C6 8 3 11 3 13.5C3 15.5 4.5 17 6.5 17C7.5 17 8.5 16.5 9 15.5C7.5 14.5 6.5 12.5 6.5 10.5C6.5 9.5 6.5 8.5 6 8ZM18 8C17.5 8.5 17.5 9.5 17.5 10.5C17.5 12.5 16.5 14.5 15 15.5C15.5 16.5 16.5 17 17.5 17C19.5 17 21 15.5 21 13.5C21 11 18 8 18 8ZM12 14C10 14 8 15.5 7 17.5C8 19.5 10 21 12 21C14 21 16 19.5 17 17.5C16 15.5 14 14 12 14Z"/>
-            </svg>
-            <div className="w-10 h-px bg-gradient-to-l from-transparent via-gold/60 to-gold/30" />
+          {/* Gold Separator */}
+          <div className="flex items-center justify-center gap-2 my-3">
+            <div className="w-8 h-px bg-gradient-to-r from-transparent via-shiny-gold/60 to-shiny-gold/30" />
+            <div className="w-1.5 h-1.5 rounded-full bg-shiny-gold/60" />
+            <div className="w-8 h-px bg-gradient-to-l from-transparent via-shiny-gold/60 to-shiny-gold/30" />
           </div>
           
           {/* Price */}
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2">
             {isOnSale && originalPrice && (
-              <p className="font-display text-sm text-cream/40 line-through">
+              <p className="font-display text-sm text-muted-foreground line-through">
                 {price.currencyCode} {originalPrice.toFixed(2)}
               </p>
             )}
-            <p className={`font-display text-xl font-medium tracking-wide ${isOnSale ? 'text-rose' : 'text-gold'}`}>
+            <p className={`font-display text-lg font-medium tracking-wide ${isOnSale ? 'text-primary' : 'text-shiny-gold'}`}>
               {price.currencyCode} {currentPrice.toFixed(2)}
             </p>
           </div>
         </div>
       </div>
       
-      {/* Quick View Modal */}
       <QuickViewModal 
         product={product} 
         isOpen={isQuickViewOpen} 

@@ -88,6 +88,73 @@ export async function storefrontApiRequest(query: string, variables: Record<stri
   return data;
 }
 
+// Paginated query for large catalogs (2000+ products)
+const STOREFRONT_PRODUCTS_PAGINATED_QUERY = `
+  query GetProductsPaginated($first: Int!, $after: String, $query: String) {
+    products(first: $first, after: $after, query: $query) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        cursor
+        node {
+          id
+          title
+          description
+          handle
+          vendor
+          productType
+          tags
+          createdAt
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          images(first: 3) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+          variants(first: 5) {
+            edges {
+              node {
+                id
+                title
+                price {
+                  amount
+                  currencyCode
+                }
+                compareAtPrice {
+                  amount
+                  currencyCode
+                }
+                availableForSale
+                selectedOptions {
+                  name
+                  value
+                }
+              }
+            }
+          }
+          options {
+            name
+            values
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Simple query for initial load (backwards compatibility)
 const STOREFRONT_PRODUCTS_QUERY = `
   query GetProducts($first: Int!, $query: String) {
     products(first: $first, query: $query) {
@@ -99,13 +166,15 @@ const STOREFRONT_PRODUCTS_QUERY = `
           handle
           vendor
           productType
+          tags
+          createdAt
           priceRange {
             minVariantPrice {
               amount
               currencyCode
             }
           }
-          images(first: 5) {
+          images(first: 3) {
             edges {
               node {
                 url
@@ -113,7 +182,7 @@ const STOREFRONT_PRODUCTS_QUERY = `
               }
             }
           }
-          variants(first: 10) {
+          variants(first: 5) {
             edges {
               node {
                 id
@@ -196,7 +265,44 @@ const STOREFRONT_PRODUCT_BY_HANDLE_QUERY = `
   }
 `;
 
-export async function fetchProducts(first: number = 20, query?: string): Promise<ShopifyProduct[]> {
+// Pagination response type
+export interface PaginatedProductsResponse {
+  products: ShopifyProduct[];
+  pageInfo: {
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    startCursor: string | null;
+    endCursor: string | null;
+  };
+}
+
+// Fetch products with pagination support for large catalogs
+export async function fetchProductsPaginated(
+  first: number = 24, 
+  after?: string | null, 
+  query?: string
+): Promise<PaginatedProductsResponse> {
+  const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_PAGINATED_QUERY, { 
+    first, 
+    after: after || null, 
+    query 
+  });
+  
+  if (!data) {
+    return { 
+      products: [], 
+      pageInfo: { hasNextPage: false, hasPreviousPage: false, startCursor: null, endCursor: null } 
+    };
+  }
+  
+  return {
+    products: data.data.products.edges,
+    pageInfo: data.data.products.pageInfo,
+  };
+}
+
+// Simple fetch for backwards compatibility
+export async function fetchProducts(first: number = 24, query?: string): Promise<ShopifyProduct[]> {
   const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first, query });
   if (!data) return [];
   return data.data.products.edges;
