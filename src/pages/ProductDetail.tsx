@@ -6,11 +6,16 @@ import { useWishlistStore } from "@/stores/wishlistStore";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield, Sparkles, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Minus, Plus, Heart, Star, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { getLocalizedDescription, extractKeyBenefits, getLocalizedCategory, translateTitle } from "@/lib/productUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import asperLogo from "@/assets/asper-logo.jpg";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ProductData {
   id: string;
@@ -195,36 +200,29 @@ const ProductDetail = () => {
   const hasMultipleVariants = product.variants.edges.length > 1;
   const currencyCode = selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode;
 
+  // Check if option might be a color (for round color circles)
+  const isColorOption = (optionName: string) => {
+    const colorNames = ['color', 'colour', 'shade', 'لون'];
+    return colorNames.some(c => optionName.toLowerCase().includes(c));
+  };
+
   return (
     <div className="min-h-screen bg-cream">
       <Header />
       <main className="pt-36 pb-32 lg:pb-24">
         <div className="luxury-container">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-8">
-            <Link to="/" className="font-body text-muted-foreground hover:text-gold transition-colors duration-400">
-              {isArabic ? 'الرئيسية' : 'Home'}
-            </Link>
-            <span className="text-muted-foreground">/</span>
-            <Link to="/collections" className="font-body text-muted-foreground hover:text-gold transition-colors duration-400">
-              {isArabic ? 'المنتجات' : 'Products'}
-            </Link>
-            <span className="text-muted-foreground">/</span>
-            <span className="font-body text-foreground">{translateTitle(product.title, language)}</span>
-          </nav>
-
-          {/* Main Product Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+          {/* Sticky Split-Screen Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-0">
             
-            {/* Left Side - Image Gallery */}
-            <div>
+            {/* Left Column - Image Gallery (Sticky) */}
+            <div className="lg:sticky lg:top-[100px] lg:self-start lg:pr-8">
               {/* Main Image */}
-              <div className="relative aspect-square bg-white rounded-lg overflow-hidden border border-gold/20 mb-4 group">
+              <div className="relative aspect-square bg-white rounded-lg overflow-hidden mb-4 group">
                 {images[selectedImage] ? (
                   <img
                     src={images[selectedImage].node.url}
                     alt={images[selectedImage].node.altText || product.title}
-                    className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -234,40 +232,22 @@ const ProductDetail = () => {
 
                 {/* Sale Badge */}
                 {isOnSale && (
-                  <div className="absolute top-4 left-4 bg-burgundy text-white px-4 py-2 font-body text-sm tracking-wide">
+                  <div className="absolute top-4 left-4 bg-burgundy text-white px-4 py-2 font-body text-sm tracking-wide rounded">
                     -{discountPercent}% OFF
                   </div>
                 )}
-
-                {/* Navigation Arrows */}
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => setSelectedImage(selectedImage === 0 ? images.length - 1 : selectedImage - 1)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-gold/30 flex items-center justify-center text-foreground hover:bg-gold hover:text-burgundy transition-all duration-400 opacity-0 group-hover:opacity-100"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedImage(selectedImage === images.length - 1 ? 0 : selectedImage + 1)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-gold/30 flex items-center justify-center text-foreground hover:bg-gold hover:text-burgundy transition-all duration-400 opacity-0 group-hover:opacity-100"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
               </div>
               
-              {/* Thumbnail Gallery */}
+              {/* Thumbnail Gallery - 4 images */}
               {images.length > 1 && (
-                <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-3">
-                  {images.map((img, idx) => (
+                <div className="grid grid-cols-4 gap-3">
+                  {images.slice(0, 4).map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
                       className={`aspect-square overflow-hidden rounded-lg border-2 transition-all duration-400 ${
                         selectedImage === idx 
-                          ? "border-gold shadow-lg" 
+                          ? "border-gold ring-2 ring-gold ring-offset-2" 
                           : "border-transparent hover:border-gold/50"
                       }`}
                     >
@@ -282,22 +262,22 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Right Side - Product Info */}
-            <div>
-              {/* Brand Badge */}
-              <div className="flex items-center gap-3 mb-4">
-                <p className="font-body text-xs tracking-widest uppercase text-muted-foreground">
-                  {product.vendor || 'Asper Beauty'}
-                </p>
-                {product.productType && (
-                  <>
-                    <span className="w-1 h-1 rounded-full bg-gold" />
-                    <p className="font-body text-xs tracking-widest uppercase text-gold">
-                      {getLocalizedCategory(product.productType, language)}
-                    </p>
-                  </>
-                )}
-              </div>
+            {/* Right Column - Buy Box */}
+            <div className="lg:pl-[60px] pt-8 lg:pt-0">
+              {/* Breadcrumbs */}
+              <nav className="flex items-center gap-2 text-sm mb-6">
+                <Link to="/" className="font-body text-muted-foreground hover:text-gold transition-colors duration-400">
+                  {isArabic ? 'الرئيسية' : 'Home'}
+                </Link>
+                <span className="text-muted-foreground">&gt;</span>
+                <Link to="/collections" className="font-body text-muted-foreground hover:text-gold transition-colors duration-400">
+                  {product.productType ? getLocalizedCategory(product.productType, language) : (isArabic ? 'العناية بالبشرة' : 'Skincare')}
+                </Link>
+                <span className="text-muted-foreground">&gt;</span>
+                <span className="font-body text-muted-foreground">
+                  {isArabic ? 'سيروم' : 'Serums'}
+                </span>
+              </nav>
               
               {/* Title */}
               <h1 className="font-display text-3xl lg:text-4xl text-foreground mb-4 leading-tight">
@@ -305,70 +285,74 @@ const ProductDetail = () => {
               </h1>
               
               {/* Price */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <p className="font-display text-2xl lg:text-3xl font-bold text-burgundy">
+                  {currencyCode} {currentPrice.toFixed(2)}
+                </p>
                 {isOnSale && originalPrice && (
-                  <p className="font-body text-xl text-muted-foreground line-through">
+                  <p className="font-body text-lg text-muted-foreground line-through">
                     {currencyCode} {originalPrice.toFixed(2)}
                   </p>
                 )}
-                <p className={`font-display text-3xl ${isOnSale ? 'text-burgundy' : 'text-burgundy'}`}>
-                  {currencyCode} {currentPrice.toFixed(2)}
-                </p>
               </div>
 
-              {/* Gold divider */}
-              <div className="w-16 h-px bg-gold mb-6" />
+              {/* Review Stars */}
+              <div className="flex items-center gap-2 mb-6">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-gold text-gold" />
+                  ))}
+                </div>
+                <span className="font-body text-sm text-muted-foreground">(128 Reviews)</span>
+              </div>
 
-              {/* Key Benefits */}
-              {(() => {
-                const benefits = extractKeyBenefits(product.description, language);
-                return benefits.length > 0 ? (
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="w-4 h-4 text-gold" />
-                      <span className="font-body text-xs tracking-widest uppercase text-foreground">
-                        {isArabic ? 'الفوائد الرئيسية' : 'Key Benefits'}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {benefits.map((benefit, idx) => (
-                        <span 
-                          key={idx}
-                          className="px-3 py-1.5 bg-gold/10 border border-gold/30 text-foreground font-body text-xs rounded-full"
-                        >
-                          {benefit}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-
-              {/* Description */}
-              <p className="font-body text-muted-foreground leading-relaxed mb-8">
-                {getLocalizedDescription(product.description, language, 250) || (isArabic ? 'منتج تجميل فاخر من مجموعتنا المختارة، مصنوع بأجود المكونات.' : 'A premium beauty product from our curated collection, crafted with the finest ingredients for discerning individuals.')}
+              {/* Short Description */}
+              <p className="font-body text-muted-foreground leading-relaxed mb-8" style={{ lineHeight: '1.6' }}>
+                {getLocalizedDescription(product.description, language, 300) || (isArabic ? 'منتج تجميل فاخر من مجموعتنا المختارة، مصنوع بأجود المكونات للحصول على بشرة مشرقة ونضرة.' : 'A premium beauty product from our curated collection, crafted with the finest ingredients for radiant and youthful skin.')}
               </p>
 
               {/* Variant Options */}
               {hasMultipleVariants && product.options.map((option) => (
                 <div key={option.name} className="mb-6">
                   <label className="font-body text-sm font-medium text-foreground mb-3 block">
-                    {option.name}
+                    {isArabic ? (isColorOption(option.name) ? 'اختر اللون' : 'الحجم') : (isColorOption(option.name) ? 'Select Shade' : option.name)}
                   </label>
-                  <div className="flex flex-wrap gap-2">
-                    {option.values.map((value) => (
-                      <button
-                        key={value}
-                        onClick={() => setSelectedOptions({ ...selectedOptions, [option.name]: value })}
-                        className={`px-5 py-2.5 rounded-lg border font-body text-sm transition-all duration-400 ${
-                          selectedOptions[option.name] === value
-                            ? "border-gold bg-gold text-burgundy"
-                            : "border-gold/30 text-foreground hover:border-gold"
-                        }`}
-                      >
-                        {value}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-3">
+                    {option.values.map((value) => {
+                      const isSelected = selectedOptions[option.name] === value;
+                      
+                      // For color options, show round circles
+                      if (isColorOption(option.name)) {
+                        return (
+                          <button
+                            key={value}
+                            onClick={() => setSelectedOptions({ ...selectedOptions, [option.name]: value })}
+                            className={`w-10 h-10 rounded-full transition-all duration-400 ${
+                              isSelected
+                                ? "ring-2 ring-gold ring-offset-2"
+                                : "hover:ring-2 hover:ring-gold/50 hover:ring-offset-1"
+                            }`}
+                            style={{ backgroundColor: value.toLowerCase() }}
+                            title={value}
+                          />
+                        );
+                      }
+                      
+                      // For size/other options, show outlined buttons
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [option.name]: value })}
+                          className={`px-5 py-2.5 rounded-lg border-2 font-body text-sm transition-all duration-400 ${
+                            isSelected
+                              ? "border-gold ring-2 ring-gold text-foreground"
+                              : "border-gold/30 text-foreground hover:border-gold"
+                          }`}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -397,15 +381,15 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Action Buttons - Desktop */}
+              {/* Add to Bag CTA - Full Width */}
               <div className="hidden lg:flex gap-4 mb-8">
                 <button
                   onClick={handleAddToCart}
                   disabled={!selectedVariant?.availableForSale}
-                  className="flex-1 py-4 px-8 bg-burgundy text-white font-display text-sm tracking-widest uppercase transition-all duration-400 hover:bg-burgundy-light disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                  className="flex-1 py-4 px-8 bg-burgundy text-white font-display text-sm tracking-widest uppercase transition-all duration-400 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
                   {selectedVariant?.availableForSale 
-                    ? (isArabic ? 'أضف إلى السلة' : 'Add to Cart') 
+                    ? (isArabic ? 'أضف إلى السلة' : 'Add to Bag') 
                     : (isArabic ? 'نفذ من المخزون' : 'Sold Out')
                   }
                 </button>
@@ -421,40 +405,51 @@ const ProductDetail = () => {
                 </button>
               </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-gold/20">
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-2">
-                    <Truck className="w-5 h-5 text-gold" />
-                  </div>
-                  <p className="font-body text-xs text-foreground">{isArabic ? 'توصيل مجاني' : 'Free Shipping'}</p>
-                  <p className="font-body text-[10px] text-muted-foreground">{isArabic ? 'فوق 50 دينار' : 'Over 50 JOD'}</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-2">
-                    <RotateCcw className="w-5 h-5 text-gold" />
-                  </div>
-                  <p className="font-body text-xs text-foreground">{isArabic ? 'إرجاع سهل' : 'Easy Returns'}</p>
-                  <p className="font-body text-[10px] text-muted-foreground">{isArabic ? '30 يوم' : '30 Days'}</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-2">
-                    <Shield className="w-5 h-5 text-gold" />
-                  </div>
-                  <p className="font-body text-xs text-foreground">{isArabic ? 'أصلي 100%' : '100% Authentic'}</p>
-                  <p className="font-body text-[10px] text-muted-foreground">{isArabic ? 'مضمون' : 'Guaranteed'}</p>
-                </div>
-              </div>
-
-              {/* Brand Assurance */}
-              <div className="mt-6 flex items-center gap-4 p-4 bg-burgundy/5 rounded-lg border border-gold/20">
-                <img src={asperLogo} alt="Asper Beauty Shop" className="h-12 rounded" />
-                <div>
-                  <p className="font-script text-lg text-gold">Elegance in every detail</p>
-                  <p className="font-body text-xs text-muted-foreground">
-                    {isArabic ? 'منتقى بعناية من خبرائنا في الصيدلة' : 'Curated by Pharmacists. Powered by Intelligence.'}
-                  </p>
-                </div>
+              {/* Information Accordions */}
+              <div className="border-t border-gold">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="ingredients" className="border-b border-gold">
+                    <AccordionTrigger className="py-4 font-display text-sm text-foreground hover:no-underline hover:text-gold transition-colors duration-400">
+                      {isArabic ? 'المكونات والفوائد' : 'Ingredients & Benefits'}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                        {isArabic 
+                          ? 'مكونات طبيعية فاخرة تعمل على ترطيب البشرة وتجديدها. تحتوي على فيتامين سي وحمض الهيالورونيك والنياسيناميد لبشرة مشرقة وصحية.'
+                          : 'Premium natural ingredients that hydrate and rejuvenate the skin. Contains Vitamin C, Hyaluronic Acid, and Niacinamide for a radiant, healthy complexion.'
+                        }
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="how-to-use" className="border-b border-gold">
+                    <AccordionTrigger className="py-4 font-display text-sm text-foreground hover:no-underline hover:text-gold transition-colors duration-400">
+                      {isArabic ? 'طريقة الاستخدام' : 'How to Use'}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                        {isArabic 
+                          ? 'ضعي كمية مناسبة على البشرة النظيفة صباحاً ومساءً. دلكي بلطف بحركات دائرية حتى يمتص المنتج بالكامل. للحصول على أفضل النتائج، استخدميه بانتظام.'
+                          : 'Apply an appropriate amount to clean skin morning and evening. Gently massage in circular motions until fully absorbed. For best results, use consistently as part of your daily skincare routine.'
+                        }
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="shipping" className="border-b border-gold">
+                    <AccordionTrigger className="py-4 font-display text-sm text-foreground hover:no-underline hover:text-gold transition-colors duration-400">
+                      {isArabic ? 'الشحن والإرجاع' : 'Shipping & Returns'}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                        {isArabic 
+                          ? 'شحن مجاني للطلبات فوق 50 دينار. التوصيل خلال 2-5 أيام عمل داخل عمان. سياسة إرجاع سهلة خلال 30 يوم من الاستلام.'
+                          : 'Free shipping on orders over 50 JOD. Delivery within 2-5 business days in Amman. Easy 30-day return policy from the date of receipt.'
+                        }
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
             </div>
           </div>
@@ -500,10 +495,10 @@ const ProductDetail = () => {
           <button
             onClick={handleAddToCart}
             disabled={!selectedVariant?.availableForSale}
-            className="flex-1 py-3 px-4 bg-burgundy text-white font-display text-sm tracking-wider uppercase transition-all duration-400 hover:bg-burgundy-light disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+            className="flex-1 py-3 px-4 bg-burgundy text-white font-display text-sm tracking-wider uppercase transition-all duration-400 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
           >
             {selectedVariant?.availableForSale 
-              ? (isArabic ? 'أضف إلى السلة' : 'Add to Cart') 
+              ? (isArabic ? 'أضف إلى السلة' : 'Add to Bag') 
               : (isArabic ? 'نفذ' : 'Sold Out')
             }
           </button>

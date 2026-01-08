@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 import asperLogo from "@/assets/asper-logo.jpg";
 
+// TikTok icon component
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
+
 export const Footer = () => {
   const [email, setEmail] = useState("");
-  const { t, language, isRTL } = useLanguage();
+  const { language } = useLanguage();
   const isArabic = language === "ar";
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -15,75 +22,72 @@ export const Footer = () => {
     setEmail("");
   };
 
-  const navigationLinks = [
-    { name: isArabic ? 'الرئيسية' : 'Home', href: '/' },
-    { name: isArabic ? 'المجموعات' : 'Collections', href: '/collections' },
-    { name: isArabic ? 'وصل حديثاً' : 'New Arrivals', href: '/collections?filter=new' },
-    { name: isArabic ? 'الأكثر مبيعاً' : 'Best Sellers', href: '/best-sellers' },
-    { name: isArabic ? 'العروض' : 'Offers', href: '/offers' },
-  ];
-
-  const customerCareLinks = [
-    { name: isArabic ? 'اتصل بنا' : 'Contact Us', href: '/contact' },
-    { name: isArabic ? 'معلومات الشحن' : 'Shipping Info', href: '/shipping' },
+  const conciergLinks = [
+    { name: isArabic ? 'تتبع الطلب' : 'Track Order', href: '/tracking' },
+    { name: isArabic ? 'سياسة الشحن' : 'Shipping Policy', href: '/shipping' },
     { name: isArabic ? 'الإرجاع والاستبدال' : 'Returns & Exchanges', href: '/returns' },
-    { name: isArabic ? 'تتبع الطلب' : 'Order Tracking', href: '/tracking' },
-    { name: isArabic ? 'الأسئلة الشائعة' : 'FAQ', href: '/faq' },
-  ];
-
-  const legalLinks = [
-    { name: isArabic ? 'سياسة الخصوصية' : 'Privacy Policy', href: '/privacy' },
-    { name: isArabic ? 'شروط الخدمة' : 'Terms of Service', href: '/terms' },
-    { name: isArabic ? 'سياسة ملفات تعريف الارتباط' : 'Cookie Policy', href: '/cookies' },
+    { name: isArabic ? 'استشارة البشرة' : 'Skin Consultation', href: '/consultation' },
   ];
 
   return (
-    <footer className="bg-burgundy text-cream">
+    <footer className="bg-burgundy" style={{ borderTop: '1px solid hsl(var(--gold))' }}>
       {/* Main Footer Content */}
-      <div className="luxury-container py-16 lg:py-20">
+      <div className="luxury-container py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           
-          {/* Brand & Contact */}
+          {/* Column 1 - Brand Identity */}
           <div>
             <Link to="/" className="inline-block mb-6">
               <img 
                 src={asperLogo} 
                 alt="Asper Beauty Shop" 
-                className="h-14 rounded"
+                className="h-16 rounded"
               />
             </Link>
-            <p className="font-script text-xl text-gold mb-6">
-              Elegance in every detail
+            <p className="font-body text-cream mb-6">
+              {isArabic ? 'إعادة تعريف الجمال في الأردن.' : 'Redefining Beauty in Jordan.'}
             </p>
             
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <a href="tel:+962791234567" className="flex items-center gap-3 font-body text-sm text-cream/70 hover:text-gold transition-colors duration-400">
-                <Phone className="w-4 h-4 text-gold" />
-                +962 79 123 4567
+            {/* Social Icons - Gold Outlines */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400"
+              >
+                <Instagram className="w-4 h-4" strokeWidth={1.5} />
               </a>
-              <a href="mailto:info@asperbeauty.com" className="flex items-center gap-3 font-body text-sm text-cream/70 hover:text-gold transition-colors duration-400">
-                <Mail className="w-4 h-4 text-gold" />
-                info@asperbeauty.com
+              <a 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400"
+              >
+                <Facebook className="w-4 h-4" strokeWidth={1.5} />
               </a>
-              <p className="flex items-start gap-3 font-body text-sm text-cream/70">
-                <MapPin className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" />
-                {isArabic ? 'عمّان، الأردن' : 'Amman, Jordan'}
-              </p>
+              <a 
+                href="https://tiktok.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400"
+              >
+                <TikTokIcon className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Column 2 - Concierge */}
           <div>
-            <h3 className="font-display text-lg text-gold mb-6">
-              {isArabic ? 'التصفح' : 'Navigation'}
+            <h3 className="font-display text-lg text-white mb-6">
+              {isArabic ? 'خدمة العملاء' : 'Concierge'}
             </h3>
             <ul className="space-y-3">
-              {navigationLinks.map((item) => (
+              {conciergLinks.map((item) => (
                 <li key={item.href}>
                   <Link 
                     to={item.href}
-                    className="font-body text-sm text-cream/70 hover:text-gold transition-colors duration-400"
+                    className="font-body text-sm text-cream hover:text-gold transition-colors duration-400"
                   >
                     {item.name}
                   </Link>
@@ -92,44 +96,36 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Care */}
+          {/* Column 3 - Visit Us */}
           <div>
-            <h3 className="font-display text-lg text-gold mb-6">
-              {isArabic ? 'خدمة العملاء' : 'Customer Care'}
+            <h3 className="font-display text-lg text-white mb-6">
+              {isArabic ? 'زورونا' : 'Visit Us'}
             </h3>
-            <ul className="space-y-3">
-              {customerCareLinks.map((item) => (
-                <li key={item.href}>
-                  <Link 
-                    to={item.href}
-                    className="font-body text-sm text-cream/70 hover:text-gold transition-colors duration-400"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-3">
+              <p className="font-body text-sm text-cream">
+                {isArabic ? 'عمّان، الأردن' : 'Amman, Jordan'}
+              </p>
+              <a 
+                href="mailto:concierge@asperbeauty.com" 
+                className="font-body text-sm text-cream hover:text-gold transition-colors duration-400 block"
+              >
+                concierge@asperbeauty.com
+              </a>
+            </div>
           </div>
 
-          {/* Newsletter */}
+          {/* Column 4 - VIP Club */}
           <div>
-            <h3 className="font-display text-lg text-gold mb-6">
-              {isArabic ? 'ابقى على تواصل' : 'Stay Connected'}
+            <h3 className="font-display text-lg text-white mb-6">
+              {isArabic ? 'اكتشف الحصريات' : 'Unlock Exclusives'}
             </h3>
-            <p className="font-body text-sm text-cream/70 mb-4">
-              {isArabic 
-                ? 'اشترك للحصول على عروض حصرية ونصائح الجمال.'
-                : 'Subscribe for exclusive offers and beauty tips.'
-              }
-            </p>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input 
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 placeholder={isArabic ? 'بريدك الإلكتروني' : 'Your email'}
-                className="w-full px-4 py-3 bg-burgundy-light border border-gold/30 text-cream font-body text-sm placeholder:text-cream/40 focus:outline-none focus:border-gold transition-colors duration-400 rounded"
-                dir={isRTL ? 'rtl' : 'ltr'}
+                className="w-full px-4 py-3 bg-transparent border border-white text-white font-body text-sm placeholder:text-white/50 focus:outline-none focus:border-gold transition-colors duration-400 rounded"
               />
               <button 
                 type="submit" 
@@ -138,45 +134,16 @@ export const Footer = () => {
                 {isArabic ? 'اشترك' : 'Subscribe'}
               </button>
             </form>
-
-            {/* Social Links */}
-            <div className="flex items-center gap-4 mt-6">
-              <a href="#" className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
-                <Youtube className="w-4 h-4" />
-              </a>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gold/20">
+      {/* Copyright Bar */}
+      <div className="border-t border-gold/30">
         <div className="luxury-container py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="font-body text-xs text-cream/50">
-              © {new Date().getFullYear()} Asper Beauty. {isArabic ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
-            </p>
-            <div className="flex items-center gap-6">
-              {legalLinks.map((item) => (
-                <Link 
-                  key={item.href}
-                  to={item.href}
-                  className="font-body text-xs text-cream/50 hover:text-gold transition-colors duration-400"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <p className="font-body text-xs text-cream/50 text-center">
+            © 2026 Asper Beauty Shop. {isArabic ? 'جميع الحقوق محفوظة.' : 'All Rights Reserved.'}
+          </p>
         </div>
       </div>
     </footer>
