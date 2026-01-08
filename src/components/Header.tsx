@@ -1,6 +1,6 @@
 import { ShoppingBag, Menu, X, Search, User, Heart, ChevronDown } from "lucide-react";
-import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { CartDrawer } from "./CartDrawer";
@@ -8,6 +8,8 @@ import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { User as UserType } from "@supabase/supabase-js";
 import asperLogoHorizontal from "@/assets/asper-logo-horizontal.jpg";
 
 export const Header = () => {
@@ -16,13 +18,29 @@ export const Header = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   const totalItems = useCartStore(state => state.getTotalItems());
   const wishlistItems = useWishlistStore(state => state.items);
   const setCartOpen = useCartStore(state => state.setOpen);
   const setWishlistOpen = useWishlistStore(state => state.setOpen);
   const { language, isRTL } = useLanguage();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const navItems = [
     {
@@ -136,9 +154,12 @@ export const Header = () => {
             {/* Icons - Right (Gold outline) */}
             <div className="flex items-center gap-3 flex-shrink-0">
               {/* Account Icon */}
-              <button className="p-2 text-gold hover:text-gold-light transition-colors duration-400">
+              <Link 
+                to={user ? "/account" : "/auth"}
+                className="p-2 text-gold hover:text-gold-light transition-colors duration-400"
+              >
                 <User className="w-5 h-5" strokeWidth={1.5} />
-              </button>
+              </Link>
 
               {/* Wishlist Icon */}
               <button
@@ -404,6 +425,18 @@ export const Header = () => {
                   </Link>
                 </li>
               ))}
+              {/* Account Link */}
+              <li className="border-t border-gold/30 mt-4 pt-4">
+                <Link
+                  to={user ? "/account" : "/auth"}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 py-4 px-3 font-display text-xl text-gold hover:text-gold-light transition-colors duration-400"
+                  style={{ fontSize: '20px' }}
+                >
+                  <User className="w-5 h-5" />
+                  {user ? (language === 'ar' ? 'حسابي' : 'My Account') : (language === 'ar' ? 'تسجيل الدخول' : 'Sign In')}
+                </Link>
+              </li>
             </ul>
           </nav>
 
