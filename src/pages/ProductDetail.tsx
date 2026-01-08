@@ -101,7 +101,9 @@ const ProductDetail = () => {
         const related = await fetchProducts(8);
         setRelatedProducts(related.filter((p: ShopifyProduct) => p.node.handle !== handle).slice(0, 4));
       } catch (error) {
-        console.error("Failed to fetch product:", error);
+        if (import.meta.env.DEV) {
+          console.error("Failed to fetch product:", error);
+        }
       } finally {
         setLoading(false);
       }

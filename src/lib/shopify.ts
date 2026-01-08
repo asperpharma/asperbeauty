@@ -3,7 +3,14 @@ import { toast } from "sonner";
 const SHOPIFY_API_VERSION = '2025-07';
 const SHOPIFY_STORE_PERMANENT_DOMAIN = 'lovable-project-milns.myshopify.com';
 const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+// Note: Shopify Storefront tokens are designed for client-side use with read-only access to public data
 const SHOPIFY_STOREFRONT_TOKEN = '9daedc472c5910e742ec88bdaad108e2';
+
+// Sanitize search input to prevent GraphQL injection
+function sanitizeSearchTerm(term: string): string {
+  // Remove special characters that could break GraphQL queries
+  return term.replace(/[^a-zA-Z0-9\s\-\u0600-\u06FF]/g, '').slice(0, 100);
+}
 
 export interface ShopifyProduct {
   node: {
@@ -310,7 +317,9 @@ export async function fetchProducts(first: number = 24, query?: string): Promise
 
 export async function searchProducts(searchTerm: string, first: number = 10): Promise<ShopifyProduct[]> {
   if (!searchTerm.trim()) return [];
-  const query = `title:*${searchTerm}* OR vendor:*${searchTerm}*`;
+  const sanitized = sanitizeSearchTerm(searchTerm);
+  if (!sanitized) return [];
+  const query = `title:*${sanitized}* OR vendor:*${sanitized}*`;
   const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first, query });
   if (!data) return [];
   return data.data.products.edges;

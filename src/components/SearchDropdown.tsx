@@ -45,7 +45,9 @@ export const SearchDropdown = ({
         const products = await searchProducts(searchQuery, 8);
         setResults(products);
       } catch (error) {
-        console.error("Search error:", error);
+        if (import.meta.env.DEV) {
+          console.error("Search error:", error);
+        }
         setResults([]);
       } finally {
         setIsLoading(false);

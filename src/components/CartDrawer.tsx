@@ -43,7 +43,9 @@ export const CartDrawer = () => {
         setOpen(false);
       }
     } catch (error) {
-      console.error('Checkout failed:', error);
+      if (import.meta.env.DEV) {
+        console.error('Checkout failed:', error);
+      }
       toast.error("Checkout failed. Please try again.");
     }
   };
