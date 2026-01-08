@@ -68,6 +68,7 @@ export const Hero = () => {
             src={heroSlide1}
             alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
             className="w-full h-full object-cover"
+            fetchPriority="high"
           />
         </div>
         {/* Subtle gradient overlay */}
