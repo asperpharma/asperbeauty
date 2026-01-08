@@ -57,6 +57,9 @@ export const CategoryHighlights = () => {
                 src={category.image}
                 alt={language === "ar" ? category.nameAr : category.nameEn}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="lazy"
+                width={600}
+                height={800}
               />
 
               {/* Dark Charcoal Overlay */}

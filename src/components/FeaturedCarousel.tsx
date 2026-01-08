@@ -7,6 +7,7 @@ import { fetchProducts, ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { translateTitle } from "@/lib/productUtils";
 import { toast } from "sonner";
+import { OptimizedImage } from "./OptimizedImage";
 
 export const FeaturedCarousel = () => {
   const { language, isRTL } = useLanguage();
@@ -131,10 +132,14 @@ export const FeaturedCarousel = () => {
                   {/* Product Image */}
                   <div className="relative aspect-square bg-white rounded-lg overflow-hidden mb-4 shadow-sm">
                     {imageUrl ? (
-                      <img
+                      <OptimizedImage
                         src={imageUrl}
                         alt={displayTitle}
                         className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        width={400}
+                        height={400}
+                        sizes="(max-width: 768px) 256px, 288px"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100">

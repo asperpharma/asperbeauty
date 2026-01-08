@@ -87,6 +87,9 @@ export const CuratedCategories = () => {
                     src={category.image}
                     alt={isArabic ? category.nameAr : category.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    width={128}
+                    height={128}
                   />
                 </div>
                 {/* Gold glow overlay on hover */}

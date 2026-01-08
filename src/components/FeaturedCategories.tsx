@@ -81,6 +81,9 @@ export const FeaturedCategories = () => {
                 src={category.image}
                 alt={language === "ar" ? category.nameAr : category.nameEn}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+                width={300}
+                height={400}
               />
 
               {/* Gradient Overlay */}

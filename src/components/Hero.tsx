@@ -69,6 +69,9 @@ export const Hero = () => {
             alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
             className="w-full h-full object-cover"
             fetchPriority="high"
+            width={1920}
+            height={1080}
+            decoding="async"
           />
         </div>
         {/* Subtle gradient overlay */}

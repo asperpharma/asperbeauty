@@ -91,8 +91,10 @@ export const Header = () => {
             <Link to="/" className="flex-shrink-0 group">
               <img
                 alt="Asper Beauty Shop"
-                className="h-12 sm:h-14 rounded transition-all duration-400 group-hover:opacity-90"
+                className="h-12 sm:h-14 w-12 sm:w-14 rounded transition-all duration-400 group-hover:opacity-90"
                 src={asperLogo}
+                width={56}
+                height={56}
               />
             </Link>
 
@@ -183,8 +185,10 @@ export const Header = () => {
             <Link to="/" className="absolute left-1/2 -translate-x-1/2">
               <img
                 alt="Asper Beauty Shop"
-                className="h-10 rounded"
+                className="h-10 w-10 rounded"
                 src={asperLogo}
+                width={40}
+                height={40}
               />
             </Link>
 
@@ -373,7 +377,9 @@ export const Header = () => {
             <img
               src={asperLogo}
               alt="Asper Beauty Shop"
-              className="h-10 rounded"
+              className="h-10 w-10 rounded"
+              width={40}
+              height={40}
             />
             <button
               onClick={() => setMobileMenuOpen(false)}

@@ -9,6 +9,7 @@ import { ShoppingBag, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
 import { getLocalizedDescription, translateTitle } from "@/lib/productUtils";
+import { OptimizedImage } from "./OptimizedImage";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -97,11 +98,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="aspect-square bg-secondary overflow-hidden relative">
           {firstImage ? (
             <>
-              <img
+              <OptimizedImage
                 src={firstImage.url}
                 alt={firstImage.altText || node.title}
                 className="w-full h-full object-cover transition-transform duration-400 ease-in-out group-hover:scale-105"
                 loading="lazy"
+                width={400}
+                height={400}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
             </>
           ) : (
