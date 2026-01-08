@@ -132,11 +132,7 @@ export const Header = () => {
           <div className="flex items-center justify-between h-full gap-6">
             {/* Logo - Left */}
             <Link to="/" className="flex-shrink-0 group">
-              <img 
-                src={asperLogo} 
-                alt="Asper Beauty Shop" 
-                className="h-12 sm:h-14 rounded transition-all duration-400 group-hover:opacity-90"
-              />
+              <img alt="Asper Beauty Shop" className="h-12 sm:h-14 rounded transition-all duration-400 group-hover:opacity-90" src="/lovable-uploads/7831568c-30c3-4d7e-935c-aacc6f527765.jpg" />
             </Link>
 
             {/* Search Bar - Center (Pill-shaped) */}
