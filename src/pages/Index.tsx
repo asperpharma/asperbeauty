@@ -6,6 +6,7 @@ import { BestSellers } from "@/components/BestSellers";
 import { Testimonials } from "@/components/Testimonials";
 import { Newsletter } from "@/components/Newsletter";
 import { Footer } from "@/components/Footer";
+import { BeautyAssistant } from "@/components/BeautyAssistant";
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
         <Newsletter />
       </main>
       <Footer />
+      <BeautyAssistant />
     </div>
   );
 };
