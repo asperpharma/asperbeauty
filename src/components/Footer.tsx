@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import asperLogo from "@/assets/asper-logo-new.jpg";
 
 export const Footer = () => {
   const [email, setEmail] = useState("");
@@ -45,9 +46,11 @@ export const Footer = () => {
           {/* Brand & Contact */}
           <div>
             <Link to="/" className="inline-block mb-6">
-              <span className="font-display text-3xl font-bold text-gold tracking-wider">
-                ASPER
-              </span>
+              <img 
+                src={asperLogo} 
+                alt="Asper Beauty Shop" 
+                className="h-14 rounded"
+              />
             </Link>
             <p className="font-script text-xl text-gold mb-6">
               Elegance in every detail

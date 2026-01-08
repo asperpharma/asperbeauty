@@ -8,6 +8,7 @@ import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
+import asperLogo from "@/assets/asper-logo-new.jpg";
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -131,11 +132,11 @@ export const Header = () => {
           <div className="flex items-center justify-between h-full gap-6">
             {/* Logo - Left */}
             <Link to="/" className="flex-shrink-0 group">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-gold tracking-wider transition-all duration-400 group-hover:text-gold-light">
-                ​Asper 
-Beauty Shop  
- 
-              </span>
+              <img 
+                src={asperLogo} 
+                alt="Asper Beauty Shop" 
+                className="h-12 sm:h-14 rounded transition-all duration-400 group-hover:opacity-90"
+              />
             </Link>
 
             {/* Search Bar - Center (Pill-shaped) */}
