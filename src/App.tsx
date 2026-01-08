@@ -16,6 +16,8 @@ import Contact from "./pages/Contact";
 import SkinConcerns from "./pages/SkinConcerns";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/skin-concerns" element={<SkinConcerns />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/account" element={<Account />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
