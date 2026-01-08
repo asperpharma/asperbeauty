@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import asperLogo from "@/assets/asper-logo-new.jpg";
+import asperLogo from "@/assets/asper-logo.jpg";
 
 export const Footer = () => {
   const [email, setEmail] = useState("");

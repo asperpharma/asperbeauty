@@ -10,7 +10,7 @@ import { Loader2, ArrowLeft, Minus, Plus, Truck, RotateCcw, Shield, Sparkles, He
 import { toast } from "sonner";
 import { getLocalizedDescription, extractKeyBenefits, getLocalizedCategory, translateTitle } from "@/lib/productUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import asperLogo from "@/assets/asper-logo-horizontal.jpg";
+import asperLogo from "@/assets/asper-logo.jpg";
 
 interface ProductData {
   id: string;

@@ -8,7 +8,7 @@ import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
-import asperLogo from "@/assets/asper-logo-new.jpg";
+import asperLogo from "@/assets/asper-logo.jpg";
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
