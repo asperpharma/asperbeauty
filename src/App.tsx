@@ -14,6 +14,7 @@ import BestSellers from "./pages/BestSellers";
 import Offers from "./pages/Offers";
 import Contact from "./pages/Contact";
 import SkinConcerns from "./pages/SkinConcerns";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/offers" element={<Offers />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/skin-concerns" element={<SkinConcerns />} />
+            <Route path="/wishlist" element={<Wishlist />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
