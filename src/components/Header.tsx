@@ -8,7 +8,7 @@ import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
-import asperLogo from "@/assets/asper-logo.jpg";
+import asperLogoHorizontal from "@/assets/asper-logo-horizontal.jpg";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -91,10 +91,10 @@ export const Header = () => {
             <Link to="/" className="flex-shrink-0 group">
               <img
                 alt="Asper Beauty Shop"
-                className="h-12 sm:h-14 w-12 sm:w-14 rounded transition-all duration-400 group-hover:opacity-90"
-                src={asperLogo}
-                width={56}
-                height={56}
+                className="h-10 sm:h-12 w-auto transition-all duration-400 group-hover:opacity-90"
+                src={asperLogoHorizontal}
+                width={180}
+                height={48}
               />
             </Link>
 
@@ -185,10 +185,10 @@ export const Header = () => {
             <Link to="/" className="absolute left-1/2 -translate-x-1/2">
               <img
                 alt="Asper Beauty Shop"
-                className="h-10 w-10 rounded"
-                src={asperLogo}
-                width={40}
-                height={40}
+                className="h-8 w-auto max-w-[140px]"
+                src={asperLogoHorizontal}
+                width={140}
+                height={32}
               />
             </Link>
 
@@ -375,11 +375,11 @@ export const Header = () => {
           {/* Menu Header */}
           <div className="flex items-center justify-between p-4 border-b border-gold/30">
             <img
-              src={asperLogo}
+              src={asperLogoHorizontal}
               alt="Asper Beauty Shop"
-              className="h-10 w-10 rounded"
-              width={40}
-              height={40}
+              className="h-8 w-auto max-w-[120px]"
+              width={120}
+              height={32}
             />
             <button
               onClick={() => setMobileMenuOpen(false)}
