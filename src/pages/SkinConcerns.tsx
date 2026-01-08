@@ -130,7 +130,7 @@ export default function SkinConcerns() {
           
           <div className="luxury-container relative z-10">
             <div className="text-center max-w-3xl mx-auto">
-              <span className="inline-block px-4 py-1.5 bg-shiny-gold/10 text-shiny-gold rounded-full text-sm font-medium mb-4">
+              <span className="inline-block px-4 py-1.5 bg-shiny-gold/10 text-shiny-gold rounded-full text-sm font-medium mb-4 bg-gold text-rose-950">
                 {language === "ar" ? "العناية المستهدفة" : "Targeted Care"}
               </span>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-dark-charcoal mb-6">
@@ -155,9 +155,9 @@ export default function SkinConcerns() {
                     <div className={`absolute inset-0 bg-gradient-to-t ${concern.color} to-black/60 transition-opacity duration-300`} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white">
                       <div className={`w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>
-                        <IconComponent className="w-7 h-7 text-rose-950 bg-rose-50" />
+                        <IconComponent className="w-7 h-7 text-rose-950 bg-gold" />
                       </div>
-                      <h3 className="font-display text-xl text-center mb-2 md:text-4xl text-rose-950 bg-rose-50">
+                      <h3 className="font-display text-xl text-center mb-2 md:text-4xl text-rose-950 bg-gold">
                         {language === "ar" ? concern.nameAr : concern.nameEn}
                       </h3>
                       <p className="font-body text-sm text-center line-clamp-2 text-rose-950">
