@@ -15,7 +15,8 @@ export default {
     extend: {
       fontFamily: {
         display: ['Playfair Display', 'serif'],
-        body: ['Montserrat', 'sans-serif'],
+        body: ['Inter', 'Lato', 'sans-serif'],
+        script: ['Great Vibes', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -74,6 +75,10 @@ export default {
           light: "hsl(var(--maroon-light))",
           dark: "hsl(var(--maroon-dark))",
         },
+        "warm-brown": {
+          DEFAULT: "hsl(var(--warm-brown))",
+          light: "hsl(var(--warm-brown-light))",
+        },
         "shiny-gold": "hsl(var(--shiny-gold))",
         "soft-ivory": "hsl(var(--soft-ivory))",
         "dark-charcoal": "hsl(var(--dark-charcoal))",
@@ -92,6 +97,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      transitionDuration: {
+        '400': '400ms',
       },
       keyframes: {
         "accordion-down": {

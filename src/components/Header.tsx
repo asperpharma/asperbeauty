@@ -1,71 +1,102 @@
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, Heart, ChevronDown } from "lucide-react";
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlistStore";
 import { CartDrawer } from "./CartDrawer";
 import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
-import asperLogo from "@/assets/asper-logo-new.jpg";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const wishlistItems = useWishlistStore((state) => state.items);
   const setCartOpen = useCartStore((state) => state.setOpen);
+  const setWishlistOpen = useWishlistStore((state) => state.setOpen);
   const { language, isRTL } = useLanguage();
 
-  const categories = [
-    { name: language === 'ar' ? 'العناية بالبشرة' : 'Skin Care', href: "/collections/skin-care" },
+  const navItems = [
+    { 
+      name: language === 'ar' ? 'العناية بالبشرة' : 'Skincare', 
+      href: "/collections/skin-care",
+      hasMegaMenu: true,
+      megaMenu: {
+        byCategory: [
+          { name: language === 'ar' ? 'منظفات' : 'Cleansers', href: '/collections/skin-care?category=cleansers' },
+          { name: language === 'ar' ? 'تونر' : 'Toners', href: '/collections/skin-care?category=toners' },
+          { name: language === 'ar' ? 'مرطبات' : 'Moisturizers', href: '/collections/skin-care?category=moisturizers' },
+          { name: language === 'ar' ? 'سيروم' : 'Serums', href: '/collections/skin-care?category=serums' },
+        ],
+        byConcern: [
+          { name: language === 'ar' ? 'حب الشباب' : 'Acne', href: '/skin-concerns?concern=acne' },
+          { name: language === 'ar' ? 'مكافحة الشيخوخة' : 'Anti-Aging', href: '/skin-concerns?concern=anti-aging' },
+          { name: language === 'ar' ? 'الجفاف' : 'Dryness', href: '/skin-concerns?concern=dryness' },
+          { name: language === 'ar' ? 'التصبغات' : 'Hyperpigmentation', href: '/skin-concerns?concern=brightening' },
+        ],
+        featuredBrands: [
+          { name: 'Vichy', href: '/brands/vichy' },
+          { name: 'Eucerin', href: '/brands/eucerin' },
+          { name: 'SVR', href: '/brands/svr' },
+          { name: 'Cetaphil', href: '/brands/cetaphil' },
+          { name: 'Bio-Balance', href: '/brands/bio-balance' },
+        ]
+      }
+    },
+    { 
+      name: language === 'ar' ? 'المكياج' : 'Makeup', 
+      href: "/collections/make-up",
+      hasMegaMenu: true,
+      megaMenu: {
+        byCategory: [
+          { name: language === 'ar' ? 'الوجه' : 'Face', href: '/collections/make-up?category=face' },
+          { name: language === 'ar' ? 'العيون' : 'Eyes', href: '/collections/make-up?category=eyes' },
+          { name: language === 'ar' ? 'الشفاه' : 'Lips', href: '/collections/make-up?category=lips' },
+        ],
+        byConcern: [
+          { name: language === 'ar' ? 'تغطية كاملة' : 'Full Coverage', href: '/collections/make-up?type=full-coverage' },
+          { name: language === 'ar' ? 'طبيعي' : 'Natural Look', href: '/collections/make-up?type=natural' },
+          { name: language === 'ar' ? 'طويل الأمد' : 'Long-lasting', href: '/collections/make-up?type=long-lasting' },
+        ],
+        featuredBrands: [
+          { name: 'Bourjois', href: '/brands/bourjois' },
+          { name: 'Essence', href: '/brands/essence' },
+          { name: 'IsaDora', href: '/brands/isadora' },
+          { name: 'Mavala', href: '/brands/mavala' },
+        ]
+      }
+    },
     { name: language === 'ar' ? 'العناية بالشعر' : 'Hair Care', href: "/collections/hair-care" },
-    { name: language === 'ar' ? 'العناية بالجسم' : 'Body Care', href: "/collections/body-care" },
-    { name: language === 'ar' ? 'المكياج' : 'Make Up', href: "/collections/make-up" },
-    { name: language === 'ar' ? 'مشاكل البشرة' : 'Skin Concerns', href: "/skin-concerns" },
-    { name: language === 'ar' ? 'العلامات التجارية' : 'Brands', href: "/brands" },
-    { name: language === 'ar' ? 'العروض' : 'Offers', href: "/offers" },
+    { name: language === 'ar' ? 'العطور' : 'Fragrance', href: "/collections/fragrances" },
+    { name: language === 'ar' ? 'للرجال' : 'Men', href: "/collections/men" },
+    { name: language === 'ar' ? 'حصريات آسبر' : 'Asper Exclusives', href: "/collections/exclusives" },
   ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Announcement Bar */}
-      <div className="bg-shiny-gold py-2 px-4">
-        <div className="luxury-container flex items-center justify-between">
-          <div className="flex-1" />
-          <p className="text-center text-black font-body text-xs sm:text-sm font-medium">
-            Free Delivery on orders over 50 JOD | توصيل مجاني للطلبات فوق ٥٠ دينار
-          </p>
-          <div className="flex-1 flex justify-end">
-            <LanguageSwitcher variant="announcement" />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header Row */}
-      <div className="bg-soft-ivory border-b border-gray-200">
-        <div className="luxury-container py-4">
-          <div className="flex items-center justify-between gap-4">
+      {/* Main Header Row - Deep Burgundy */}
+      <div className="bg-burgundy h-20">
+        <div className="luxury-container h-full">
+          <div className="flex items-center justify-between h-full gap-6">
             {/* Logo - Left */}
-            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
-              <img 
-                src={asperLogo} 
-                alt="Asper Beauty" 
-                className="w-12 h-12 rounded object-cover shadow-md"
-              />
-              <div className="hidden sm:flex flex-col">
-                <span className="font-display text-xl text-dark-charcoal tracking-wider">ASPER</span>
-                <span className="font-body text-xs text-gray-500 tracking-widest uppercase">
-                  {language === 'ar' ? 'متجر التجميل' : 'Beauty Shop'}
-                </span>
-              </div>
+            <Link 
+              to="/" 
+              className="flex-shrink-0 group"
+            >
+              <span className="font-display text-2xl sm:text-3xl font-bold text-gold tracking-wider transition-all duration-400 group-hover:text-gold-light">
+                ASPER
+              </span>
             </Link>
 
-            {/* Search Bar - Center */}
-            <div className="flex-1 max-w-2xl mx-4 hidden md:block relative">
+            {/* Search Bar - Center (Pill-shaped) */}
+            <div className="flex-1 max-w-xl mx-4 hidden md:block relative">
               <div className="relative">
                 <input
                   ref={searchInputRef}
@@ -73,23 +104,20 @@ export const Header = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
-                  placeholder={language === 'ar' ? 'ابحثي عن المنتجات، العلامات التجارية...' : 'Search for products, brands...'}
-                  className="w-full px-5 py-3 pr-12 rounded-full border border-gray-300 bg-white text-dark-charcoal placeholder:text-gray-400 font-body text-sm focus:outline-none focus:border-shiny-gold focus:ring-1 focus:ring-shiny-gold transition-colors"
+                  placeholder={language === 'ar' ? 'ابحثي عن سيروم، مكونات، أو علامات تجارية...' : 'Search for serums, ingredients, or brands...'}
+                  className="w-full px-6 py-3 pl-12 rounded-full bg-white text-foreground placeholder:text-muted-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-400"
                   dir={isRTL ? 'rtl' : 'ltr'}
                 />
-                {searchQuery ? (
+                <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-5 h-5 text-gold`} />
+                {searchQuery && (
                   <button 
                     onClick={() => {
                       setSearchQuery("");
                       searchInputRef.current?.focus();
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-shiny-gold transition-colors"
+                    className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gold transition-colors duration-400`}
                   >
                     <X className="w-5 h-5" />
-                  </button>
-                ) : (
-                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-shiny-gold transition-colors">
-                    <Search className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -102,35 +130,53 @@ export const Header = () => {
               />
             </div>
 
-            {/* Icons - Right */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            {/* Icons - Right (Gold outline) */}
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
               {/* Mobile Search Icon */}
-              <button className="md:hidden p-2 text-dark-charcoal hover:text-shiny-gold transition-colors">
+              <button className="md:hidden p-2 text-gold hover:text-gold-light transition-colors duration-400">
                 <Search className="w-5 h-5" />
               </button>
 
               {/* Account Icon */}
-              <button className="p-2 text-dark-charcoal hover:text-shiny-gold transition-colors">
-                <User className="w-5 h-5" />
+              <button className="p-2 text-gold hover:text-gold-light transition-colors duration-400">
+                <User className="w-5 h-5" strokeWidth={1.5} />
+              </button>
+
+              {/* Wishlist Icon */}
+              <button 
+                onClick={() => setWishlistOpen(true)}
+                className="relative p-2 text-gold hover:text-gold-light transition-colors duration-400"
+              >
+                <Heart className="w-5 h-5" strokeWidth={1.5} />
+                {wishlistItems.length > 0 && (
+                  <span className={`absolute -top-0.5 ${isRTL ? '-left-0.5' : '-right-0.5'} h-4 w-4 rounded-full bg-gold text-burgundy text-[10px] flex items-center justify-center font-body font-semibold`}>
+                    {wishlistItems.length}
+                  </span>
+                )}
               </button>
 
               {/* Cart Icon */}
               <button
                 onClick={() => setCartOpen(true)}
-                className="relative p-2 text-dark-charcoal hover:text-shiny-gold transition-colors"
+                className="relative p-2 text-gold hover:text-gold-light transition-colors duration-400"
               >
-                <ShoppingBag className="w-5 h-5" />
+                <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
                 {totalItems > 0 && (
-                  <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} h-5 w-5 rounded-full bg-shiny-gold text-black text-xs flex items-center justify-center font-body font-semibold shadow-md`}>
+                  <span className={`absolute -top-0.5 ${isRTL ? '-left-0.5' : '-right-0.5'} h-4 w-4 rounded-full bg-gold text-burgundy text-[10px] flex items-center justify-center font-body font-semibold`}>
                     {totalItems}
                   </span>
                 )}
               </button>
 
+              {/* Language Switcher */}
+              <div className="hidden sm:block">
+                <LanguageSwitcher variant="header" />
+              </div>
+
               {/* Mobile menu button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 text-dark-charcoal"
+                className="lg:hidden p-2 text-gold"
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -139,29 +185,119 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Secondary Navigation Row (Categories) - Desktop */}
-      <nav className="bg-soft-ivory border-b border-gray-200 hidden lg:block">
+      {/* Secondary Navigation Row (Mega Menu) - Cream */}
+      <nav 
+        className="bg-cream border-b border-gold/30 hidden lg:block"
+        onMouseLeave={() => setActiveMenu(null)}
+      >
         <div className="luxury-container">
-          <ul className="flex items-center justify-center gap-8 py-3">
-            {categories.map((category) => (
-              <li key={category.href}>
+          <ul className="flex items-center justify-center gap-10 py-4">
+            {navItems.map((item) => (
+              <li 
+                key={item.href} 
+                className="relative"
+                onMouseEnter={() => item.hasMegaMenu ? setActiveMenu(item.name) : setActiveMenu(null)}
+              >
                 <Link
-                  to={category.href}
-                  className="font-display text-sm tracking-wide text-dark-charcoal hover:text-shiny-gold transition-colors whitespace-nowrap"
+                  to={item.href}
+                  className="flex items-center gap-1 font-display text-sm tracking-wide text-foreground hover:text-gold transition-colors duration-400 whitespace-nowrap group"
                 >
-                  {category.name}
+                  {item.name}
+                  {item.hasMegaMenu && (
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-400 ${activeMenu === item.name ? 'rotate-180' : ''}`} />
+                  )}
                 </Link>
               </li>
             ))}
           </ul>
         </div>
+
+        {/* Mega Menu Dropdown */}
+        {navItems.filter(item => item.hasMegaMenu).map((item) => (
+          <div 
+            key={`mega-${item.name}`}
+            className={`absolute left-0 right-0 bg-cream border-t border-gold/30 shadow-xl transition-all duration-400 ease-in-out ${
+              activeMenu === item.name ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+            }`}
+            onMouseEnter={() => setActiveMenu(item.name)}
+            onMouseLeave={() => setActiveMenu(null)}
+          >
+            <div className="luxury-container py-8">
+              <div className="grid grid-cols-3 gap-12">
+                {/* Column 1: By Category */}
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-foreground mb-4 pb-2 border-b border-gold/30">
+                    {language === 'ar' ? 'حسب الفئة' : 'By Category'}
+                  </h3>
+                  <ul className="space-y-3">
+                    {item.megaMenu?.byCategory.map((subItem) => (
+                      <li key={subItem.href}>
+                        <Link 
+                          to={subItem.href}
+                          className="font-body text-sm text-muted-foreground hover:text-gold transition-colors duration-400"
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Column 2: By Concern */}
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-foreground mb-4 pb-2 border-b border-gold/30">
+                    {language === 'ar' ? 'حسب المشكلة' : 'By Concern'}
+                  </h3>
+                  <ul className="space-y-3">
+                    {item.megaMenu?.byConcern.map((subItem) => (
+                      <li key={subItem.href}>
+                        <Link 
+                          to={subItem.href}
+                          className="font-body text-sm text-muted-foreground hover:text-gold transition-colors duration-400"
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Column 3: Featured Brands */}
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-foreground mb-4 pb-2 border-b border-gold/30">
+                    {language === 'ar' ? 'علامات مميزة' : 'Featured Brands'}
+                  </h3>
+                  <ul className="space-y-3">
+                    {item.megaMenu?.featuredBrands.map((brand) => (
+                      <li key={brand.href}>
+                        <Link 
+                          to={brand.href}
+                          className="font-body text-sm text-muted-foreground hover:text-gold transition-colors duration-400"
+                        >
+                          {brand.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Script tagline */}
+              <div className="mt-8 pt-6 border-t border-gold/20 text-center">
+                <span className="font-script text-2xl text-gold">
+                  Elegance in every detail
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-soft-ivory border-b border-gray-200 animate-fade-in">
+        <div className="lg:hidden bg-cream border-b border-gold/30 animate-fade-in">
           {/* Mobile Search Bar */}
-          <div className="px-4 py-3 border-b border-gray-200 relative">
+          <div className="px-4 py-3 border-b border-gold/20 relative">
             <div className="relative">
               <input
                 ref={mobileSearchInputRef}
@@ -170,22 +306,19 @@ export const Header = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setMobileSearchFocused(true)}
                 placeholder={language === 'ar' ? 'ابحثي عن المنتجات...' : 'Search for products...'}
-                className="w-full px-5 py-3 pr-12 rounded-full border border-gray-300 bg-white text-dark-charcoal placeholder:text-gray-400 font-body text-sm focus:outline-none focus:border-shiny-gold transition-colors"
+                className="w-full px-5 py-3 pl-12 rounded-full border border-gold/30 bg-white text-foreground placeholder:text-muted-foreground font-body text-sm focus:outline-none focus:border-gold transition-colors duration-400"
                 dir={isRTL ? 'rtl' : 'ltr'}
               />
-              {searchQuery ? (
+              <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-5 h-5 text-gold`} />
+              {searchQuery && (
                 <button 
                   onClick={() => {
                     setSearchQuery("");
                     mobileSearchInputRef.current?.focus();
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-muted-foreground`}
                 >
                   <X className="w-5 h-5" />
-                </button>
-              ) : (
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Search className="w-5 h-5" />
                 </button>
               )}
             </div>
@@ -202,18 +335,23 @@ export const Header = () => {
           {/* Mobile Categories */}
           <div className="px-4 py-4">
             <ul className="space-y-1">
-              {categories.map((category) => (
-                <li key={category.href}>
+              {navItems.map((item) => (
+                <li key={item.href}>
                   <Link
-                    to={category.href}
+                    to={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block py-3 px-2 font-display text-dark-charcoal hover:text-shiny-gold hover:bg-gray-50 transition-colors rounded"
+                    className="block py-3 px-2 font-display text-foreground hover:text-gold hover:bg-gold/5 transition-all duration-400 rounded"
                   >
-                    {category.name}
+                    {item.name}
                   </Link>
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Mobile Language Switcher */}
+          <div className="px-4 py-3 border-t border-gold/20 sm:hidden">
+            <LanguageSwitcher variant="mobile" />
           </div>
         </div>
       )}

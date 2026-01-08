@@ -1,133 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Asper Beauty High-Performance Palette */
-    /* Maroon #800020 = HSL 345 100% 25% */
-    --maroon: 345 100% 25%;
-    --maroon-light: 345 80% 35%;
-    --maroon-dark: 345 100% 18%;
+    /* Asper Beauty Quiet Luxury Palette */
     
-    /* Soft Ivory #F8F8FF = HSL 240 100% 99% */
-    --soft-ivory: 240 100% 99%;
-    --soft-ivory-dark: 240 20% 95%;
+    /* Cream #F3E5DC = HSL 25 47% 91% - Global Background */
+    --cream: 25 47% 91%;
+    --cream-dark: 25 35% 85%;
     
-    /* Logo Gold #C5A028 = HSL 46 67% 46% */
-    --shiny-gold: 46 67% 46%;
-    --shiny-gold-light: 46 67% 58%;
-    --shiny-gold-dark: 46 67% 35%;
+    /* Gold Foil #D4AF37 = HSL 46 66% 52% - Accents & Borders */
+    --gold: 46 66% 52%;
+    --gold-light: 46 66% 62%;
+    --gold-glow: 46 66% 70%;
     
-    /* Dark Charcoal #333333 = HSL 0 0% 20% */
-    --dark-charcoal: 0 0% 20%;
-    --dark-charcoal-light: 0 0% 40%;
+    /* Deep Burgundy #4A0E19 = HSL 348 68% 17% - Header/Footer */
+    --burgundy: 348 68% 17%;
+    --burgundy-light: 348 58% 25%;
+    --burgundy-dark: 348 68% 12%;
     
-    /* Primary backgrounds - Soft Ivory base */
-    --background: 240 100% 99%;
-    --foreground: 0 0% 20%;
+    /* Dark Warm Brown #2C1A1D = HSL 350 25% 14% - Text */
+    --warm-brown: 350 25% 14%;
+    --warm-brown-light: 350 20% 35%;
+    
+    /* Primary backgrounds - Cream base */
+    --background: 25 47% 91%;
+    --foreground: 350 25% 14%;
 
-    --card: 240 20% 97%;
-    --card-foreground: 0 0% 20%;
+    --card: 25 40% 95%;
+    --card-foreground: 350 25% 14%;
 
-    --popover: 240 100% 99%;
-    --popover-foreground: 0 0% 20%;
+    --popover: 25 47% 91%;
+    --popover-foreground: 350 25% 14%;
 
-    /* Maroon for primary accent surfaces */
-    --primary: 345 100% 25%;
-    --primary-foreground: 240 100% 99%;
+    /* Deep Burgundy for primary accent surfaces */
+    --primary: 348 68% 17%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Warm Beige/Taupe for secondary surfaces */
-    --secondary: 50 25% 91%;
-    --secondary-foreground: 0 0% 20%;
+    /* Soft cream for secondary surfaces */
+    --secondary: 25 35% 88%;
+    --secondary-foreground: 350 25% 14%;
 
-    --muted: 50 20% 88%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 25 30% 85%;
+    --muted-foreground: 350 20% 40%;
 
-    /* Logo Gold accent */
-    --accent: 46 67% 46%;
-    --accent-foreground: 0 0% 15%;
+    /* Gold accent */
+    --accent: 46 66% 52%;
+    --accent-foreground: 350 25% 14%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 50 20% 85%;
-    --input: 50 20% 85%;
-    --ring: 46 67% 46%;
+    --border: 46 40% 75%;
+    --input: 46 40% 80%;
+    --ring: 46 66% 52%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
     /* Legacy token mappings for compatibility */
-    --burgundy: 345 100% 25%;
-    --burgundy-light: 345 80% 35%;
-    --burgundy-dark: 345 100% 18%;
-    --cream: 240 100% 99%;
-    --cream-dark: 240 20% 95%;
-    --gold: 46 67% 46%;
-    --gold-light: 46 67% 58%;
-    --gold-glow: 46 67% 65%;
+    --maroon: 348 68% 17%;
+    --maroon-light: 348 58% 25%;
+    --maroon-dark: 348 68% 12%;
     --rose: 350 45% 55%;
     --rose-light: 350 50% 65%;
+    --shiny-gold: 46 66% 52%;
+    --soft-ivory: 25 47% 91%;
+    --dark-charcoal: 350 25% 14%;
 
     --font-display: 'Playfair Display', serif;
-    --font-body: 'Montserrat', sans-serif;
+    --font-body: 'Inter', 'Lato', sans-serif;
+    --font-script: 'Great Vibes', cursive;
 
-    --sidebar-background: 345 100% 25%;
-    --sidebar-foreground: 240 100% 99%;
-    --sidebar-primary: 240 100% 99%;
-    --sidebar-primary-foreground: 345 100% 25%;
-    --sidebar-accent: 345 80% 35%;
-    --sidebar-accent-foreground: 240 100% 99%;
-    --sidebar-border: 345 80% 30%;
-    --sidebar-ring: 46 67% 46%;
+    --sidebar-background: 348 68% 17%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 348 68% 17%;
+    --sidebar-accent: 348 58% 25%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 348 58% 22%;
+    --sidebar-ring: 46 66% 52%;
   }
 
   .dark {
-    /* Dark mode with Maroon base */
-    --background: 345 100% 12%;
-    --foreground: 240 100% 99%;
+    /* Dark mode with Burgundy base */
+    --background: 348 68% 10%;
+    --foreground: 25 47% 91%;
 
-    --card: 345 100% 15%;
-    --card-foreground: 240 100% 99%;
+    --card: 348 68% 14%;
+    --card-foreground: 25 47% 91%;
 
-    --popover: 345 100% 15%;
-    --popover-foreground: 240 100% 99%;
+    --popover: 348 68% 14%;
+    --popover-foreground: 25 47% 91%;
 
-    --primary: 240 100% 99%;
-    --primary-foreground: 345 100% 12%;
+    --primary: 25 47% 91%;
+    --primary-foreground: 348 68% 10%;
 
-    --secondary: 345 80% 20%;
-    --secondary-foreground: 240 100% 99%;
+    --secondary: 348 58% 18%;
+    --secondary-foreground: 25 47% 91%;
 
-    --muted: 345 60% 22%;
-    --muted-foreground: 240 20% 75%;
+    --muted: 348 50% 20%;
+    --muted-foreground: 25 30% 70%;
 
-    --accent: 46 67% 46%;
-    --accent-foreground: 345 100% 12%;
+    --accent: 46 66% 52%;
+    --accent-foreground: 348 68% 10%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 240 100% 99%;
+    --destructive-foreground: 25 47% 91%;
 
-    --border: 345 60% 25%;
-    --input: 345 60% 25%;
-    --ring: 46 67% 46%;
+    --border: 348 50% 22%;
+    --input: 348 50% 22%;
+    --ring: 46 66% 52%;
 
-    --maroon: 345 100% 12%;
-    --maroon-light: 345 80% 20%;
-    --burgundy: 345 100% 12%;
-    --burgundy-light: 345 80% 20%;
-    --cream: 240 100% 99%;
-    --gold: 46 67% 46%;
-    --gold-light: 46 67% 58%;
+    --burgundy: 348 68% 10%;
+    --burgundy-light: 348 58% 18%;
+    --cream: 25 47% 91%;
+    --gold: 46 66% 52%;
+    --gold-light: 46 66% 62%;
 
-    --sidebar-background: 345 100% 12%;
-    --sidebar-foreground: 240 100% 99%;
-    --sidebar-primary: 240 100% 99%;
-    --sidebar-primary-foreground: 345 100% 12%;
-    --sidebar-accent: 345 80% 20%;
-    --sidebar-accent-foreground: 240 100% 99%;
-    --sidebar-border: 345 60% 25%;
-    --sidebar-ring: 46 67% 46%;
+    --sidebar-background: 348 68% 10%;
+    --sidebar-foreground: 25 47% 91%;
+    --sidebar-primary: 25 47% 91%;
+    --sidebar-primary-foreground: 348 68% 10%;
+    --sidebar-accent: 348 58% 18%;
+    --sidebar-accent-foreground: 25 47% 91%;
+    --sidebar-border: 348 50% 22%;
+    --sidebar-ring: 46 66% 52%;
   }
 }
 
@@ -146,7 +146,7 @@
 
   /* RTL Support */
   [dir="rtl"] {
-    font-family: 'Montserrat', 'Tajawal', sans-serif;
+    font-family: 'Inter', 'Tajawal', sans-serif;
   }
 
   [dir="rtl"] h1,
@@ -172,24 +172,72 @@
     @apply font-body text-muted-foreground tracking-widest uppercase text-xs;
   }
 
+  .luxury-script {
+    @apply font-script text-accent;
+  }
+
   .luxury-divider {
     @apply w-16 h-px bg-accent mx-auto;
   }
 
+  /* Product Cards - Quiet Luxury */
   .luxury-card {
-    @apply bg-card border border-border/50 transition-all duration-500 hover:shadow-lg hover:shadow-accent/5;
+    @apply bg-card border border-gold/30 rounded-lg transition-all duration-400 ease-in-out;
+    box-shadow: 0 4px 20px -4px hsl(var(--warm-brown) / 0.08);
   }
 
+  .luxury-card:hover {
+    box-shadow: 0 8px 30px -4px hsl(var(--warm-brown) / 0.15);
+  }
+
+  .luxury-card-image {
+    @apply overflow-hidden rounded-t-lg;
+  }
+
+  .luxury-card-image img {
+    @apply transition-transform duration-400 ease-in-out;
+  }
+
+  .luxury-card:hover .luxury-card-image img {
+    transform: scale(1.05);
+  }
+
+  /* Buttons - Quiet Luxury */
   .luxury-button {
-    @apply font-body tracking-widest uppercase text-xs py-4 px-8 transition-all duration-300;
+    @apply font-body tracking-widest uppercase text-xs py-4 px-8 transition-all duration-400 ease-in-out;
+  }
+
+  .luxury-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-burgundy-light;
+  }
+
+  .luxury-button-secondary {
+    @apply bg-transparent text-primary border-2 border-gold hover:bg-gold/10;
   }
 
   .luxury-link {
-    @apply relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-px after:bottom-0 after:left-0 after:bg-accent after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+    @apply relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-px after:bottom-0 after:left-0 after:bg-accent after:origin-bottom-right after:transition-transform after:duration-400 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+
+  /* Mega Menu */
+  .mega-menu {
+    @apply absolute left-0 right-0 bg-cream border-t border-gold/30 shadow-xl opacity-0 invisible transition-all duration-400 ease-in-out;
+  }
+
+  .mega-menu.open {
+    @apply opacity-100 visible;
   }
 }
 
 @layer utilities {
+  .duration-400 {
+    transition-duration: 400ms;
+  }
+
+  .ease-luxury {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .animate-fade-up {
     animation: fadeUp 0.8s ease-out forwards;
   }
