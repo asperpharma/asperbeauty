@@ -18,6 +18,7 @@ import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
+import Philosophy from "./pages/Philosophy";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/philosophy" element={<Philosophy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -36,6 +36,14 @@ export const Footer = () => {
     name: isArabic ? 'استشارة البشرة' : 'Skin Consultation',
     href: '/consultation'
   }];
+  
+  const aboutLinks = [{
+    name: isArabic ? 'فلسفتنا' : 'Our Philosophy',
+    href: '/philosophy'
+  }, {
+    name: isArabic ? 'اتصل بنا' : 'Contact Us',
+    href: '/contact'
+  }];
   return <footer className="bg-burgundy" style={{
     borderTop: '1px solid hsl(var(--gold))'
   }}>
@@ -83,12 +91,23 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 3 - Visit Us */}
+          {/* Column 3 - About */}
           <div>
             <h3 className="font-display text-lg text-white mb-6">
-              {isArabic ? 'زورونا' : 'Visit Us'}
+              {isArabic ? 'عن آسبر' : 'About Asper'}
             </h3>
-            <div className="space-y-3">
+            <ul className="space-y-3 mb-8">
+              {aboutLinks.map(item => <li key={item.href}>
+                  <Link to={item.href} className="font-body text-sm text-cream hover:text-gold transition-colors duration-400">
+                    {item.name}
+                  </Link>
+                </li>)}
+            </ul>
+            
+            <h4 className="font-display text-sm text-white mb-3">
+              {isArabic ? 'زورونا' : 'Visit Us'}
+            </h4>
+            <div className="space-y-2">
               <p className="font-body text-sm text-cream">
                 {isArabic ? 'عمّان، الأردن' : 'Amman, Jordan'}
               </p>
