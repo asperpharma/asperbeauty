@@ -5,7 +5,7 @@ import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { toast } from "sonner";
-import { ShoppingBag, Eye, Heart } from "lucide-react";
+import { ShoppingBag, Eye, Heart, Star, Sparkles, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
 import { getLocalizedDescription, translateTitle } from "@/lib/productUtils";
@@ -114,22 +114,22 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           )}
 
-          {/* Badges */}
+          {/* Gold Badge Icons */}
           {(isBestseller || isNewArrival || isOnSale) && (
-            <div className="absolute top-2 md:top-3 left-2 md:left-3 z-20 flex flex-col gap-1 md:gap-2">
-              {isOnSale && (
-                <div className="bg-burgundy text-white px-2 md:px-3 py-0.5 md:py-1 font-body text-[10px] md:text-xs tracking-wide uppercase">
-                  -{discountPercent}%
-                </div>
-              )}
+            <div className="absolute top-2 md:top-3 left-2 md:left-3 z-20 flex flex-col gap-1.5">
               {isBestseller && (
-                <div className="bg-gold text-burgundy px-2 md:px-3 py-0.5 md:py-1 font-body text-[10px] md:text-xs tracking-wide uppercase">
-                  Bestseller
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gold flex items-center justify-center shadow-md" title="Bestseller">
+                  <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-burgundy fill-burgundy" />
                 </div>
               )}
-              {isNewArrival && !isBestseller && !isOnSale && (
-                <div className="bg-burgundy text-white px-2 md:px-3 py-0.5 md:py-1 font-body text-[10px] md:text-xs tracking-wide uppercase">
-                  New
+              {isNewArrival && !isBestseller && (
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gold flex items-center justify-center shadow-md" title="New Arrival">
+                  <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-burgundy" />
+                </div>
+              )}
+              {isOnSale && (
+                <div className="px-2 py-1 bg-burgundy text-white font-body text-[10px] md:text-xs tracking-wide rounded-full shadow-md">
+                  -{discountPercent}%
                 </div>
               )}
             </div>
@@ -147,14 +147,25 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
           </button>
 
-          {/* Quick Add Button - Hidden on mobile (no hover) */}
-          <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-in-out">
+          {/* Smart Hover Buttons - Hidden on mobile (no hover) */}
+          <div className="hidden md:flex absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-in-out">
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-burgundy text-white hover:bg-burgundy-light rounded-none py-3 font-body text-xs tracking-widest uppercase"
+              className="flex-1 bg-burgundy text-white hover:bg-burgundy-light rounded-none py-3 font-body text-xs tracking-widest uppercase border-r border-gold/20"
             >
               <ShoppingBag className="w-4 h-4 me-2" />
-              {language === 'ar' ? 'إضافة سريعة' : 'Quick Add'}
+              {language === 'ar' ? 'إضافة' : 'Add to Bag'}
+            </Button>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsQuickViewOpen(true);
+              }}
+              className="flex-1 bg-cream text-burgundy hover:bg-gold hover:text-burgundy rounded-none py-3 font-body text-xs tracking-widest uppercase border-l border-gold/20"
+            >
+              <Info className="w-4 h-4 me-2" />
+              {language === 'ar' ? 'لماذا يعمل؟' : 'Why this works?'}
             </Button>
           </div>
 

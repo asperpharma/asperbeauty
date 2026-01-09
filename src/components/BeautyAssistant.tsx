@@ -1,16 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { X, Send, Loader2, Stethoscope } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+
 type Message = { role: 'user' | 'assistant'; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/beauty-assistant`;
 
+const quickPrompts = {
+  en: [
+    { label: 'Routine for Acne', message: 'What is the best skincare routine for acne-prone skin?' },
+    { label: 'Safe for Pregnancy?', message: 'Which skincare ingredients are safe to use during pregnancy?' },
+    { label: 'Compare Serums', message: 'Can you compare vitamin C serums vs retinol serums for anti-aging?' },
+  ],
+  ar: [
+    { label: 'روتين حب الشباب', message: 'ما هو أفضل روتين للعناية بالبشرة المعرضة لحب الشباب؟' },
+    { label: 'آمن للحمل؟', message: 'ما هي مكونات العناية بالبشرة الآمنة للاستخدام أثناء الحمل؟' },
+    { label: 'مقارنة السيروم', message: 'هل يمكنك مقارنة سيروم فيتامين سي مع سيروم الريتينول لمكافحة الشيخوخة؟' },
+  ],
+};
+
 export const BeautyAssistant = () => {
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -19,20 +33,23 @@ export const BeautyAssistant = () => {
 
   const translations = {
     en: {
-      title: 'Beauty Assistant',
-      subtitle: 'Your personal skincare advisor',
-      placeholder: 'Ask about skincare...',
-      welcome: "Hi! 👋 I'm your beauty assistant. Tell me about your skin type and concerns, and I'll help you find the perfect products!",
+      title: 'Asper Digital Consult',
+      subtitle: 'Clinical Skincare Expert',
+      placeholder: 'Describe your skin concern...',
+      welcome: "Hello. I am trained on clinical skincare data. Tell me your skin concern (e.g., Acne, Dryness) or ask about a specific ingredient.",
+      buttonText: 'Ask the Pharmacist',
     },
     ar: {
-      title: 'مستشار الجمال',
-      subtitle: 'مستشارك الشخصي للعناية بالبشرة',
-      placeholder: 'اسأل عن العناية بالبشرة...',
-      welcome: "مرحباً! 👋 أنا مستشار الجمال الخاص بك. أخبرني عن نوع بشرتك ومخاوفك، وسأساعدك في إيجاد المنتجات المثالية!",
+      title: 'استشارة آسبر الرقمية',
+      subtitle: 'خبير العناية بالبشرة السريرية',
+      placeholder: 'صف مشكلة بشرتك...',
+      welcome: "مرحباً. أنا مدرب على بيانات العناية بالبشرة السريرية. أخبرني عن مشكلة بشرتك (مثل حب الشباب، الجفاف) أو اسأل عن مكون معين.",
+      buttonText: 'اسأل الصيدلي',
     },
   };
 
   const t = translations[language];
+  const prompts = quickPrompts[language];
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -139,49 +156,76 @@ export const BeautyAssistant = () => {
     }
   };
 
+  const handleQuickPrompt = (message: string) => {
+    if (isLoading) return;
+    setInput(message);
+    // Auto-send after setting
+    const userMsg: Message = { role: 'user', content: message };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    streamChat(newMessages.filter(m => m.content !== t.welcome))
+      .catch((error) => {
+        console.error('Chat error:', error);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: language === 'ar' 
+            ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
+            : 'Sorry, something went wrong. Please try again.' 
+        }]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setInput('');
+      });
+  };
+
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Pill Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${isOpen ? 'scale-0' : 'scale-100'}`}
+        className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-50 flex items-center gap-3 px-5 py-3 bg-white border-2 border-gold rounded-full shadow-lg hover:shadow-xl transition-all duration-400 group ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
         aria-label="Open beauty assistant"
       >
-        <MessageCircle className="w-6 h-6 text-primary-foreground group-hover:scale-110 transition-transform" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full flex items-center justify-center">
-          <Sparkles className="w-2.5 h-2.5 text-white" />
+        <div className="w-8 h-8 rounded-full bg-burgundy flex items-center justify-center">
+          <Stethoscope className="w-4 h-4 text-gold" />
+        </div>
+        <span className="font-body text-sm font-medium text-burgundy whitespace-nowrap">
+          {t.buttonText}
         </span>
       </button>
 
       {/* Chat Window */}
       <div
-        className={`fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-card rounded-2xl shadow-2xl border border-border overflow-hidden transition-all duration-300 ${
+        className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-50 w-[400px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-gold/30 overflow-hidden transition-all duration-400 ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
         }`}
       >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-accent p-4 flex items-center justify-between">
+        {/* Header - Deep Burgundy */}
+        <div className="bg-burgundy p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">{t.title}</h3>
-              <p className="text-xs text-white/80">{t.subtitle}</p>
+              <h3 className="font-display text-base font-semibold text-white">{t.title}</h3>
+              <p className="text-xs text-gold/90 font-body">{t.subtitle}</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(false)}
-            className="text-white hover:bg-white/20"
+            className="text-gold hover:bg-gold/20"
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Messages */}
-        <ScrollArea className="h-[350px] p-4" ref={scrollRef}>
+        <ScrollArea className="h-[320px] p-4 bg-cream/30" ref={scrollRef}>
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div
@@ -189,28 +233,46 @@ export const BeautyAssistant = () => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-md'
-                      : 'bg-muted text-foreground rounded-bl-md'
+                      ? 'bg-burgundy text-white rounded-br-sm'
+                      : 'bg-white border border-gold/20 text-foreground rounded-bl-sm shadow-sm'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-body">{msg.content}</p>
                 </div>
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.role === 'user' && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                <div className="bg-white border border-gold/20 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                  <Loader2 className="w-5 h-5 animate-spin text-gold" />
                 </div>
               </div>
             )}
           </div>
         </ScrollArea>
 
+        {/* Quick Prompts */}
+        {messages.length <= 1 && (
+          <div className="px-4 pb-3 pt-2 bg-cream/30 border-t border-gold/10">
+            <div className="flex flex-wrap gap-2">
+              {prompts.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickPrompt(prompt.message)}
+                  disabled={isLoading}
+                  className="px-3 py-1.5 text-xs font-body bg-white border border-gold/30 rounded-full text-burgundy hover:bg-gold hover:text-burgundy hover:border-gold transition-all duration-300 disabled:opacity-50"
+                >
+                  {prompt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Input */}
-        <div className="p-4 border-t border-border bg-background">
+        <div className="p-4 border-t border-gold/20 bg-white">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -222,16 +284,17 @@ export const BeautyAssistant = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t.placeholder}
-              className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-primary"
+              className="flex-1 rounded-full bg-cream/50 border-gold/30 focus-visible:ring-gold font-body text-sm"
               disabled={isLoading}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}
-              className="rounded-full bg-primary hover:bg-primary/90 shrink-0"
+              className="rounded-full bg-burgundy hover:bg-burgundy-light shrink-0"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 text-gold" />
             </Button>
           </form>
         </div>

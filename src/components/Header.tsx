@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { User as UserType } from "@supabase/supabase-js";
 import asperLogoHorizontal from "@/assets/asper-logo-horizontal.jpg";
+import { PromotionBar } from "./PromotionBar";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,6 +101,9 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Promotion Bar - Top */}
+      <PromotionBar />
+      
       {/* Main Header Row - Deep Burgundy */}
       <div className="bg-burgundy h-16 md:h-20">
         <div className="luxury-container h-full">
