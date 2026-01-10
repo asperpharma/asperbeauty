@@ -1,13 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Instagram } from "lucide-react";
 
-import vichyLiftactiv from "@/assets/products/vichy-liftactiv-collagen-specialist.jpg";
-import eucerin from "@/assets/products/eucerin-sunscreen.jpg";
-import svr from "@/assets/products/svr-cream.jpg";
-import bioten from "@/assets/products/bioten-day-cream-gold.jpg";
-import isadora from "@/assets/products/isadora-mascara-new.jpg";
-import bourjois from "@/assets/products/bourjois-mascara.jpg";
-
 export const InstagramFeed = () => {
   const { language } = useLanguage();
   const isArabic = language === "ar";
@@ -15,33 +8,33 @@ export const InstagramFeed = () => {
   const instagramPosts = [
     {
       id: 1,
-      image: vichyLiftactiv,
-      likes: 234,
+      image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
+      likes: 342,
     },
     {
       id: 2,
-      image: eucerin,
-      likes: 187,
+      image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&h=400&fit=crop",
+      likes: 287,
     },
     {
       id: 3,
-      image: svr,
-      likes: 312,
+      image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+      likes: 456,
     },
     {
       id: 4,
-      image: bioten,
-      likes: 156,
+      image: "https://images.unsplash.com/photo-1571875257727-256c39da42af?w=400&h=400&fit=crop",
+      likes: 198,
     },
     {
       id: 5,
-      image: isadora,
-      likes: 289,
+      image: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&h=400&fit=crop",
+      likes: 523,
     },
     {
       id: 6,
-      image: bourjois,
-      likes: 198,
+      image: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&h=400&fit=crop",
+      likes: 389,
     },
   ];
 
