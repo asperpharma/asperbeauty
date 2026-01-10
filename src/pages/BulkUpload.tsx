@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,14 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 import { 
   Upload, FileSpreadsheet, Sparkles, Image, ShoppingBag, 
   CheckCircle2, AlertCircle, Loader2, Play, Pause, RefreshCw,
-  Download, Table
+  Download, Table, Clock, Zap, Settings, RotateCcw, Square
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { useImageQueue, QueueItem } from "@/lib/imageGenerationQueue";
 
 interface ProcessedProduct {
   sku: string;
@@ -68,12 +70,59 @@ export default function BulkUpload() {
   const [products, setProducts] = useState<ProcessedProduct[]>([]);
   const [summary, setSummary] = useState<UploadSummary | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, stage: "" });
   const [rawData, setRawData] = useState<RawProduct[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [parseError, setParseError] = useState<string>("");
   const [previewData, setPreviewData] = useState<RawProduct[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Use the queue system for image generation
+  const { 
+    stats: queueStats, 
+    items: queueItems, 
+    status: queueStatus,
+    config: queueConfig,
+    addItems: addToQueue,
+    start: startQueue,
+    pause: pauseQueue,
+    resume: resumeQueue,
+    stop: stopQueue,
+    clear: clearQueue,
+    retryFailed: retryFailedItems,
+    updateConfig
+  } = useImageQueue();
+
+  // Sync queue items back to products state
+  useEffect(() => {
+    if (queueItems.length > 0) {
+      setProducts(prev => 
+        prev.map(p => {
+          const queueItem = queueItems.find(q => q.sku === p.sku);
+          if (queueItem) {
+            return {
+              ...p,
+              status: queueItem.status === "queued" ? "pending" : 
+                     queueItem.status === "retrying" ? "processing" :
+                     queueItem.status as any,
+              imageUrl: queueItem.imageUrl,
+              error: queueItem.error,
+            };
+          }
+          return p;
+        })
+      );
+    }
+  }, [queueItems]);
+
+  // Format time remaining
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${mins}m`;
+  };
 
   // Parse Excel/CSV file using xlsx library
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,72 +293,37 @@ export default function BulkUpload() {
     }
   }, [rawData]);
 
-  // Generate images for all products
-  const generateImages = useCallback(async () => {
-    setIsProcessing(true);
-    setIsPaused(false);
+  // Initialize queue with products and start generation
+  const startImageGeneration = useCallback(() => {
+    // Clear any existing queue
+    clearQueue();
     
+    // Add all pending products to the queue
     const pendingProducts = products.filter(p => p.status === "pending" || p.status === "failed");
-    setProgress({ current: 0, total: pendingProducts.length, stage: "Generating images..." });
+    
+    const queueItems = pendingProducts.map(p => ({
+      id: p.sku,
+      sku: p.sku,
+      name: p.name,
+      category: p.category,
+      imagePrompt: p.imagePrompt,
+    }));
 
-    for (let i = 0; i < pendingProducts.length; i++) {
-      if (isPaused) break;
+    addToQueue(queueItems);
+    startQueue();
+    
+    toast.success(`Started generating images for ${pendingProducts.length} products`);
+  }, [products, clearQueue, addToQueue, startQueue]);
 
-      const product = pendingProducts[i];
-      setProgress({ current: i + 1, total: pendingProducts.length, stage: `Generating: ${product.name.slice(0, 40)}...` });
-
-      try {
-        // Update status to processing
-        setProducts(prev => prev.map(p => 
-          p.sku === product.sku ? { ...p, status: "processing" as const } : p
-        ));
-
-        const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
-          body: {
-            action: "generate-image",
-            productName: product.name,
-            category: product.category,
-            imagePrompt: product.imagePrompt,
-          },
-        });
-
-        if (error) throw error;
-
-        // Update with image URL
-        setProducts(prev => prev.map(p => 
-          p.sku === product.sku 
-            ? { ...p, status: "completed" as const, imageUrl: data.imageUrl } 
-            : p
-        ));
-
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (error: any) {
-        console.error(`Failed to generate image for ${product.name}:`, error);
-        
-        setProducts(prev => prev.map(p => 
-          p.sku === product.sku 
-            ? { ...p, status: "failed" as const, error: error.message } 
-            : p
-        ));
-
-        // If rate limited, wait longer
-        if (error.message?.includes("rate") || error.message?.includes("429")) {
-          toast.warning("Rate limited, waiting 60 seconds...");
-          await new Promise(resolve => setTimeout(resolve, 60000));
-        }
+  // Handle queue completion
+  useEffect(() => {
+    if (queueStats.total > 0 && queueStats.completed === queueStats.total && !queueStatus.isProcessing) {
+      toast.success(`Generated ${queueStats.completed} images`);
+      if (queueStats.failed === 0) {
+        setStep("review");
       }
     }
-
-    setIsProcessing(false);
-    
-    const completed = products.filter(p => p.status === "completed").length;
-    toast.success(`Generated ${completed} images`);
-    
-    if (!isPaused) {
-      setStep("review");
-    }
-  }, [products, isPaused]);
+  }, [queueStats, queueStatus.isProcessing]);
 
   // Upload to Shopify
   const uploadToShopify = useCallback(async () => {
@@ -558,6 +572,7 @@ export default function BulkUpload() {
                 {/* Images Step */}
                 {step === "images" && (
                   <div className="space-y-6">
+                    {/* Category Summary */}
                     {summary && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {Object.entries(summary.categories).map(([category, count]) => (
@@ -569,43 +584,154 @@ export default function BulkUpload() {
                       </div>
                     )}
 
-                    {isProcessing && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{progress.stage}</span>
-                          <span>{progress.current} / {progress.total}</span>
+                    {/* Queue Stats Dashboard */}
+                    {queueStats.total > 0 && (
+                      <div className="bg-gradient-to-r from-burgundy/5 to-gold/5 rounded-xl p-6 border border-burgundy/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-medium text-charcoal flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-gold" />
+                            Queue Status
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            {queueStatus.isPaused && (
+                              <Badge variant="outline" className="text-amber-600 border-amber-300">
+                                <Pause className="w-3 h-3 mr-1" />
+                                Paused
+                              </Badge>
+                            )}
+                            {queueStatus.isProcessing && !queueStatus.isPaused && (
+                              <Badge className="bg-green-100 text-green-700">
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                Processing
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <Progress value={(progress.current / progress.total) * 100} />
+
+                        {/* Progress Bar */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-taupe">
+                              {queueStats.completed} of {queueStats.total} completed
+                            </span>
+                            <span className="text-charcoal font-medium flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              ~{formatTime(queueStats.estimatedTimeRemaining)} remaining
+                            </span>
+                          </div>
+                          <Progress 
+                            value={(queueStats.completed / queueStats.total) * 100} 
+                            className="h-3"
+                          />
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-4 gap-4 text-center">
+                          <div>
+                            <p className="text-2xl font-serif text-blue-600">{queueStats.queued}</p>
+                            <p className="text-xs text-taupe">Queued</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-serif text-amber-600">{queueStats.processing + queueStats.retrying}</p>
+                            <p className="text-xs text-taupe">Processing</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-serif text-green-600">{queueStats.completed}</p>
+                            <p className="text-xs text-taupe">Completed</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-serif text-red-600">{queueStats.failed}</p>
+                            <p className="text-xs text-taupe">Failed</p>
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    <div className="flex gap-4">
-                      <Button 
-                        onClick={generateImages} 
-                        disabled={isProcessing && !isPaused} 
-                        size="lg" 
-                        className="flex-1"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Generating Images...
-                          </>
-                        ) : (
-                          <>
-                            <Image className="w-4 h-4 mr-2" />
-                            Generate All Images
-                          </>
-                        )}
-                      </Button>
-                      
-                      {isProcessing && (
+                    {/* Queue Settings */}
+                    {showSettings && (
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Settings className="w-4 h-4" />
+                            Queue Settings
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <label className="text-sm text-taupe mb-2 block">
+                              Concurrent Requests: {queueConfig.batchSize}
+                            </label>
+                            <Slider
+                              value={[queueConfig.batchSize]}
+                              onValueChange={([value]) => updateConfig({ batchSize: value })}
+                              min={1}
+                              max={5}
+                              step={1}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-taupe mt-1">
+                              Higher = faster but more likely to hit rate limits
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-sm text-taupe mb-2 block">
+                              Delay Between Requests: {queueConfig.requestDelay / 1000}s
+                            </label>
+                            <Slider
+                              value={[queueConfig.requestDelay]}
+                              onValueChange={([value]) => updateConfig({ requestDelay: value })}
+                              min={500}
+                              max={5000}
+                              step={500}
+                              className="w-full"
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-4">
+                      {!queueStatus.isProcessing ? (
                         <Button 
-                          variant="outline" 
-                          onClick={() => setIsPaused(true)}
+                          onClick={startImageGeneration}
+                          size="lg" 
+                          className="flex-1"
                         >
-                          <Pause className="w-4 h-4 mr-2" />
-                          Pause
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Generating Images
+                        </Button>
+                      ) : (
+                        <>
+                          {queueStatus.isPaused ? (
+                            <Button onClick={resumeQueue} size="lg" className="flex-1">
+                              <Play className="w-4 h-4 mr-2" />
+                              Resume
+                            </Button>
+                          ) : (
+                            <Button onClick={pauseQueue} variant="outline" size="lg" className="flex-1">
+                              <Pause className="w-4 h-4 mr-2" />
+                              Pause
+                            </Button>
+                          )}
+                          <Button onClick={stopQueue} variant="destructive" size="lg">
+                            <Square className="w-4 h-4 mr-2" />
+                            Stop
+                          </Button>
+                        </>
+                      )}
+                      
+                      <Button 
+                        variant="outline"
+                        onClick={() => setShowSettings(!showSettings)}
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+
+                      {queueStats.failed > 0 && (
+                        <Button variant="outline" onClick={retryFailedItems}>
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Retry Failed ({queueStats.failed})
                         </Button>
                       )}
                     </div>
@@ -613,7 +739,7 @@ export default function BulkUpload() {
                     {/* Product Preview Grid */}
                     <ScrollArea className="h-[400px] rounded-lg border">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-                        {products.slice(0, 20).map((product) => (
+                        {products.slice(0, 40).map((product) => (
                           <div key={product.sku} className="bg-white rounded-lg p-3 border">
                             <div className="aspect-square bg-taupe/10 rounded-lg mb-2 overflow-hidden relative">
                               {product.imageUrl ? (
@@ -641,7 +767,7 @@ export default function BulkUpload() {
                       onClick={() => setStep("review")} 
                       disabled={products.filter(p => p.status === "completed").length === 0}
                     >
-                      Skip to Review →
+                      Continue to Review →
                     </Button>
                   </div>
                 )}
