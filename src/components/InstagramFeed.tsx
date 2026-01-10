@@ -1,9 +1,11 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Instagram, Heart } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export const InstagramFeed = () => {
   const { language } = useLanguage();
   const isArabic = language === "ar";
+  const { ref: sectionRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
 
   const instagramPosts = [
     {
@@ -39,9 +41,19 @@ export const InstagramFeed = () => {
   ];
 
   return (
-    <section className="py-16 bg-cream overflow-hidden">
+    <section 
+      ref={sectionRef as React.RefObject<HTMLElement>}
+      className="py-16 bg-cream overflow-hidden"
+    >
       <div className="luxury-container">
-        <div className="text-center mb-10">
+        {/* Header with animation */}
+        <div 
+          className={`text-center mb-10 transition-all duration-700 ease-out ${
+            isVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h2 className="luxury-heading text-3xl md:text-4xl mb-3">
             {isArabic ? "تابعنا على انستغرام" : "Follow Us on Instagram"}
           </h2>
@@ -56,6 +68,7 @@ export const InstagramFeed = () => {
           </a>
         </div>
 
+        {/* Grid with staggered animations */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {instagramPosts.map((post, index) => (
             <a
@@ -63,9 +76,14 @@ export const InstagramFeed = () => {
               href="https://www.instagram.com/asper.beauty.shop/"
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-all duration-500"
+              className={`group relative aspect-square overflow-hidden rounded-xl shadow-md hover:shadow-2xl 
+                transition-all duration-500 ease-out
+                ${isVisible 
+                  ? 'opacity-100 translate-y-0 scale-100' 
+                  : 'opacity-0 translate-y-12 scale-95'
+                }`}
               style={{ 
-                animationDelay: `${index * 100}ms`,
+                transitionDelay: isVisible ? `${index * 100 + 200}ms` : '0ms',
               }}
             >
               {/* Image with filters */}
@@ -118,7 +136,15 @@ export const InstagramFeed = () => {
           ))}
         </div>
 
-        <div className="text-center mt-10">
+        {/* CTA Button with animation */}
+        <div 
+          className={`text-center mt-10 transition-all duration-700 ease-out ${
+            isVisible 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+          }`}
+          style={{ transitionDelay: isVisible ? '800ms' : '0ms' }}
+        >
           <a
             href="https://www.instagram.com/asper.beauty.shop/"
             target="_blank"
