@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 
-// Hero image - Lifestyle
+// Hero assets
 import heroLifestyle from "@/assets/hero/hero-lifestyle.webp";
+import heroVideo from "@/assets/hero/hero-video.mp4";
+
+// Toggle between video and image background
+const USE_VIDEO_BACKGROUND = true;
 
 export const Hero = () => {
   const { language } = useLanguage();
@@ -54,22 +58,41 @@ export const Hero = () => {
           className="absolute inset-[-10%] scale-115 will-change-transform transition-transform duration-100 ease-out"
           style={{ transform: 'translateY(0) scale(1.15)' }}
         >
-          <img
-            src={heroLifestyle}
-            alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
-            className="w-full h-full object-cover"
-            fetchPriority="high"
-            width={1920}
-            height={1080}
-            decoding="async"
-          />
+          {USE_VIDEO_BACKGROUND ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={heroLifestyle}
+              className="w-full h-full object-cover"
+            >
+              <source src={heroVideo} type="video/mp4" />
+              {/* Fallback to image if video fails */}
+              <img
+                src={heroLifestyle}
+                alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
+                className="w-full h-full object-cover"
+              />
+            </video>
+          ) : (
+            <img
+              src={heroLifestyle}
+              alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
+              className="w-full h-full object-cover"
+              fetchPriority="high"
+              width={1920}
+              height={1080}
+              decoding="async"
+            />
+          )}
         </div>
         
         {/* Animated gradient overlay */}
         <div 
           ref={overlayRef}
           className="absolute inset-0 transition-all duration-300 ease-out"
-          style={{ background: 'linear-gradient(to right, rgba(103, 32, 46, 0.7), rgba(103, 32, 46, 0.4), transparent)' }}
+          style={{ background: 'linear-gradient(to right, rgba(103, 32, 46, 0.75), rgba(103, 32, 46, 0.45), transparent)' }}
         />
         
         {/* Decorative floating particles */}
