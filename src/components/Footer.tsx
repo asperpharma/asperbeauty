@@ -62,16 +62,16 @@ export const Footer = () => {
             
             {/* Social Icons - Gold Outlines */}
             <div className="flex items-center gap-4">
-              <a href="https://www.instagram.com/asper.beauty.box/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
+              <a href="https://www.instagram.com/asper.beauty.shop/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
                 <Instagram className="w-4 h-4" strokeWidth={1.5} />
               </a>
-              <a href="https://web.facebook.com/robu.sweileh/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
+              <a href="https://www.facebook.com/asper.beauty.shop" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
                 <Facebook className="w-4 h-4" strokeWidth={1.5} />
               </a>
               <a href="https://wa.me/962790656666" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
                 <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
               </a>
-              <a href="https://www.tiktok.com/@asper.pharmacy" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
+              <a href="https://www.tiktok.com/@asper.beauty.shop" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gold flex items-center justify-center text-gold hover:bg-gold hover:text-burgundy transition-all duration-400">
                 <TikTokIcon className="w-4 h-4" />
               </a>
             </div>
