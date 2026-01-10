@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnimatedSection } from "./AnimatedSection";
+import { LazyImage } from "./LazyImage";
 
 const testimonials = [
   {
@@ -98,10 +99,11 @@ export const Testimonials = () => {
                   <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gold to-gold-light opacity-0 group-hover:opacity-100 transition-opacity duration-400 blur-sm" />
                     <div className="relative w-14 h-14 rounded-full border-2 border-gold overflow-hidden">
-                      <img
+                      <LazyImage
                         src={testimonial.avatar}
                         alt={isArabic ? testimonial.nameAr : testimonial.name}
                         className="w-full h-full object-cover"
+                        skeletonClassName="rounded-full"
                       />
                     </div>
                   </div>
