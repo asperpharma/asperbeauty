@@ -325,23 +325,106 @@ export default function BulkUpload() {
     }
   }, [queueStats, queueStatus.isProcessing]);
 
-  // Upload to Shopify
+  // Shopify upload state
+  const [shopifyProgress, setShopifyProgress] = useState({
+    current: 0,
+    total: 0,
+    succeeded: 0,
+    failed: 0,
+    stage: "",
+    currentProduct: "",
+  });
+  const [shopifyErrors, setShopifyErrors] = useState<Array<{sku: string; name: string; error: string}>>([]);
+  const [isShopifyUploading, setIsShopifyUploading] = useState(false);
+
+  // Upload to Shopify using the edge function
   const uploadToShopify = useCallback(async () => {
-    setIsProcessing(true);
+    setIsShopifyUploading(true);
+    setShopifyErrors([]);
     const readyProducts = products.filter(p => p.status === "completed" && p.imageUrl);
-    setProgress({ current: 0, total: readyProducts.length, stage: "Uploading to Shopify..." });
+    setShopifyProgress({ 
+      current: 0, 
+      total: readyProducts.length, 
+      succeeded: 0, 
+      failed: 0, 
+      stage: "Preparing upload...",
+      currentProduct: "",
+    });
 
-    for (let i = 0; i < readyProducts.length; i++) {
-      const product = readyProducts[i];
-      setProgress({ current: i + 1, total: readyProducts.length, stage: `Uploading: ${product.name.slice(0, 40)}...` });
+    const BATCH_SIZE = 5; // Process 5 products at a time
+    const errors: Array<{sku: string; name: string; error: string}> = [];
+    let succeeded = 0;
 
-      // Note: This would use the Shopify Admin API to create products
-      // For now, we'll just simulate the upload
-      await new Promise(resolve => setTimeout(resolve, 500));
+    // Process in batches
+    for (let i = 0; i < readyProducts.length; i += BATCH_SIZE) {
+      const batch = readyProducts.slice(i, i + BATCH_SIZE);
+      
+      // Process each product in the batch sequentially to avoid rate limits
+      for (let j = 0; j < batch.length; j++) {
+        const product = batch[j];
+        const currentIndex = i + j + 1;
+        
+        setShopifyProgress(prev => ({
+          ...prev,
+          current: currentIndex,
+          stage: `Creating product ${currentIndex} of ${readyProducts.length}`,
+          currentProduct: product.name,
+        }));
+
+        try {
+          // Call edge function to create Shopify product
+          const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
+            body: { 
+              action: "create-shopify-product", 
+              product: {
+                title: product.name,
+                body: `${product.brand} - ${product.category}`,
+                vendor: product.brand,
+                product_type: product.category,
+                tags: `${product.category}, ${product.brand}, bulk-upload`,
+                price: product.price.toFixed(2),
+                sku: product.sku,
+                imageUrl: product.imageUrl,
+              }
+            },
+          });
+
+          if (error) throw new Error(error.message);
+          if (data?.error) throw new Error(data.error);
+          
+          succeeded++;
+          setShopifyProgress(prev => ({
+            ...prev,
+            succeeded,
+          }));
+          
+          // Add small delay between requests to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+        } catch (error: any) {
+          console.error(`Failed to create ${product.name}:`, error);
+          errors.push({
+            sku: product.sku,
+            name: product.name,
+            error: error.message || "Unknown error",
+          });
+          setShopifyProgress(prev => ({
+            ...prev,
+            failed: prev.failed + 1,
+          }));
+        }
+      }
     }
 
-    setIsProcessing(false);
-    toast.success(`Uploaded ${readyProducts.length} products to Shopify`);
+    setShopifyErrors(errors);
+    setIsShopifyUploading(false);
+    
+    if (succeeded > 0) {
+      toast.success(`Successfully created ${succeeded} products in Shopify!`);
+    }
+    if (errors.length > 0) {
+      toast.error(`${errors.length} products failed to upload`);
+    }
   }, [products]);
 
   const getStatusIcon = (status: ProcessedProduct["status"]) => {
@@ -835,7 +918,8 @@ export default function BulkUpload() {
                 {step === "shopify" && (
                   <div className="space-y-6">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                      <h3 className="font-medium text-green-800 mb-2">
+                      <h3 className="font-medium text-green-800 mb-2 flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5" />
                         Ready to upload {products.filter(p => p.status === "completed").length} products
                       </h3>
                       <p className="text-sm text-green-700">
@@ -843,21 +927,100 @@ export default function BulkUpload() {
                       </p>
                     </div>
 
-                    {isProcessing && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{progress.stage}</span>
-                          <span>{progress.current} / {progress.total}</span>
-                        </div>
-                        <Progress value={(progress.current / progress.total) * 100} />
-                      </div>
+                    {/* Upload Progress */}
+                    {isShopifyUploading && (
+                      <Card className="border-burgundy/20">
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin text-burgundy" />
+                              <span className="text-sm font-medium">{shopifyProgress.stage}</span>
+                            </div>
+                            <span className="text-sm text-taupe">
+                              {shopifyProgress.current} / {shopifyProgress.total}
+                            </span>
+                          </div>
+                          
+                          <Progress 
+                            value={(shopifyProgress.current / shopifyProgress.total) * 100} 
+                            className="h-2"
+                          />
+                          
+                          {shopifyProgress.currentProduct && (
+                            <p className="text-xs text-taupe truncate">
+                              Creating: {shopifyProgress.currentProduct}
+                            </p>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-4 pt-2">
+                            <div className="text-center p-3 bg-green-50 rounded-lg">
+                              <p className="text-2xl font-serif text-green-600">{shopifyProgress.succeeded}</p>
+                              <p className="text-xs text-green-700">Succeeded</p>
+                            </div>
+                            <div className="text-center p-3 bg-red-50 rounded-lg">
+                              <p className="text-2xl font-serif text-red-600">{shopifyProgress.failed}</p>
+                              <p className="text-xs text-red-700">Failed</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     )}
 
-                    <Button onClick={uploadToShopify} disabled={isProcessing} size="lg" className="w-full">
-                      {isProcessing ? (
+                    {/* Completion Summary */}
+                    {!isShopifyUploading && shopifyProgress.total > 0 && (
+                      <Card className="border-green-200 bg-green-50/50">
+                        <CardContent className="pt-6">
+                          <div className="text-center space-y-2">
+                            <CheckCircle2 className="w-12 h-12 mx-auto text-green-600" />
+                            <h3 className="text-lg font-medium text-green-800">Upload Complete!</h3>
+                            <p className="text-sm text-green-700">
+                              {shopifyProgress.succeeded} products created successfully
+                              {shopifyProgress.failed > 0 && `, ${shopifyProgress.failed} failed`}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Error List */}
+                    {shopifyErrors.length > 0 && (
+                      <Card className="border-red-200">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm text-red-700 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            Failed Products ({shopifyErrors.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="h-[200px]">
+                            <div className="space-y-2">
+                              {shopifyErrors.map((err, i) => (
+                                <div key={i} className="text-sm p-2 bg-red-50 rounded">
+                                  <p className="font-medium text-red-800">{err.name}</p>
+                                  <p className="text-xs text-red-600">{err.error}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    <Button 
+                      onClick={uploadToShopify} 
+                      disabled={isShopifyUploading} 
+                      size="lg" 
+                      className="w-full"
+                    >
+                      {isShopifyUploading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Uploading to Shopify...
+                        </>
+                      ) : shopifyProgress.succeeded > 0 ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Upload
                         </>
                       ) : (
                         <>

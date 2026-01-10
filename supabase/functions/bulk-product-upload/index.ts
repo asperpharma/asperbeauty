@@ -130,7 +130,8 @@ serve(async (req) => {
   }
 
   try {
-    const { action, products, batchId, productId } = await req.json();
+    const requestData = await req.json();
+    const { action } = requestData;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -142,8 +143,14 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Shopify Admin API configuration
+    const SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+    const SHOPIFY_STORE_DOMAIN = "lovable-project-milns.myshopify.com";
+    const SHOPIFY_API_VERSION = "2025-01";
+
     if (action === "categorize") {
       // Categorize and prepare products from Excel data
+      const { products } = requestData;
       const processedProducts: ProcessedProduct[] = products.map((product: ProductData) => {
         const category = categorizeProduct(product.name);
         const brand = extractBrand(product.name);
@@ -186,7 +193,7 @@ serve(async (req) => {
 
     if (action === "generate-image") {
       // Generate image for a single product using Lovable AI
-      const { productName, category, imagePrompt } = await req.json();
+      const { productName, category, imagePrompt } = requestData;
       
       console.log(`Generating image for: ${productName}`);
       
@@ -260,9 +267,85 @@ serve(async (req) => {
       );
     }
 
+    if (action === "create-shopify-product") {
+      // Create a product in Shopify using Admin API
+      const { product } = requestData;
+      
+      if (!SHOPIFY_ACCESS_TOKEN) {
+        throw new Error("SHOPIFY_ACCESS_TOKEN is not configured.");
+      }
+
+      console.log(`Creating Shopify product: ${product.title}`);
+
+      // Prepare the product data for Shopify Admin API
+      const shopifyProduct = {
+        product: {
+          title: product.title,
+          body_html: `<p>${product.body || ""}</p>`,
+          vendor: product.vendor || "Asper",
+          product_type: product.product_type || "General",
+          tags: product.tags || "",
+          status: "active",
+          variants: [
+            {
+              price: product.price,
+              sku: product.sku,
+              inventory_management: "shopify",
+              inventory_policy: "continue",
+            },
+          ],
+          images: product.imageUrl ? [
+            {
+              src: product.imageUrl,
+              alt: product.title,
+            },
+          ] : [],
+        },
+      };
+
+      const shopifyResponse = await fetch(
+        `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/products.json`,
+        {
+          method: "POST",
+          headers: {
+            "X-Shopify-Access-Token": SHOPIFY_ACCESS_TOKEN,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(shopifyProduct),
+        }
+      );
+
+      if (!shopifyResponse.ok) {
+        const errorData = await shopifyResponse.text();
+        console.error("Shopify API error:", shopifyResponse.status, errorData);
+        
+        if (shopifyResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limited by Shopify. Please wait.", retryAfter: 60 }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        throw new Error(`Shopify API error: ${shopifyResponse.status} - ${errorData}`);
+      }
+
+      const shopifyData = await shopifyResponse.json();
+      
+      console.log(`Successfully created product: ${shopifyData.product?.id}`);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          productId: shopifyData.product?.id,
+          handle: shopifyData.product?.handle,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "ai-categorize") {
       // Use AI for smarter categorization
-      const { productNames } = await req.json();
+      const { productNames } = requestData;
       
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
