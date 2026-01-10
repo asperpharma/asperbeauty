@@ -1,9 +1,6 @@
-import { MessageCircle } from "lucide-react";
-import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const WhatsAppButton = () => {
-  const [isHovered, setIsHovered] = useState(false);
   const { language } = useLanguage();
   const isArabic = language === "ar";
 
@@ -19,33 +16,19 @@ export const WhatsAppButton = () => {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="fixed bottom-6 right-6 z-50"
       aria-label="Chat on WhatsApp"
     >
-      {/* Tooltip */}
-      <div 
-        className={`absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300 ${
-          isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
-        }`}
+      <svg 
+        viewBox="0 0 48 48" 
+        className="w-14 h-14 hover:scale-110 transition-transform duration-300 drop-shadow-lg"
       >
-        <div className="bg-foreground text-cream px-4 py-2 rounded-lg shadow-lg font-body text-sm">
-          {isArabic ? 'تحدث معنا على واتساب' : 'Chat with us on WhatsApp'}
-          <div className="absolute -bottom-1 right-4 w-2 h-2 bg-foreground rotate-45" />
-        </div>
-      </div>
-
-      {/* Button */}
-      <div className="relative">
-        {/* Pulse animation ring */}
-        <div className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-25" />
-        
-        {/* Main button */}
-        <div className="relative w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300">
-          <MessageCircle className="w-7 h-7 text-white" fill="white" strokeWidth={0} />
-        </div>
-      </div>
+        <circle cx="24" cy="24" r="24" fill="#25D366" />
+        <path
+          fill="white"
+          d="M24 11.5c-6.9 0-12.5 5.6-12.5 12.5 0 2.2.6 4.3 1.6 6.2l-1.7 6.3 6.5-1.7c1.8.9 3.8 1.4 5.9 1.4 6.9 0 12.5-5.6 12.5-12.5S30.9 11.5 24 11.5zm6.1 17.2c-.3.8-1.5 1.5-2.1 1.6-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-5-4.4-5.1-4.6-.1-.2-1-1.3-1-2.6s.6-1.8.9-2.1c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.2.3-.3.5-.1.2-.3.4-.4.5-.2.2-.4.3-.2.6.2.3 1 1.6 2.1 2.6 1.4 1.2 2.6 1.6 3 1.8.4.2.6.1.8-.1.2-.2.9-1 1.1-1.4.2-.4.5-.3.8-.2.3.1 1.8.9 2.2 1 .4.2.6.3.7.4.1.2.1.9-.2 1.7z"
+        />
+      </svg>
     </a>
   );
 };
