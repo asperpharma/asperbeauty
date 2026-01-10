@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BeautyAssistant } from "@/components/BeautyAssistant";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { FlaskConical, Sparkles, Globe, Award } from "lucide-react";
 
 interface TimelineItem {
@@ -12,9 +12,34 @@ interface TimelineItem {
   icon: React.ReactNode;
 }
 
+// Custom hook for parallax effect
+const useParallax = (speed: number = 0.1) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const elementCenter = rect.top + rect.height / 2;
+        const distanceFromCenter = elementCenter - windowHeight / 2;
+        setOffset(distanceFromCenter * speed);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [speed]);
+
+  return { ref, offset };
+};
+
 const TimelineSection = ({ isArabic }: { isArabic: boolean }) => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const { ref: parallaxRef, offset } = useParallax(0.05);
 
   const timelineData: { en: TimelineItem[]; ar: TimelineItem[] } = {
     en: [
@@ -95,7 +120,14 @@ const TimelineSection = ({ isArabic }: { isArabic: boolean }) => {
   }, []);
 
   return (
-    <section className="py-16 md:py-24 bg-burgundy/5 -mx-6 md:-mx-8 px-6 md:px-8 my-16 md:my-24 rounded-lg">
+    <section 
+      ref={parallaxRef}
+      className="py-16 md:py-24 bg-burgundy/5 -mx-6 md:-mx-8 px-6 md:px-8 my-16 md:my-24 rounded-lg"
+      style={{
+        transform: `translateY(${offset}px)`,
+        transition: 'transform 0.1s ease-out',
+      }}
+    >
       <div className="text-center mb-12 md:mb-16">
         <span className="font-script text-xl md:text-2xl text-gold mb-3 block">
           {isArabic ? "رحلتنا" : "Our Journey"}
@@ -120,7 +152,12 @@ const TimelineSection = ({ isArabic }: { isArabic: boolean }) => {
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-8"
               }`}
-              style={{ transitionDelay: `${index * 150}ms` }}
+              style={{ 
+                transitionDelay: `${index * 150}ms`,
+                transform: visibleItems.includes(index) 
+                  ? `translateY(${index % 2 === 0 ? offset * 0.3 : offset * -0.3}px)` 
+                  : undefined,
+              }}
             >
               {/* Content Card */}
               <div
@@ -162,9 +199,80 @@ const TimelineSection = ({ isArabic }: { isArabic: boolean }) => {
   );
 };
 
+// Parallax section wrapper component
+const ParallaxSection = ({ 
+  children, 
+  speed = 0.08,
+  className = "",
+  fadeIn = true,
+}: { 
+  children: React.ReactNode; 
+  speed?: number;
+  className?: string;
+  fadeIn?: boolean;
+}) => {
+  const { ref, offset } = useParallax(speed);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!fadeIn) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fadeIn]);
+
+  return (
+    <div
+      ref={(node) => {
+        (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        (sectionRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
+      className={`transition-all duration-700 ease-out ${className} ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      }`}
+      style={{
+        transform: `translateY(${isVisible ? offset : 32}px)`,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Philosophy = () => {
   const { language } = useLanguage();
   const isArabic = language === "ar";
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Track scroll progress for decorative elements
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = window.scrollY / scrollHeight;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const content = {
     en: {
@@ -204,73 +312,141 @@ const Philosophy = () => {
   const t = content[language];
 
   return (
-    <div className="min-h-screen bg-cream" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-cream overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
       <Header />
 
+      {/* Decorative floating elements with parallax */}
+      <div 
+        className="fixed top-1/4 left-8 w-32 h-32 rounded-full bg-gold/5 blur-3xl pointer-events-none"
+        style={{
+          transform: `translateY(${scrollProgress * -100}px)`,
+        }}
+      />
+      <div 
+        className="fixed bottom-1/4 right-8 w-48 h-48 rounded-full bg-burgundy/5 blur-3xl pointer-events-none"
+        style={{
+          transform: `translateY(${scrollProgress * 150}px)`,
+        }}
+      />
+
       {/* Main Content - Editorial Style */}
-      <main className="pt-40 md:pt-48 pb-24">
+      <main className="pt-40 md:pt-48 pb-24 relative">
         {/* Narrow Content Column */}
         <article className="max-w-[800px] mx-auto px-6 md:px-8">
           
-          {/* Page Title */}
-          <header className="text-center mb-16 md:mb-24">
-            <span className="font-script text-2xl md:text-3xl text-gold mb-4 block">
-              {isArabic ? "قصتنا" : "Our Story"}
-            </span>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-burgundy leading-tight">
-              {t.pageTitle}
-            </h1>
-          </header>
+          {/* Page Title with enhanced parallax */}
+          <ParallaxSection speed={0.12} className="text-center mb-16 md:mb-24">
+            <header>
+              <span 
+                className="font-script text-2xl md:text-3xl text-gold mb-4 block"
+                style={{
+                  transform: `translateY(${scrollProgress * -20}px)`,
+                  transition: 'transform 0.1s ease-out',
+                }}
+              >
+                {isArabic ? "قصتنا" : "Our Story"}
+              </span>
+              <h1 
+                className="font-display text-4xl md:text-5xl lg:text-6xl text-burgundy leading-tight"
+                style={{
+                  transform: `translateY(${scrollProgress * -40}px) scale(${1 - scrollProgress * 0.05})`,
+                  transition: 'transform 0.1s ease-out',
+                }}
+              >
+                {t.pageTitle}
+              </h1>
+            </header>
+          </ParallaxSection>
 
           {/* Section 1: The Origin */}
-          <section className="mb-16 md:mb-24">
-            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
-              {t.section1.headline}
-            </h2>
-            <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
-              {t.section1.body}
-            </p>
-            
-            {/* Gold Line Separator */}
-            <div className="flex justify-center my-12 md:my-16">
-              <div className="w-24 h-px bg-gold"></div>
-            </div>
-          </section>
+          <ParallaxSection speed={0.06} className="mb-16 md:mb-24">
+            <section>
+              <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
+                {t.section1.headline}
+              </h2>
+              <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
+                {t.section1.body}
+              </p>
+              
+              {/* Gold Line Separator with animation */}
+              <div className="flex justify-center my-12 md:my-16">
+                <div 
+                  className="h-px bg-gold transition-all duration-700"
+                  style={{
+                    width: `${Math.min(96, 24 + scrollProgress * 200)}px`,
+                  }}
+                />
+              </div>
+            </section>
+          </ParallaxSection>
 
           {/* Animated Timeline */}
           <TimelineSection isArabic={isArabic} />
 
           {/* Section 2: The Rejection Policy */}
-          <section className="mb-16 md:mb-24">
-            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
-              {t.section2.headline}
-            </h2>
-            <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
-              {t.section2.body}
-            </p>
-            
-            {/* Gold Line Separator */}
-            <div className="flex justify-center my-12 md:my-16">
-              <div className="w-24 h-px bg-gold"></div>
-            </div>
-          </section>
+          <ParallaxSection speed={0.04} className="mb-16 md:mb-24">
+            <section>
+              <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
+                {t.section2.headline}
+              </h2>
+              <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
+                {t.section2.body}
+              </p>
+              
+              {/* Gold Line Separator */}
+              <div className="flex justify-center my-12 md:my-16">
+                <div 
+                  className="h-px bg-gold transition-all duration-700"
+                  style={{
+                    width: `${Math.min(96, 24 + scrollProgress * 150)}px`,
+                  }}
+                />
+              </div>
+            </section>
+          </ParallaxSection>
 
           {/* Section 3: The Service Promise */}
-          <section className="mb-16 md:mb-24">
-            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
-              {t.section3.headline}
-            </h2>
-            <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
-              {t.section3.body}
-            </p>
-          </section>
+          <ParallaxSection speed={0.03} className="mb-16 md:mb-24">
+            <section>
+              <h2 className="font-display text-2xl md:text-3xl lg:text-4xl text-burgundy mb-6 leading-snug">
+                {t.section3.headline}
+              </h2>
+              <p className="font-body text-base md:text-lg text-foreground leading-relaxed">
+                {t.section3.body}
+              </p>
+            </section>
+          </ParallaxSection>
 
-          {/* The Signature */}
-          <footer className="text-center pt-8 md:pt-12 border-t border-gold/30">
-            <span className="font-script text-3xl md:text-4xl text-gold">
-              {t.signature}
-            </span>
-          </footer>
+          {/* The Signature with floating effect */}
+          <ParallaxSection speed={0.02} className="pt-8 md:pt-12 border-t border-gold/30">
+            <footer className="text-center">
+              <span 
+                className="font-script text-3xl md:text-4xl text-gold inline-block"
+                style={{
+                  transform: `translateY(${Math.sin(scrollProgress * Math.PI * 2) * 5}px)`,
+                  transition: 'transform 0.2s ease-out',
+                }}
+              >
+                {t.signature}
+              </span>
+              
+              {/* Decorative star */}
+              <div 
+                className="mt-8 w-12 h-12 mx-auto opacity-30"
+                style={{
+                  transform: `rotate(${scrollProgress * 180}deg)`,
+                  transition: 'transform 0.1s ease-out',
+                }}
+              >
+                <svg viewBox="0 0 100 100" className="w-full h-full text-gold">
+                  <path
+                    d="M50 5 L58 38 L95 38 L65 58 L73 95 L50 73 L27 95 L35 58 L5 38 L42 38 Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+            </footer>
+          </ParallaxSection>
 
         </article>
       </main>
