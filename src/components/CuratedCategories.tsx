@@ -1,39 +1,35 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TestTube, Sparkles, Scissors, Heart } from "lucide-react";
+import { Droplets, Flower2, Sparkle, Baby } from "lucide-react";
 
 const categories = [
   {
     id: 'clinical-skincare',
     name: 'Clinical Skincare',
     nameAr: 'العناية السريرية',
-    icon: TestTube,
+    icon: Droplets,
     href: '/collections/skin-care',
-    color: 'from-burgundy/20 to-burgundy/5',
   },
   {
     id: 'niche-fragrance',
     name: 'Niche Fragrance',
     nameAr: 'العطور الفاخرة',
-    icon: Sparkles,
+    icon: Flower2,
     href: '/collections/fragrances',
-    color: 'from-gold/20 to-gold/5',
   },
   {
     id: 'dermo-hair',
     name: 'Dermo-Hair',
     nameAr: 'العناية بالشعر',
-    icon: Scissors,
+    icon: Sparkle,
     href: '/collections/hair-care',
-    color: 'from-rose/20 to-rose/5',
   },
   {
     id: 'mother-child',
     name: 'Mother & Child',
     nameAr: 'الأم والطفل',
-    icon: Heart,
+    icon: Baby,
     href: '/collections/body-care',
-    color: 'from-cream to-white',
   },
 ];
 
@@ -63,14 +59,14 @@ export const CuratedCategories = () => {
               to={category.href}
               className="group flex flex-col items-center flex-shrink-0"
             >
-              {/* Circular Icon Container */}
-              <div className={`relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full overflow-hidden border-2 border-gold transition-all duration-400 group-hover:border-gold-light group-hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] bg-gradient-to-br ${category.color} flex items-center justify-center`}>
+              {/* Circular Icon Container - Instagram-style gradient */}
+              <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full overflow-hidden border border-gold/40 transition-all duration-400 group-hover:border-gold group-hover:shadow-[0_0_40px_rgba(212,175,55,0.3)] bg-gradient-to-br from-cream via-white to-cream flex items-center justify-center">
+                {/* Inner circle for depth */}
+                <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white to-cream/80 shadow-inner" />
                 <category.icon 
-                  className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-burgundy transition-transform duration-400 group-hover:scale-110" 
-                  strokeWidth={1.5} 
+                  className="relative z-10 w-9 h-9 md:w-11 md:h-11 lg:w-12 lg:h-12 text-burgundy/80 transition-all duration-400 group-hover:text-burgundy group-hover:scale-110" 
+                  strokeWidth={1.2} 
                 />
-                {/* Gold glow overlay on hover */}
-                <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/10 transition-colors duration-400 rounded-full" />
               </div>
               
               {/* Category Label */}
