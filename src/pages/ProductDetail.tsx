@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { Loader2, Minus, Plus, Heart, Star, ChevronDown } from "lucide-react";
+import { ShareButtons } from "@/components/ShareButtons";
 import { toast } from "sonner";
 import { getLocalizedDescription, extractKeyBenefits, getLocalizedCategory, translateTitle } from "@/lib/productUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -298,14 +299,20 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Review Stars */}
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex items-center gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-                  ))}
+              {/* Review Stars & Share */}
+              <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-gold text-gold" />
+                    ))}
+                  </div>
+                  <span className="font-body text-sm text-muted-foreground">(128 Reviews)</span>
                 </div>
-                <span className="font-body text-sm text-muted-foreground">(128 Reviews)</span>
+                <ShareButtons 
+                  url={window.location.href} 
+                  title={`${isArabic ? 'اكتشف' : 'Check out'} ${product.title} ${isArabic ? 'من آسبر بيوتي' : 'from Asper Beauty'}`}
+                />
               </div>
 
               {/* Short Description */}
