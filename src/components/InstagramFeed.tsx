@@ -1,5 +1,5 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Instagram } from "lucide-react";
+import { Instagram, Heart } from "lucide-react";
 
 export const InstagramFeed = () => {
   const { language } = useLanguage();
@@ -39,7 +39,7 @@ export const InstagramFeed = () => {
   ];
 
   return (
-    <section className="py-16 bg-cream">
+    <section className="py-16 bg-cream overflow-hidden">
       <div className="luxury-container">
         <div className="text-center mb-10">
           <h2 className="luxury-heading text-3xl md:text-4xl mb-3">
@@ -49,46 +49,87 @@ export const InstagramFeed = () => {
             href="https://www.instagram.com/asper.beauty.shop/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium"
+            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors font-medium group"
           >
-            <Instagram className="w-5 h-5" />
+            <Instagram className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             @asper.beauty.shop
           </a>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {instagramPosts.map((post) => (
+          {instagramPosts.map((post, index) => (
             <a
               key={post.id}
               href="https://www.instagram.com/asper.beauty.shop/"
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative aspect-square overflow-hidden rounded-lg"
+              className="group relative aspect-square overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-all duration-500"
+              style={{ 
+                animationDelay: `${index * 100}ms`,
+              }}
             >
+              {/* Image with filters */}
               <img
                 src={post.image}
                 alt="Instagram post"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-all duration-700 ease-out 
+                  group-hover:scale-125 group-hover:rotate-2
+                  filter saturate-100 group-hover:saturate-[1.2] group-hover:brightness-90"
               />
-              <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/50 transition-colors duration-300 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-cream flex items-center gap-1">
-                  <Instagram className="w-5 h-5" />
-                  <span className="font-medium">{post.likes}</span>
+              
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent 
+                opacity-0 group-hover:opacity-100 transition-all duration-500" />
+              
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                bg-gradient-to-r from-transparent via-white/20 to-transparent
+                -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+              
+              {/* Content overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                {/* Instagram icon with animation */}
+                <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 
+                  transition-all duration-500 ease-out">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center
+                    border border-white/30 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Instagram className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                
+                {/* Likes with heart animation */}
+                <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 
+                  transition-all duration-500 delay-100 ease-out flex items-center gap-2 text-white">
+                  <Heart className="w-4 h-4 fill-red-500 text-red-500 group-hover:animate-pulse" />
+                  <span className="font-display text-lg">{post.likes}</span>
                 </div>
               </div>
+              
+              {/* Corner accent */}
+              <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-gold/40 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+              
+              {/* Border glow effect */}
+              <div className="absolute inset-0 rounded-xl border-2 border-transparent 
+                group-hover:border-gold/50 transition-colors duration-500" />
             </a>
           ))}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-10">
           <a
             href="https://www.instagram.com/asper.beauty.shop/"
             target="_blank"
             rel="noopener noreferrer"
-            className="luxury-button luxury-button-secondary inline-flex items-center gap-2"
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 
+              text-white font-display text-sm tracking-widest uppercase rounded-full
+              shadow-lg hover:shadow-xl hover:shadow-pink-500/25 
+              transform hover:-translate-y-1 transition-all duration-400"
           >
-            <Instagram className="w-4 h-4" />
-            {isArabic ? "تابعنا" : "Follow Us"}
+            <Instagram className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+            {isArabic ? "تابعنا على انستغرام" : "Follow on Instagram"}
           </a>
         </div>
       </div>
