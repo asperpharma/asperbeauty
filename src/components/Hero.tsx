@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
+import { Volume2, VolumeX } from "lucide-react";
 
 // Hero assets
 import heroLifestyle from "@/assets/hero/hero-lifestyle.webp";
@@ -16,7 +17,16 @@ export const Hero = () => {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [scrollY, setScrollY] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
 
   // Enhanced parallax effect with multiple layers
   useEffect(() => {
@@ -60,8 +70,9 @@ export const Hero = () => {
         >
           {USE_VIDEO_BACKGROUND ? (
             <video
+              ref={videoRef}
               autoPlay
-              muted
+              muted={isMuted}
               loop
               playsInline
               poster={heroLifestyle}
@@ -214,6 +225,37 @@ export const Hero = () => {
           <div className="w-1.5 h-3 bg-gold rounded-full animate-bounce" />
         </div>
       </div>
+
+      {/* Video Sound Control Button */}
+      {USE_VIDEO_BACKGROUND && (
+        <button
+          onClick={toggleMute}
+          className={`absolute bottom-8 right-8 z-20 w-12 h-12 rounded-full 
+            flex items-center justify-center transition-all duration-300
+            backdrop-blur-sm border border-cream/30
+            ${isMuted 
+              ? 'bg-cream/10 hover:bg-cream/20' 
+              : 'bg-gold/80 hover:bg-gold'
+            }
+            group shadow-lg hover:shadow-xl hover:scale-110`}
+          aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+        >
+          {isMuted ? (
+            <VolumeX className="w-5 h-5 text-cream group-hover:scale-110 transition-transform" />
+          ) : (
+            <Volume2 className="w-5 h-5 text-burgundy group-hover:scale-110 transition-transform" />
+          )}
+          
+          {/* Tooltip */}
+          <span className="absolute bottom-full mb-2 px-3 py-1 bg-foreground text-cream text-xs font-body 
+            rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            {isMuted 
+              ? (isArabic ? 'تشغيل الصوت' : 'Unmute') 
+              : (isArabic ? 'كتم الصوت' : 'Mute')
+            }
+          </span>
+        </button>
+      )}
     </section>
   );
 };
