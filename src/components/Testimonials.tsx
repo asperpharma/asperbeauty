@@ -55,10 +55,10 @@ export const Testimonials = () => {
   const isArabic = language === "ar";
 
   return (
-    <section className="py-20 lg:py-28 bg-burgundy">
+    <section className="py-20 lg:py-28 bg-burgundy overflow-hidden">
       <div className="luxury-container">
         {/* Section Header */}
-        <AnimatedSection className="text-center mb-16">
+        <AnimatedSection className="text-center mb-16" animation="slide-up" duration={800}>
           <span className="font-script text-2xl lg:text-3xl text-gold block mb-2">
             {isArabic ? 'ماذا يقول عملاؤنا' : 'What Our Clients Say'}
           </span>
@@ -71,7 +71,7 @@ export const Testimonials = () => {
         {/* Testimonial Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <AnimatedSection key={testimonial.id} animation="fade-up" delay={index * 150}>
+            <AnimatedSection key={testimonial.id} animation="zoom" delay={index * 200} duration={800}>
               <div className="bg-cream/5 backdrop-blur-sm border border-gold/20 rounded-lg p-8 transition-all duration-400 hover:border-gold/50 hover:bg-cream/10 group h-full">
                 {/* Quote Icon */}
                 <div className="text-gold/30 mb-6">
@@ -124,11 +124,11 @@ export const Testimonials = () => {
         </div>
 
         {/* Bottom Accent */}
-        <AnimatedSection animation="fade" delay={500} className="flex flex-col items-center mt-16">
+        <AnimatedSection animation="blur" delay={700} duration={1000} className="flex flex-col items-center mt-16">
           <div className="flex items-center gap-3">
             <div className="w-12 h-px bg-gradient-to-r from-transparent to-gold/50" />
             <span className="font-script text-2xl text-gold">
-              Elegance in every detail
+              {isArabic ? 'الأناقة في كل تفصيل' : 'Elegance in every detail'}
             </span>
             <div className="w-12 h-px bg-gradient-to-l from-transparent to-gold/50" />
           </div>

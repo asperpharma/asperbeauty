@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
 interface AnimatedSectionProps {
   children: ReactNode;
   className?: string;
-  animation?: "fade-up" | "fade-left" | "fade-right" | "scale" | "fade";
+  animation?: "fade-up" | "fade-left" | "fade-right" | "scale" | "fade" | "zoom" | "blur" | "slide-up";
   delay?: number;
+  duration?: number;
+  threshold?: number;
 }
 
 export const AnimatedSection = ({
@@ -14,9 +16,10 @@ export const AnimatedSection = ({
   className,
   animation = "fade-up",
   delay = 0,
+  duration = 700,
+  threshold = 0.1,
 }: AnimatedSectionProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { ref, isVisible } = useScrollAnimation();
+  const { ref, isVisible } = useScrollAnimation({ threshold });
 
   // Assign ref to container
   const setRef = (node: HTMLDivElement | null) => {
@@ -24,24 +27,30 @@ export const AnimatedSection = ({
   };
 
   const animationClasses = {
-    "fade-up": "translate-y-8 opacity-0",
-    "fade-left": "-translate-x-8 opacity-0",
-    "fade-right": "translate-x-8 opacity-0",
-    "scale": "scale-95 opacity-0",
+    "fade-up": "translate-y-12 opacity-0",
+    "fade-left": "-translate-x-12 opacity-0",
+    "fade-right": "translate-x-12 opacity-0",
+    "scale": "scale-90 opacity-0",
     "fade": "opacity-0",
+    "zoom": "scale-75 opacity-0 blur-sm",
+    "blur": "opacity-0 blur-md",
+    "slide-up": "translate-y-20 opacity-0 scale-95",
   };
 
-  const visibleClasses = "translate-y-0 translate-x-0 scale-100 opacity-100";
+  const visibleClasses = "translate-y-0 translate-x-0 scale-100 opacity-100 blur-0";
 
   return (
     <div
       ref={setRef}
       className={cn(
-        "transition-all duration-700 ease-out",
+        "transition-all ease-out will-change-transform",
         isVisible ? visibleClasses : animationClasses[animation],
         className
       )}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{ 
+        transitionDelay: `${delay}ms`,
+        transitionDuration: `${duration}ms`,
+      }}
     >
       {children}
     </div>
