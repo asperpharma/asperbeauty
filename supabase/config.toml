@@ -1,1 +1,7 @@
 project_id = "rgehleqcubtmcwyipyvi"
+
+[functions.beauty-assistant]
+verify_jwt = false
+
+[functions.bulk-product-upload]
+verify_jwt = false
