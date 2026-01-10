@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnimatedSection } from "./AnimatedSection";
+import { LazyImage } from "./LazyImage";
 
 // Product images
 import anthelios from "@/assets/products/anthelios-uvmune.webp";
@@ -74,13 +75,14 @@ export const AmmanEdit = () => {
                 <div className="relative overflow-hidden rounded-lg transition-all duration-500">
                   {/* Image Container with hover effect */}
                   <div className="aspect-[3/4] bg-[#f5f5f5] group-hover:bg-[#D4AF37] transition-colors duration-500 p-6">
-                    <img
+                    <LazyImage
                       src={product.image}
                       alt={isArabic ? product.nameAr : product.name}
                       className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                       width={640}
                       height={960}
+                      skeletonClassName="rounded-lg"
                     />
                   </div>
                   

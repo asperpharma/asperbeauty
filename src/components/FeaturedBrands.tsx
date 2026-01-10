@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection } from "./AnimatedSection";
+import { LazyImage } from "./LazyImage";
 
 // Brand logos
 import vichyLogo from "@/assets/brands/vichy-logo.webp";
@@ -127,13 +128,14 @@ export const FeaturedBrands = () => {
                   <div className="w-40 lg:w-48 rounded-xl p-6 lg:p-8 border border-gold/10 bg-cream/30 transition-all duration-400 hover:border-gold/40 hover:shadow-xl hover:bg-white text-center">
                     {/* Brand Logo */}
                     <div className="h-20 lg:h-24 flex items-center justify-center mb-4">
-                      <img 
+                      <LazyImage 
                         src={brand.logo} 
                         alt={brand.name}
                         className="max-h-full max-w-full object-contain transition-transform duration-400 group-hover/brand:scale-110"
                         loading="lazy"
                         width={150}
                         height={80}
+                        skeletonClassName="rounded"
                       />
                     </div>
                     
