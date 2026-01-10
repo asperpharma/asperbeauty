@@ -82,10 +82,10 @@ export const FeaturedBrands = () => {
   };
 
   return (
-    <section className="py-16 lg:py-20 bg-white">
+    <section className="py-16 lg:py-20 bg-white overflow-hidden">
       <div className="luxury-container">
         {/* Section Header */}
-        <AnimatedSection className="text-center mb-12">
+        <AnimatedSection className="text-center mb-12" animation="slide-up" duration={800}>
           <span className="font-script text-2xl text-gold mb-2 block">
             {isArabic ? 'علامات تجارية فاخرة' : 'Luxury Brands'}
           </span>
@@ -96,7 +96,7 @@ export const FeaturedBrands = () => {
         </AnimatedSection>
 
         {/* Carousel Container */}
-        <AnimatedSection animation="fade-up" delay={200}>
+        <AnimatedSection animation="fade-up" delay={200} duration={900}>
           <div className="relative group">
             {/* Navigation Arrows - Desktop */}
             <button 
@@ -151,13 +151,13 @@ export const FeaturedBrands = () => {
         </AnimatedSection>
 
         {/* View All Brands Link */}
-        <AnimatedSection animation="fade" delay={400} className="text-center mt-10">
+        <AnimatedSection animation="zoom" delay={500} duration={800} className="text-center mt-10">
           <Link 
             to="/brands" 
-            className="inline-flex items-center gap-2 font-body text-sm text-foreground hover:text-gold transition-colors duration-400 uppercase tracking-widest"
+            className="inline-flex items-center gap-2 font-body text-sm text-foreground hover:text-gold transition-colors duration-400 uppercase tracking-widest group"
           >
             {isArabic ? 'عرض جميع العلامات' : 'View All Brands'}
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </AnimatedSection>
       </div>
