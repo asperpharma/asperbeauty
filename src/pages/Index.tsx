@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { AmmanEdit } from "@/components/AmmanEdit";
@@ -10,10 +11,26 @@ import { Footer } from "@/components/Footer";
 import { BeautyAssistant } from "@/components/BeautyAssistant";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { FloatingSocials } from "@/components/FloatingSocials";
+import { PageLoadingSkeleton } from "@/components/PageLoadingSkeleton";
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial page load with minimum skeleton display time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <PageLoadingSkeleton />;
+  }
+
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream animate-fade-in">
       <Header />
       <main className="pt-28 md:pt-32 lg:pt-36">
         <Hero />
