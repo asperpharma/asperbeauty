@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 
 // Hero image - WebP for better compression
-import heroSlide1 from "@/assets/hero/hero-slide-1.webp";
+import heroSlide1 from "@/assets/hero/hero-slide-1-new.webp";
 
 export const Hero = () => {
   const { language } = useLanguage();
