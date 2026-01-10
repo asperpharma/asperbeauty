@@ -8,7 +8,7 @@ import { Newsletter } from "@/components/Newsletter";
 import { TrustBanner } from "@/components/TrustBanner";
 import { Footer } from "@/components/Footer";
 import { BeautyAssistant } from "@/components/BeautyAssistant";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
@@ -25,7 +25,7 @@ const Index = () => {
       </main>
       <Footer />
       <BeautyAssistant />
-      <WhatsAppButton />
+      <ScrollToTop />
     </div>
   );
 };
