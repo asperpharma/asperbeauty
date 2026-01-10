@@ -9,6 +9,7 @@ import { TrustBanner } from "@/components/TrustBanner";
 import { Footer } from "@/components/Footer";
 import { BeautyAssistant } from "@/components/BeautyAssistant";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { FloatingSocials } from "@/components/FloatingSocials";
 
 const Index = () => {
   return (
@@ -26,6 +27,7 @@ const Index = () => {
       <Footer />
       <BeautyAssistant />
       <ScrollToTop />
+      <FloatingSocials />
     </div>
   );
 };
