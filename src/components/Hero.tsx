@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
@@ -8,20 +9,41 @@ import heroLifestyle from "@/assets/hero/hero-lifestyle.webp";
 export const Hero = () => {
   const { language } = useLanguage();
   const isArabic = language === "ar";
+  const parallaxRef = useRef<HTMLDivElement>(null);
+
+  // Parallax effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (parallaxRef.current) {
+        const scrolled = window.scrollY;
+        const rate = scrolled * 0.4;
+        parallaxRef.current.style.transform = `translateY(${rate}px) scale(1.1)`;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <section className="relative min-h-[70vh] lg:min-h-[85vh] overflow-hidden">
-      {/* Full-width background image */}
-      <div className="absolute inset-0">
-        <img
-          src={heroLifestyle}
-          alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
-          className="w-full h-full object-cover"
-          fetchPriority="high"
-          width={1920}
-          height={1080}
-          decoding="async"
-        />
+      {/* Full-width background image with parallax */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          ref={parallaxRef}
+          className="absolute inset-0 scale-110 will-change-transform"
+          style={{ transform: 'translateY(0) scale(1.1)' }}
+        >
+          <img
+            src={heroLifestyle}
+            alt={isArabic ? 'مجموعة الجمال الفاخرة' : 'Luxury Beauty Collection'}
+            className="w-full h-full object-cover"
+            fetchPriority="high"
+            width={1920}
+            height={1080}
+            decoding="async"
+          />
+        </div>
         {/* Gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-burgundy/70 via-burgundy/40 to-transparent" />
       </div>
