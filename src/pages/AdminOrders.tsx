@@ -39,7 +39,8 @@ import {
   Mail,
   RefreshCw,
   Eye,
-  FileText
+  FileText,
+  Printer
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -187,6 +188,139 @@ export default function AdminOrders() {
   const filteredOrders = statusFilter === "all" 
     ? orders 
     : orders.filter(order => order.status === statusFilter);
+
+  // Print invoice
+  const printInvoice = (order: CODOrder) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Please allow popups to print invoices');
+      return;
+    }
+
+    const statusLabel = ORDER_STATUSES.find(s => s.value === order.status)?.label || order.status;
+    
+    const invoiceHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice - ${order.order_number}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+          .logo { font-size: 28px; font-weight: bold; color: #8B0000; }
+          .invoice-title { text-align: right; }
+          .invoice-title h1 { font-size: 24px; margin-bottom: 5px; }
+          .invoice-title p { color: #666; font-size: 14px; }
+          .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; }
+          .info-block { flex: 1; }
+          .info-block h3 { font-size: 14px; color: #666; margin-bottom: 10px; text-transform: uppercase; }
+          .info-block p { margin-bottom: 5px; font-size: 14px; }
+          .status-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #e8e8e8; }
+          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          .items-table th { text-align: left; padding: 12px; background: #f5f5f5; border-bottom: 2px solid #ddd; font-size: 12px; text-transform: uppercase; color: #666; }
+          .items-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+          .items-table .item-name { font-weight: 500; }
+          .items-table .item-variant { color: #666; font-size: 12px; }
+          .items-table .text-right { text-align: right; }
+          .totals { margin-left: auto; width: 300px; }
+          .totals-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+          .totals-row.total { border-top: 2px solid #333; margin-top: 10px; padding-top: 15px; font-size: 18px; font-weight: bold; }
+          .footer { margin-top: 50px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+          .notes { background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 30px; }
+          .notes h3 { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; }
+          @media print {
+            body { padding: 20px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">ASPER Beauty</div>
+          <div class="invoice-title">
+            <h1>INVOICE</h1>
+            <p>${order.order_number}</p>
+            <p>${format(new Date(order.created_at), 'MMMM d, yyyy')}</p>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-block">
+            <h3>Bill To</h3>
+            <p><strong>${order.customer_name}</strong></p>
+            <p>${order.delivery_address}</p>
+            <p>${order.city}</p>
+            <p>${order.customer_phone}</p>
+            ${order.customer_email ? `<p>${order.customer_email}</p>` : ''}
+          </div>
+          <div class="info-block" style="text-align: right;">
+            <h3>Order Status</h3>
+            <span class="status-badge">${statusLabel}</span>
+          </div>
+        </div>
+
+        ${order.notes ? `
+        <div class="notes">
+          <h3>Order Notes</h3>
+          <p>${order.notes}</p>
+        </div>
+        ` : ''}
+
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="text-right">Price</th>
+              <th class="text-right">Qty</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${order.items.map(item => `
+              <tr>
+                <td>
+                  <div class="item-name">${item.productTitle}</div>
+                  ${item.variantTitle !== "Default Title" ? `<div class="item-variant">${item.selectedOptions.map(o => o.value).join(' / ')}</div>` : ''}
+                </td>
+                <td class="text-right">${parseFloat(item.price).toFixed(2)} JOD</td>
+                <td class="text-right">${item.quantity}</td>
+                <td class="text-right">${(parseFloat(item.price) * item.quantity).toFixed(2)} JOD</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="totals-row">
+            <span>Subtotal</span>
+            <span>${order.subtotal.toFixed(2)} JOD</span>
+          </div>
+          <div class="totals-row">
+            <span>Shipping</span>
+            <span>${order.shipping_cost > 0 ? order.shipping_cost.toFixed(2) + ' JOD' : 'Free'}</span>
+          </div>
+          <div class="totals-row total">
+            <span>Total</span>
+            <span>${order.total.toFixed(2)} JOD</span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Thank you for shopping with ASPER Beauty!</p>
+          <p style="margin-top: 5px;">Payment Method: Cash on Delivery</p>
+        </div>
+
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(invoiceHTML);
+    printWindow.document.close();
+  };
 
   // Get status badge
   const getStatusBadge = (status: string) => {
@@ -422,13 +556,24 @@ export default function AdminOrders() {
                           {format(new Date(order.created_at), 'MMM d, yyyy')}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedOrder(order)}
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => printInvoice(order)}
+                              title="Print Invoice"
+                            >
+                              <Printer className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -544,8 +689,14 @@ export default function AdminOrders() {
                 </div>
 
                 {/* Order Date */}
-                <div className="text-sm text-muted-foreground text-center">
-                  Order placed on {format(new Date(selectedOrder.created_at), 'MMMM d, yyyy at h:mm a')}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Order placed on {format(new Date(selectedOrder.created_at), 'MMMM d, yyyy at h:mm a')}
+                  </span>
+                  <Button onClick={() => printInvoice(selectedOrder)} className="gap-2">
+                    <Printer className="w-4 h-4" />
+                    Print Invoice
+                  </Button>
                 </div>
               </div>
             </>
