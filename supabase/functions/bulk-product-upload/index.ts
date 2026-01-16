@@ -130,6 +130,67 @@ serve(async (req) => {
   }
 
   try {
+    // ==================== AUTHENTICATION ====================
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      console.error("Missing or invalid Authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Missing or invalid token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize Supabase clients
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Client for auth verification (uses user's token)
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    
+    // Verify the user's token
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+
+    if (userError || !user) {
+      console.error("Token verification failed:", userError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Invalid token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+    console.log("Authenticated user:", userId);
+
+    // ==================== AUTHORIZATION (Admin Check) ====================
+    // Use service role client to check user roles (bypasses RLS)
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+
+    if (roleError && roleError.code !== "PGRST116") {
+      // PGRST116 means no rows found - that's expected for non-admin users
+      console.error("Role check error:", roleError);
+    }
+
+    const isAdmin = roleData?.role === "admin";
+    if (!isAdmin) {
+      console.error("User is not an admin:", userId);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: Admin access required for bulk operations" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Admin access verified for user:", userId);
+
+    // ==================== PROCESS REQUEST ====================
     const requestData = await req.json();
     const { action } = requestData;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -138,10 +199,8 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Service role client for storage and other operations
+    const supabase = supabaseAdmin;
 
     // Shopify Admin API configuration
     const SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ACCESS_TOKEN");

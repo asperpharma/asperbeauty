@@ -275,19 +275,38 @@ export default function BulkUpload() {
     setProgress({ current: 0, total: rawData.length, stage: "Categorizing products..." });
 
     try {
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast.error("Please log in as an admin to use bulk upload");
+        setIsProcessing(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { action: "categorize", products: rawData },
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       setProducts(data.products);
       setSummary(data.summary);
       toast.success(`Categorized ${data.products.length} products into ${Object.keys(data.summary.categories).length} categories`);
       setStep("images");
-    } catch (error) {
-      toast.error("Failed to categorize products");
+    } catch (error: any) {
       console.error(error);
+      if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
+        toast.error("Authentication required. Please log in.");
+      } else if (error.message?.includes("403") || error.message?.includes("Forbidden")) {
+        toast.error("Admin access required for bulk operations.");
+      } else {
+        toast.error("Failed to categorize products");
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -339,6 +358,14 @@ export default function BulkUpload() {
 
   // Upload to Shopify using the edge function
   const uploadToShopify = useCallback(async () => {
+    // Get current session for authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+      toast.error("Please log in as an admin to upload to Shopify");
+      return;
+    }
+
     setIsShopifyUploading(true);
     setShopifyErrors([]);
     const readyProducts = products.filter(p => p.status === "completed" && p.imageUrl);
@@ -374,6 +401,9 @@ export default function BulkUpload() {
         try {
           // Call edge function to create Shopify product
           const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
             body: { 
               action: "create-shopify-product", 
               product: {
@@ -403,6 +433,14 @@ export default function BulkUpload() {
           
         } catch (error: any) {
           console.error(`Failed to create ${product.name}:`, error);
+          
+          // Check for auth errors and stop if unauthorized
+          if (error.message?.includes("401") || error.message?.includes("403") || error.message?.includes("Unauthorized") || error.message?.includes("Forbidden")) {
+            toast.error("Authorization failed. Please log in as an admin.");
+            setIsShopifyUploading(false);
+            return;
+          }
+          
           errors.push({
             sku: product.sku,
             name: product.name,

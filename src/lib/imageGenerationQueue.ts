@@ -244,7 +244,17 @@ class ImageGenerationQueue {
     const startTime = Date.now();
     
     try {
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        return { success: false, error: "Not authenticated. Please log in as admin." };
+      }
+
       const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: {
           action: "generate-image",
           productName: item.name,
@@ -263,11 +273,16 @@ class ImageGenerationQueue {
       if (error) {
         console.error(`Error generating image for ${item.name}:`, error);
         const isRateLimited = error.message?.includes("429") || error.message?.includes("rate");
-        return { success: false, error: error.message, rateLimited: isRateLimited };
+        const isAuthError = error.message?.includes("401") || error.message?.includes("403") || error.message?.includes("Unauthorized") || error.message?.includes("Forbidden");
+        return { success: false, error: error.message, rateLimited: isRateLimited && !isAuthError };
       }
 
       if (data?.imageUrl) {
         return { success: true, imageUrl: data.imageUrl };
+      }
+
+      if (data?.error) {
+        return { success: false, error: data.error };
       }
 
       return { success: false, error: "No image URL returned" };
