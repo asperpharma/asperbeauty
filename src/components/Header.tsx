@@ -1,4 +1,4 @@
-import { ShoppingBag, Menu, X, Search, User, Heart, ChevronDown, Instagram, Facebook, MessageCircle } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, Heart, ChevronDown, Instagram, Facebook, MessageCircle, Settings, Upload, ClipboardList } from "lucide-react";
 
 // TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -15,8 +15,7 @@ import { WishlistDrawer } from "./WishlistDrawer";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchDropdown } from "./SearchDropdown";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { supabase } from "@/integrations/supabase/client";
-import { User as UserType } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/useAuth";
 import asperLogoHorizontal from "@/assets/asper-logo-horizontal.jpg";
 import { PromotionBar } from "./PromotionBar";
 
@@ -26,28 +25,27 @@ export const Header = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [user, setUser] = useState<UserType | null>(null);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { user, isAdmin } = useAuth();
   const totalItems = useCartStore(state => state.getTotalItems());
   const wishlistItems = useWishlistStore(state => state.items);
   const setCartOpen = useCartStore(state => state.setOpen);
   const setWishlistOpen = useWishlistStore(state => state.setOpen);
   const { language, isRTL } = useLanguage();
 
+  // Close admin menu when clicking outside
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setAdminMenuOpen(false);
       }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const navItems = [
@@ -200,6 +198,41 @@ export const Header = () => {
 
             {/* Icons - Right (Gold outline) */}
             <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Admin Menu - Only visible for admins */}
+              {isAdmin && (
+                <div className="relative" ref={adminMenuRef}>
+                  <button
+                    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                    className="p-2 text-gold hover:text-gold-light transition-colors duration-400"
+                    title="Admin"
+                  >
+                    <Settings className="w-5 h-5" strokeWidth={1.5} />
+                  </button>
+                  
+                  {/* Admin Dropdown */}
+                  {adminMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gold/20 py-2 z-50">
+                      <Link
+                        to="/admin/bulk-upload"
+                        onClick={() => setAdminMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal hover:bg-cream hover:text-burgundy transition-colors"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {language === 'ar' ? 'رفع المنتجات' : 'Bulk Upload'}
+                      </Link>
+                      <Link
+                        to="/admin/orders"
+                        onClick={() => setAdminMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal hover:bg-cream hover:text-burgundy transition-colors"
+                      >
+                        <ClipboardList className="w-4 h-4" />
+                        {language === 'ar' ? 'الطلبات' : 'Orders'}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Account Icon */}
               <Link 
                 to={user ? "/account" : "/auth"}
@@ -484,6 +517,36 @@ export const Header = () => {
                   {user ? (language === 'ar' ? 'حسابي' : 'My Account') : (language === 'ar' ? 'تسجيل الدخول' : 'Sign In')}
                 </Link>
               </li>
+              {/* Admin Links - Only visible for admins */}
+              {isAdmin && (
+                <>
+                  <li className="border-t border-gold/30 mt-2 pt-2">
+                    <span className="block px-3 py-2 text-sm text-gold/60 font-body">
+                      {language === 'ar' ? 'لوحة الإدارة' : 'Admin Panel'}
+                    </span>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/bulk-upload"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 py-3 px-3 font-display text-lg text-white hover:text-gold transition-colors duration-400"
+                    >
+                      <Upload className="w-5 h-5" />
+                      {language === 'ar' ? 'رفع المنتجات' : 'Bulk Upload'}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/orders"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 py-3 px-3 font-display text-lg text-white hover:text-gold transition-colors duration-400"
+                    >
+                      <ClipboardList className="w-5 h-5" />
+                      {language === 'ar' ? 'الطلبات' : 'Orders'}
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
 

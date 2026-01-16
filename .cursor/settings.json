@@ -1,0 +1,15 @@
+{
+  "workspace": {
+    "name": "Asper Beauty Shop",
+    "type": "react-typescript",
+    "framework": "vite"
+  },
+  "editor": {
+    "formatOnSave": true,
+    "tabSize": 2
+  },
+  "typescript": {
+    "enabled": true,
+    "strict": true
+  }
+}
