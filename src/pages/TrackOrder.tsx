@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Package, MapPin, Calendar, Loader2, AlertCircle } from "lucide-react";
+import { Search, Package, MapPin, Calendar, Loader2, AlertCircle, Key } from "lucide-react";
 import { format } from "date-fns";
 
 interface OrderItem {
@@ -46,10 +46,44 @@ const statusConfig: Record<string, { label: string; color: string; labelAr: stri
 const TrackOrder = () => {
   const [searchParams] = useSearchParams();
   const [orderNumber, setOrderNumber] = useState(searchParams.get("order") || "");
-  const [phone, setPhone] = useState("");
+  const [token, setToken] = useState(searchParams.get("token") || "");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Auto-track if both order and token are provided in URL
+  useEffect(() => {
+    const urlOrder = searchParams.get("order");
+    const urlToken = searchParams.get("token");
+    if (urlOrder && urlToken) {
+      setOrderNumber(urlOrder);
+      setToken(urlToken);
+      handleAutoTrack(urlOrder, urlToken);
+    }
+  }, [searchParams]);
+
+  const handleAutoTrack = async (orderNum: string, confirmToken: string) => {
+    setLoading(true);
+    setError("");
+    setOrder(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("get-order-status", {
+        body: { orderNumber: orderNum, token: confirmToken },
+      });
+
+      if (fnError || data?.error) {
+        setError(data?.error || "Failed to find order. Please check your details.");
+        return;
+      }
+
+      setOrder(data.order);
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +93,7 @@ const TrackOrder = () => {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke("get-order-status", {
-        body: { orderNumber, phone },
+        body: { orderNumber, token },
       });
 
       if (fnError || data?.error) {
@@ -90,7 +124,7 @@ const TrackOrder = () => {
             <Package className="h-12 w-12 text-primary mx-auto mb-4" />
             <h1 className="text-3xl font-serif text-foreground mb-2">Track Your Order</h1>
             <p className="text-muted-foreground">
-              Enter your order number and phone to view your order status
+              Enter your order number and confirmation token to view your order status
             </p>
           </div>
 
@@ -108,15 +142,21 @@ const TrackOrder = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="token" className="flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    Confirmation Token
+                  </Label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="e.g., 079XXXXXXX"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    id="token"
+                    placeholder="Check your confirmation email"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
                     required
+                    className="font-mono text-sm"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    You can find this token in your order confirmation email
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (

@@ -12,11 +12,23 @@ serve(async (req) => {
   }
 
   try {
-    const { orderNumber, phone } = await req.json();
+    const { orderNumber, token } = await req.json();
 
-    if (!orderNumber || !phone) {
+    // Validate required fields
+    if (!orderNumber || !token) {
+      console.log("Missing required fields:", { orderNumber: !!orderNumber, token: !!token });
       return new Response(
-        JSON.stringify({ error: "Order number and phone are required" }),
+        JSON.stringify({ error: "Order number and confirmation token are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate token format (UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(token)) {
+      console.log("Invalid token format:", token);
+      return new Response(
+        JSON.stringify({ error: "Invalid confirmation token format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -25,38 +37,23 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Clean phone number for comparison (remove spaces, dashes)
-    const cleanPhone = phone.replace(/[\s-]/g, "");
-
+    // Lookup order by order number AND confirmation token (secure token-based verification)
     const { data: order, error } = await supabase
       .from("cod_orders")
       .select("order_number, status, items, subtotal, shipping_cost, total, city, delivery_address, created_at, updated_at")
-      .eq("order_number", orderNumber.toUpperCase())
+      .eq("order_number", orderNumber.toUpperCase().trim())
+      .eq("confirmation_token", token)
       .single();
 
     if (error || !order) {
+      console.log("Order not found or token mismatch:", { orderNumber, error: error?.message });
       return new Response(
-        JSON.stringify({ error: "Order not found" }),
+        JSON.stringify({ error: "Order not found. Please check your order number and confirmation token." }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify phone number matches (basic security)
-    const { data: fullOrder } = await supabase
-      .from("cod_orders")
-      .select("customer_phone")
-      .eq("order_number", orderNumber.toUpperCase())
-      .single();
-
-    if (fullOrder) {
-      const orderPhone = fullOrder.customer_phone.replace(/[\s-]/g, "");
-      if (!orderPhone.includes(cleanPhone.slice(-9)) && !cleanPhone.includes(orderPhone.slice(-9))) {
-        return new Response(
-          JSON.stringify({ error: "Phone number does not match order" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
+    console.log("Order found successfully:", order.order_number);
 
     return new Response(
       JSON.stringify({ order }),

@@ -76,13 +76,15 @@ async function verifyHCaptcha(token: string): Promise<boolean> {
 function generateOrderEmailHtml(
   customerName: string,
   orderNumber: string,
+  confirmationToken: string,
   items: OrderItem[],
   subtotal: number,
   shippingCost: number,
   total: number,
   deliveryAddress: string,
   city: string,
-  customerPhone: string
+  customerPhone: string,
+  trackingUrl: string
 ): string {
   const itemsHtml = items.map(item => `
     <tr>
@@ -193,6 +195,19 @@ function generateOrderEmailHtml(
                 <p style="margin: 8px 0 0; color: #666; font-size: 14px;">Please have ${total.toFixed(2)} JOD ready upon delivery</p>
               </div>
               
+              <!-- Track Order Button -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <a href="${trackingUrl}" style="display: inline-block; background: linear-gradient(135deg, #4A0E19 0%, #6b1525 100%); color: #D4AF37; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                  📦 Track Your Order
+                </a>
+              </div>
+
+              <!-- Confirmation Token -->
+              <div style="background-color: #f0f8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 30px;">
+                <p style="margin: 0 0 5px; color: #666; font-size: 13px;">Your Confirmation Token (for tracking)</p>
+                <p style="margin: 0; color: #2c5282; font-size: 12px; font-family: monospace; word-break: break-all;">${confirmationToken}</p>
+              </div>
+              
               <!-- What's Next -->
               <div style="background-color: #f8f5f2; border-radius: 8px; padding: 20px;">
                 <h4 style="margin: 0 0 15px; color: #4A0E19; font-size: 16px;">What's Next?</h4>
@@ -228,13 +243,15 @@ async function sendOrderConfirmationEmail(
   customerEmail: string,
   customerName: string,
   orderNumber: string,
+  confirmationToken: string,
   items: OrderItem[],
   subtotal: number,
   shippingCost: number,
   total: number,
   deliveryAddress: string,
   city: string,
-  customerPhone: string
+  customerPhone: string,
+  siteUrl: string
 ): Promise<boolean> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   
@@ -251,16 +268,21 @@ async function sendOrderConfirmationEmail(
   try {
     const resend = new Resend(resendApiKey);
     
+    // Generate tracking URL
+    const trackingUrl = `${siteUrl}/track-order?order=${encodeURIComponent(orderNumber)}&token=${encodeURIComponent(confirmationToken)}`;
+    
     const emailHtml = generateOrderEmailHtml(
       customerName,
       orderNumber,
+      confirmationToken,
       items,
       subtotal,
       shippingCost,
       total,
       deliveryAddress,
       city,
-      customerPhone
+      customerPhone,
+      trackingUrl
     );
 
     const { data, error } = await resend.emails.send({
@@ -365,18 +387,23 @@ serve(async (req) => {
     console.log('Order created successfully:', order.order_number);
 
     // Send confirmation email (don't fail the order if email fails)
+    // Determine site URL from Supabase URL (convert API URL to site URL)
+    const siteUrl = 'https://asperbeautyshop.lovable.app'; // Production URL
+    
     if (data.customerEmail) {
       await sendOrderConfirmationEmail(
         data.customerEmail,
         data.customerName,
         order.order_number,
+        order.confirmation_token,
         sanitizedItems,
         data.subtotal,
         data.shippingCost,
         data.total,
         data.deliveryAddress,
         data.city,
-        data.customerPhone
+        data.customerPhone,
+        siteUrl
       );
     }
 
