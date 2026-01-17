@@ -1,89 +1,26 @@
-import { Plus, ShoppingBag, Star, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, ShoppingBag, Star, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { getProductImage } from "@/lib/productImageUtils";
 
-// Product data structure
+// Product type from Supabase
 interface Product {
   id: string;
   title: string;
   price: number;
-  description: string;
-  category: "New Arrival" | "Best Seller" | "Featured" | "Trending";
-  image: string;
+  description: string | null;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-// Mock product data with high-quality Unsplash images
-const products: Product[] = [
-  {
-    id: "1",
-    title: "Luxury Hydrating Serum",
-    price: 45.00,
-    description: "Intensive hydration formula with hyaluronic acid for all skin types.",
-    category: "Best Seller",
-    image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "2",
-    title: "Vitamin C Brightening Cream",
-    price: 52.00,
-    description: "Powerful antioxidant cream that illuminates and evens skin tone.",
-    category: "New Arrival",
-    image: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "3",
-    title: "Retinol Night Treatment",
-    price: 68.00,
-    description: "Advanced anti-aging formula that works while you sleep.",
-    category: "Best Seller",
-    image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "4",
-    title: "Rose Gold Eye Palette",
-    price: 38.00,
-    description: "Twelve shimmering shades for stunning eye looks day or night.",
-    category: "Trending",
-    image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "5",
-    title: "Nourishing Hair Oil",
-    price: 32.00,
-    description: "Lightweight argan blend that restores shine and softness.",
-    category: "Featured",
-    image: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "6",
-    title: "Signature Eau de Parfum",
-    price: 95.00,
-    description: "An enchanting blend of jasmine, amber, and warm vanilla notes.",
-    category: "New Arrival",
-    image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "7",
-    title: "Matte Velvet Lipstick",
-    price: 24.00,
-    description: "Long-lasting, richly pigmented color with a luxurious velvet finish.",
-    category: "Best Seller",
-    image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "8",
-    title: "SPF 50 Mineral Sunscreen",
-    price: 42.00,
-    description: "Lightweight, non-greasy protection with a natural matte finish.",
-    category: "Trending",
-    image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80"
-  }
-];
-
 // Badge styling based on category
-const getBadgeVariant = (category: Product["category"]) => {
+const getBadgeVariant = (category: string) => {
   switch (category) {
     case "Best Seller":
       return "bg-gold text-burgundy";
@@ -99,7 +36,7 @@ const getBadgeVariant = (category: Product["category"]) => {
 };
 
 // Badge icon based on category
-const getBadgeIcon = (category: Product["category"]) => {
+const getBadgeIcon = (category: string) => {
   switch (category) {
     case "Best Seller":
       return <Star className="w-3 h-3 fill-current" />;
@@ -111,8 +48,9 @@ const getBadgeIcon = (category: Product["category"]) => {
 };
 
 // ProductCard Component
-const SimpleProductCard = ({ product }: { product: Product }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   const { language } = useLanguage();
+  const imageUrl = getProductImage(product.image_url, product.category, product.title);
 
   const handleAddToCart = () => {
     toast.success(language === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', {
@@ -126,7 +64,7 @@ const SimpleProductCard = ({ product }: { product: Product }) => {
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-cream">
         <img
-          src={product.image}
+          src={imageUrl}
           alt={product.title}
           className="w-full h-full object-cover transition-transform duration-500 ease-luxury group-hover:scale-105"
           loading="lazy"
@@ -153,13 +91,13 @@ const SimpleProductCard = ({ product }: { product: Product }) => {
 
         {/* Description */}
         <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
-          {product.description}
+          {product.description || 'Premium quality beauty product.'}
         </p>
 
         {/* Price & Add to Cart */}
         <div className="flex items-center justify-between pt-2">
           <p className="font-display text-lg md:text-xl font-semibold text-burgundy">
-            JOD {product.price.toFixed(2)}
+            JOD {Number(product.price).toFixed(2)}
           </p>
           
           <Button
@@ -182,6 +120,32 @@ const SimpleProductCard = ({ product }: { product: Product }) => {
 // ProductCatalog Section Component
 export const ProductCatalog = () => {
   const { language } = useLanguage();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(8);
+
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (err: any) {
+        console.error('Error fetching products:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <section className="py-16 md:py-24 bg-cream relative overflow-hidden">
@@ -217,12 +181,39 @@ export const ProductCatalog = () => {
           </p>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-gold animate-spin" />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">
+              {language === 'ar' ? 'حدث خطأ في تحميل المنتجات' : 'Failed to load products'}
+            </p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && products.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">
+              {language === 'ar' ? 'لا توجد منتجات متاحة' : 'No products available'}
+            </p>
+          </div>
+        )}
+
         {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {products.map((product) => (
-            <SimpleProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {!isLoading && !error && products.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
         <div className="text-center mt-12 md:mt-16">

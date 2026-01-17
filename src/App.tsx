@@ -22,6 +22,7 @@ import Philosophy from "./pages/Philosophy";
 import BulkUpload from "./pages/BulkUpload";
 import AdminOrders from "./pages/AdminOrders";
 import TrackOrder from "./pages/TrackOrder";
+import ManageProducts from "./pages/ManageProducts";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/philosophy" element={<Philosophy />} />
             <Route path="/admin/bulk-upload" element={<BulkUpload />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/products" element={<ManageProducts />} />
             <Route path="/track-order" element={<TrackOrder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
