@@ -8,30 +8,114 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Validation schema for order data
+// ============================================================
+// RATE LIMITING - In-memory store (per instance)
+// ============================================================
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+// Rate limit config: 5 orders per 15 minutes per IP
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function getClientIP(req: Request): string {
+  // Try various headers for IP detection
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  if (xForwardedFor) {
+    return xForwardedFor.split(',')[0].trim();
+  }
+  const xRealIP = req.headers.get('x-real-ip');
+  if (xRealIP) {
+    return xRealIP.trim();
+  }
+  const cfConnectingIP = req.headers.get('cf-connecting-ip');
+  if (cfConnectingIP) {
+    return cfConnectingIP.trim();
+  }
+  return 'unknown';
+}
+
+function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const key = `order:${clientIP}`;
+  
+  // Clean up expired entries periodically
+  if (Math.random() < 0.1) {
+    for (const [k, v] of rateLimitStore.entries()) {
+      if (v.resetAt < now) {
+        rateLimitStore.delete(k);
+      }
+    }
+  }
+  
+  const entry = rateLimitStore.get(key);
+  
+  if (!entry || entry.resetAt < now) {
+    // Create new entry
+    rateLimitStore.set(key, {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetAt: now + RATE_LIMIT_WINDOW_MS };
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  }
+  
+  entry.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - entry.count, resetAt: entry.resetAt };
+}
+
+// ============================================================
+// VALIDATION SCHEMAS
+// ============================================================
 const orderItemSchema = z.object({
-  productId: z.string(),
-  productTitle: z.string(),
-  variantId: z.string(),
-  variantTitle: z.string().optional(),
-  price: z.string(),
-  currency: z.string(),
+  productId: z.string().min(1).max(100),
+  productTitle: z.string().min(1).max(200),
+  variantId: z.string().min(1).max(100),
+  variantTitle: z.string().max(100).optional(),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+  currency: z.string().length(3),
   quantity: z.number().int().positive().max(99),
   selectedOptions: z.record(z.string()).optional(),
   imageUrl: z.string().url().nullable().optional(),
 });
 
 const orderSchema = z.object({
-  customerName: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
-  customerPhone: z.string().trim().regex(/^07[789]\d{7}$/, "Invalid Jordanian phone number format"),
-  customerEmail: z.string().email("Invalid email").max(255).optional().or(z.literal('')),
-  deliveryAddress: z.string().trim().min(10, "Address must be at least 10 characters").max(500, "Address too long"),
+  customerName: z.string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name too long")
+    .regex(/^[a-zA-Z\u0600-\u06FF\s'-]+$/, "Name contains invalid characters"),
+  customerPhone: z.string()
+    .trim()
+    .regex(/^07[789]\d{7}$/, "Invalid Jordanian phone number format"),
+  customerEmail: z.string()
+    .email("Invalid email")
+    .max(255)
+    .optional()
+    .or(z.literal('')),
+  deliveryAddress: z.string()
+    .trim()
+    .min(10, "Address must be at least 10 characters")
+    .max(500, "Address too long"),
   city: z.enum([
     "Amman", "Zarqa", "Irbid", "Aqaba", "Salt", "Mafraq", 
     "Jerash", "Madaba", "Karak", "Ajloun", "Ma'an", "Tafilah"
   ], { errorMap: () => ({ message: "Invalid city" }) }),
-  notes: z.string().trim().max(500, "Notes too long").optional().or(z.literal('')),
-  items: z.array(orderItemSchema).min(1, "Cart cannot be empty").max(50, "Too many items"),
+  notes: z.string()
+    .trim()
+    .max(500, "Notes too long")
+    .optional()
+    .or(z.literal('')),
+  items: z.array(orderItemSchema)
+    .min(1, "Cart cannot be empty")
+    .max(50, "Too many items"),
   subtotal: z.number().positive().max(10000),
   shippingCost: z.number().min(0).max(100),
   total: z.number().positive().max(10100),
@@ -45,7 +129,9 @@ interface OrderItem {
   quantity: number;
 }
 
-// Verify hCaptcha token
+// ============================================================
+// CAPTCHA VERIFICATION
+// ============================================================
 async function verifyHCaptcha(token: string): Promise<boolean> {
   const secretKey = Deno.env.get('HCAPTCHA_SECRET_KEY');
   
@@ -72,7 +158,9 @@ async function verifyHCaptcha(token: string): Promise<boolean> {
   }
 }
 
-// Generate order confirmation email HTML
+// ============================================================
+// EMAIL GENERATION
+// ============================================================
 function generateOrderEmailHtml(
   customerName: string,
   orderNumber: string,
@@ -89,8 +177,8 @@ function generateOrderEmailHtml(
   const itemsHtml = items.map(item => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">
-        <strong>${item.productTitle}</strong>
-        ${item.variantTitle ? `<br><span style="color: #666; font-size: 13px;">${item.variantTitle}</span>` : ''}
+        <strong>${escapeHtml(item.productTitle)}</strong>
+        ${item.variantTitle ? `<br><span style="color: #666; font-size: 13px;">${escapeHtml(item.variantTitle)}</span>` : ''}
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${item.quantity}</td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right;">${parseFloat(item.price).toFixed(2)} JOD</td>
@@ -128,12 +216,12 @@ function generateOrderEmailHtml(
                   <span style="color: #28a745; font-size: 36px;">✓</span>
                 </div>
                 <h2 style="margin: 0; color: #4A0E19; font-size: 24px;">Order Confirmed!</h2>
-                <p style="margin: 10px 0 0; color: #666;">Thank you for your order, ${customerName}!</p>
+                <p style="margin: 10px 0 0; color: #666;">Thank you for your order, ${escapeHtml(customerName)}!</p>
               </div>
               
               <div style="background-color: #f8f5f2; border-radius: 8px; padding: 20px; margin-bottom: 30px; text-align: center;">
                 <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Order Number</p>
-                <p style="margin: 0; color: #4A0E19; font-size: 22px; font-weight: 700;">${orderNumber}</p>
+                <p style="margin: 0; color: #4A0E19; font-size: 22px; font-weight: 700;">${escapeHtml(orderNumber)}</p>
               </div>
               
               <!-- Order Items -->
@@ -173,19 +261,19 @@ function generateOrderEmailHtml(
               <table role="presentation" style="width: 100%; margin-bottom: 30px;">
                 <tr>
                   <td style="padding: 8px 0; color: #666; width: 120px;">Name:</td>
-                  <td style="padding: 8px 0; color: #333;">${customerName}</td>
+                  <td style="padding: 8px 0; color: #333;">${escapeHtml(customerName)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #666;">Phone:</td>
-                  <td style="padding: 8px 0; color: #333;">${customerPhone}</td>
+                  <td style="padding: 8px 0; color: #333;">${escapeHtml(customerPhone)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #666;">City:</td>
-                  <td style="padding: 8px 0; color: #333;">${city}</td>
+                  <td style="padding: 8px 0; color: #333;">${escapeHtml(city)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #666; vertical-align: top;">Address:</td>
-                  <td style="padding: 8px 0; color: #333;">${deliveryAddress}</td>
+                  <td style="padding: 8px 0; color: #333;">${escapeHtml(deliveryAddress)}</td>
                 </tr>
               </table>
               
@@ -205,7 +293,7 @@ function generateOrderEmailHtml(
               <!-- Confirmation Token -->
               <div style="background-color: #f0f8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 30px;">
                 <p style="margin: 0 0 5px; color: #666; font-size: 13px;">Your Confirmation Token (for tracking)</p>
-                <p style="margin: 0; color: #2c5282; font-size: 12px; font-family: monospace; word-break: break-all;">${confirmationToken}</p>
+                <p style="margin: 0; color: #2c5282; font-size: 12px; font-family: monospace; word-break: break-all;">${escapeHtml(confirmationToken)}</p>
               </div>
               
               <!-- What's Next -->
@@ -224,7 +312,7 @@ function generateOrderEmailHtml(
           <tr>
             <td style="background-color: #4A0E19; padding: 25px; text-align: center; border-radius: 0 0 12px 12px;">
               <p style="margin: 0 0 10px; color: #D4AF37; font-size: 14px;">Need help? Contact us:</p>
-              <p style="margin: 0; color: #F3E5DC; font-size: 13px;">📞 +962 XXX XXXX | 📧 support@asperbeauty.com</p>
+              <p style="margin: 0; color: #F3E5DC; font-size: 13px;">📞 +962 79 065 6666 | 📧 asperpharma@gmail.com</p>
               <p style="margin: 15px 0 0; color: #999; font-size: 12px;">© 2024 Asper Beauty. All rights reserved.</p>
             </td>
           </tr>
@@ -238,7 +326,21 @@ function generateOrderEmailHtml(
   `;
 }
 
-// Send order confirmation email
+// Escape HTML to prevent XSS in emails
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+// ============================================================
+// EMAIL SENDING
+// ============================================================
 async function sendOrderConfirmationEmail(
   customerEmail: string,
   customerName: string,
@@ -305,6 +407,9 @@ async function sendOrderConfirmationEmail(
   }
 }
 
+// ============================================================
+// MAIN HANDLER
+// ============================================================
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -312,31 +417,74 @@ serve(async (req) => {
   }
 
   try {
+    // ========== RATE LIMITING ==========
+    const clientIP = getClientIP(req);
+    const rateLimit = checkRateLimit(clientIP);
+    
+    console.log(`Rate limit check for ${clientIP}: allowed=${rateLimit.allowed}, remaining=${rateLimit.remaining}`);
+    
+    if (!rateLimit.allowed) {
+      const retryAfterSeconds = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+      console.warn(`Rate limit exceeded for ${clientIP}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many orders. Please try again later.',
+          retryAfter: retryAfterSeconds 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfterSeconds),
+            'X-RateLimit-Limit': String(RATE_LIMIT_MAX),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetAt / 1000)),
+          } 
+        }
+      );
+    }
+
     const body = await req.json();
     
-    // Validate input
+    // ========== VALIDATION ==========
     const validationResult = orderSchema.safeParse(body);
     if (!validationResult.success) {
       const errors = validationResult.error.issues.map(i => i.message).join(', ');
+      console.warn('Validation failed:', errors);
       return new Response(
         JSON.stringify({ error: `Validation failed: ${errors}` }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: 400, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          } 
+        }
       );
     }
 
     const data = validationResult.data;
 
-    // Verify CAPTCHA first
+    // ========== CAPTCHA VERIFICATION ==========
     const captchaValid = await verifyHCaptcha(data.captchaToken);
     if (!captchaValid) {
       console.warn('CAPTCHA verification failed');
       return new Response(
         JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: 400, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          } 
+        }
       );
     }
 
-    // Create Supabase client with service role for bypassing RLS
+    // ========== CREATE ORDER ==========
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -380,15 +528,21 @@ serve(async (req) => {
       console.error('Database error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to create order' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: 500, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          } 
+        }
       );
     }
 
     console.log('Order created successfully:', order.order_number);
 
-    // Send confirmation email (don't fail the order if email fails)
-    // Determine site URL from Supabase URL (convert API URL to site URL)
-    const siteUrl = 'https://asperbeautyshop.lovable.app'; // Production URL
+    // ========== SEND CONFIRMATION EMAIL ==========
+    const siteUrl = 'https://asperbeautyshop.lovable.app';
     
     if (data.customerEmail) {
       await sendOrderConfirmationEmail(
@@ -407,13 +561,22 @@ serve(async (req) => {
       );
     }
 
-    // Return only the order number
+    // Return success with rate limit headers
     return new Response(
       JSON.stringify({ 
         success: true, 
         orderNumber: order.order_number 
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': String(RATE_LIMIT_MAX),
+          'X-RateLimit-Remaining': String(rateLimit.remaining),
+          'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetAt / 1000)),
+        } 
+      }
     );
 
   } catch (error) {

@@ -1,17 +1,10 @@
-import { useState, useEffect } from "react";
-import { Search, ChevronDown, X, SlidersHorizontal, Filter } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Search, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { CATEGORIES, SKIN_CONCERNS, BRANDS, PRICE_RANGES } from "@/lib/categoryHierarchy";
+import { sanitizeInput } from "@/lib/validationSchemas";
 
 export interface FilterState {
   searchQuery: string;
@@ -60,9 +54,16 @@ export const ProductSearchFilters = ({
     (filters.onSaleOnly ? 1 : 0) +
     (filters.priceRange[0] > 0 || filters.priceRange[1] < 200 ? 1 : 0);
 
-  const updateFilters = (updates: Partial<FilterState>) => {
+  const updateFilters = useCallback((updates: Partial<FilterState>) => {
     onFiltersChange({ ...filters, ...updates });
-  };
+  }, [filters, onFiltersChange]);
+  
+  // Sanitize search input to prevent XSS
+  const handleSearchChange = useCallback((value: string) => {
+    // Limit length and sanitize
+    const sanitized = sanitizeInput(value).slice(0, 100);
+    updateFilters({ searchQuery: sanitized });
+  }, [updateFilters]);
 
   const toggleArrayFilter = (key: keyof FilterState, value: string) => {
     const current = filters[key] as string[];
@@ -232,12 +233,13 @@ export const ProductSearchFilters = ({
             type="text"
             placeholder={language === "ar" ? "ابحث عن منتجات..." : "Search products..."}
             value={filters.searchQuery}
-            onChange={(e) => updateFilters({ searchQuery: e.target.value })}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10 pr-4 py-2.5 bg-white border-gray-200 rounded-lg focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy"
+            maxLength={100}
           />
           {filters.searchQuery && (
             <button
-              onClick={() => updateFilters({ searchQuery: "" })}
+              onClick={() => handleSearchChange("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="w-4 h-4" />
