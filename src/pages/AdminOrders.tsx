@@ -54,6 +54,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { format, subDays, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { DriverAssignment } from "@/components/DriverAssignment";
 
 interface OrderItem {
   productId: string;
@@ -83,6 +84,10 @@ interface CODOrder {
   status: string;
   created_at: string;
   updated_at: string;
+  driver_id: string | null;
+  assigned_at: string | null;
+  delivered_at: string | null;
+  delivery_notes: string | null;
 }
 
 const ORDER_STATUSES = [
@@ -714,6 +719,7 @@ export default function AdminOrders() {
                       <TableHead>Items</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Driver</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -754,6 +760,13 @@ export default function AdminOrders() {
                               ))}
                             </SelectContent>
                           </Select>
+                        </TableCell>
+                        <TableCell>
+                          <DriverAssignment 
+                            orderId={order.id} 
+                            currentDriverId={order.driver_id}
+                            onAssigned={fetchOrders}
+                          />
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(order.created_at), 'MMM d, yyyy')}
@@ -841,8 +854,28 @@ export default function AdminOrders() {
                   )}
                 </div>
 
-                {/* Order Items */}
-                <div>
+                {/* Driver Assignment */}
+                <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
+                  <h4 className="font-medium mb-3">Driver Assignment</h4>
+                  <DriverAssignment 
+                    orderId={selectedOrder.id} 
+                    currentDriverId={selectedOrder.driver_id}
+                    onAssigned={fetchOrders}
+                  />
+                  {selectedOrder.assigned_at && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Assigned on {format(new Date(selectedOrder.assigned_at), 'MMM d, yyyy at h:mm a')}
+                    </p>
+                  )}
+                  {selectedOrder.delivery_notes && (
+                    <p className="text-sm mt-2 text-muted-foreground">
+                      Driver notes: {selectedOrder.delivery_notes}
+                    </p>
+                  )}
+                </div>
+863: 
+864:                 {/* Order Items */}
+865:                 <div>
                   <h4 className="font-medium mb-3">Order Items</h4>
                   <div className="space-y-3">
                     {selectedOrder.items.map((item, index) => (
