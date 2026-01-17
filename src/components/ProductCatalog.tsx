@@ -1,15 +1,16 @@
 import { useEffect, useState, useMemo } from "react";
-import { Plus, ShoppingBag, Star, Sparkles, Loader2, TrendingUp, Award, Eye } from "lucide-react";
+import { ShoppingBag, Star, Sparkles, Loader2, TrendingUp, Award, Eye, Percent } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getProductImage } from "@/lib/productImageUtils";
+import { getProductImage, formatPriceJOD } from "@/lib/productImageUtils";
 import { ProductQuickView } from "./ProductQuickView";
+import { useCartStore } from "@/stores/cartStore";
 
-// Product type from Supabase
+// Product type from Supabase with new columns
 interface Product {
   id: string;
   title: string;
@@ -17,55 +18,86 @@ interface Product {
   description: string | null;
   category: string;
   image_url: string | null;
+  brand: string | null;
+  volume_ml: string | null;
+  is_on_sale: boolean | null;
+  original_price: number | null;
+  discount_percent: number | null;
   created_at: string;
   updated_at: string;
 }
 
-// Badge styling based on category
-const getBadgeVariant = (category: string) => {
-  switch (category) {
-    case "Best Seller":
-      return "bg-gold text-burgundy";
-    case "New Arrival":
-      return "bg-burgundy text-white";
-    case "Trending":
-      return "bg-burgundy-light text-white";
-    case "Featured":
-      return "bg-gold/80 text-burgundy";
-    default:
-      return "bg-secondary text-foreground";
-  }
-};
-
-// Badge icon based on category
-const getBadgeIcon = (category: string) => {
-  switch (category) {
-    case "Best Seller":
-      return <Star className="w-3 h-3 fill-current" />;
-    case "New Arrival":
-      return <Sparkles className="w-3 h-3" />;
-    default:
-      return null;
-  }
-};
-
-// ProductCard Component
+// Professional ProductCard Component - BeautyBox/iHerb Style
 const ProductCard = ({ 
   product, 
-  onQuickView 
+  onQuickView,
+  index 
 }: { 
   product: Product; 
   onQuickView: (product: Product) => void;
+  index: number;
 }) => {
   const { language } = useLanguage();
+  const addItem = useCartStore((state) => state.addItem);
+  const setCartOpen = useCartStore((state) => state.setOpen);
   const imageUrl = getProductImage(product.image_url, product.category, product.title);
+  
+  const isOnSale = product.is_on_sale && product.original_price && product.original_price > product.price;
+  const discountPercent = product.discount_percent || 
+    (isOnSale ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100) : 0);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Create a mock product for cart compatibility
+    const cartProduct = {
+      node: {
+        id: product.id,
+        title: product.title,
+        handle: product.id,
+        description: product.description || '',
+        priceRange: {
+          minVariantPrice: {
+            amount: product.price.toString(),
+            currencyCode: 'JOD'
+          }
+        },
+        images: {
+          edges: [{
+            node: {
+              url: imageUrl,
+              altText: product.title
+            }
+          }]
+        },
+        variants: {
+          edges: [{
+            node: {
+              id: product.id,
+              title: 'Default',
+              price: { amount: product.price.toString(), currencyCode: 'JOD' },
+              selectedOptions: []
+            }
+          }]
+        }
+      }
+    };
+
+    addItem({
+      product: cartProduct as any,
+      variantId: product.id,
+      variantTitle: 'Default',
+      price: { amount: product.price.toString(), currencyCode: 'JOD' },
+      quantity: 1,
+      selectedOptions: [],
+    });
+    
     toast.success(language === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', {
       description: product.title,
       position: "top-center",
     });
+    
+    setCartOpen(true);
   };
 
   const handleQuickView = () => {
@@ -74,83 +106,110 @@ const ProductCard = ({
 
   return (
     <article 
-      className="group relative bg-white rounded-xl overflow-hidden border border-gold/10 shadow-gold-sm hover:shadow-gold-lg transition-all duration-500 ease-luxury cursor-pointer animate-fade-in"
+      className="group relative bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer animate-fade-in flex flex-col"
       onClick={handleQuickView}
+      style={{ animationDelay: `${index * 50}ms` }}
     >
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-cream">
+      <div className="relative aspect-square overflow-hidden bg-gray-50">
         <img
           src={imageUrl}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-500 ease-luxury group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
         
-        {/* Category Badge Overlay */}
-        <Badge 
-          className={`absolute top-3 left-3 z-10 ${getBadgeVariant(product.category)} font-body text-[10px] uppercase tracking-wider px-2.5 py-1 flex items-center gap-1.5 shadow-md border-0`}
-        >
-          {getBadgeIcon(product.category)}
-          {product.category}
-        </Badge>
+        {/* Sale Badge - iHerb Style (top-left, red/orange) */}
+        {isOnSale && discountPercent > 0 && (
+          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-[#E53E3E] text-white px-2 py-1 rounded-sm text-xs font-semibold shadow-md">
+            <Percent className="w-3 h-3" />
+            <span>-{discountPercent}%</span>
+          </div>
+        )}
 
-        {/* Quick View Button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        {/* Category Badge (below sale badge if exists) */}
+        {(product.category === 'Best Seller' || product.category === 'New Arrival') && (
+          <Badge 
+            className={`absolute ${isOnSale ? 'top-10' : 'top-2'} left-2 z-10 font-medium text-[10px] uppercase tracking-wide px-2 py-1 flex items-center gap-1 shadow-sm border-0 ${
+              product.category === 'Best Seller' 
+                ? 'bg-amber-500 text-white' 
+                : 'bg-emerald-500 text-white'
+            }`}
+          >
+            {product.category === 'Best Seller' && <Star className="w-3 h-3 fill-current" />}
+            {product.category === 'New Arrival' && <Sparkles className="w-3 h-3" />}
+            {product.category}
+          </Badge>
+        )}
+
+        {/* Quick View Button - Appears on Hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/10">
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleQuickView();
             }}
-            className="w-12 h-12 rounded-full bg-cream/95 backdrop-blur-sm border border-gold/50 flex items-center justify-center hover:bg-burgundy hover:text-white hover:border-burgundy transition-all duration-300 shadow-lg transform scale-90 group-hover:scale-100"
+            className="w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-burgundy hover:text-white transition-all duration-200 transform scale-90 group-hover:scale-100"
           >
             <Eye className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-burgundy/0 group-hover:bg-burgundy/10 transition-colors duration-500 pointer-events-none" />
       </div>
 
       {/* Content */}
-      <div className="p-4 md:p-5 space-y-3">
+      <div className="p-4 flex flex-col flex-grow">
+        {/* Brand - Small uppercase text */}
+        {product.brand && (
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1 font-medium">
+            {product.brand}
+          </p>
+        )}
+
         {/* Title */}
-        <h3 className="font-display text-base md:text-lg text-foreground font-medium leading-tight line-clamp-1 group-hover:text-burgundy transition-colors duration-300">
+        <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-2 mb-1 group-hover:text-burgundy transition-colors flex-grow">
           {product.title}
         </h3>
 
-        {/* Description */}
-        <p className="font-body text-sm text-muted-foreground leading-relaxed line-clamp-2">
-          {product.description || 'Premium quality beauty product.'}
-        </p>
-
-        {/* Price & Add to Cart */}
-        <div className="flex items-center justify-between pt-2">
-          <p className="font-display text-lg md:text-xl font-semibold text-burgundy">
-            JOD {Number(product.price).toFixed(2)}
+        {/* Volume/Size - iHerb style specs */}
+        {product.volume_ml && (
+          <p className="text-xs text-gray-500 mb-2">
+            {product.volume_ml}
           </p>
-          
+        )}
+
+        {/* Price Section */}
+        <div className="mt-auto">
+          <div className="flex items-baseline gap-2 mb-3">
+            {isOnSale && product.original_price && (
+              <span className="text-sm text-gray-400 line-through">
+                {formatPriceJOD(product.original_price)}
+              </span>
+            )}
+            <span className={`text-base font-bold ${isOnSale ? 'text-[#E53E3E]' : 'text-gray-900'}`}>
+              {formatPriceJOD(product.price)}
+            </span>
+          </div>
+
+          {/* Add to Cart Button - Full width, modern shadcn style */}
           <Button
             onClick={handleAddToCart}
             size="sm"
-            className="bg-burgundy hover:bg-burgundy-light text-white font-body text-xs uppercase tracking-wider px-4 py-2 shadow-gold-sm hover:shadow-gold-md transition-all duration-300"
+            className="w-full bg-burgundy hover:bg-burgundy-light text-white text-xs uppercase tracking-wide py-2.5 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <Plus className="w-4 h-4 me-1.5" />
-            {language === 'ar' ? 'إضافة' : 'Add'}
+            <ShoppingBag className="w-4 h-4 me-2" />
+            {language === 'ar' ? 'أضف للسلة' : 'Add to Cart'}
           </Button>
         </div>
       </div>
-
-      {/* Gold accent line on hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </article>
   );
 };
 
-// Category filter options
+// Category filter options with icons
 const CATEGORY_FILTERS = [
-  { value: "all", labelEn: "All", labelAr: "الكل", icon: null },
-  { value: "Best Seller", labelEn: "Best Seller", labelAr: "الأكثر مبيعاً", icon: Star },
-  { value: "New Arrival", labelEn: "New Arrival", labelAr: "وصل حديثاً", icon: Sparkles },
+  { value: "all", labelEn: "All Products", labelAr: "جميع المنتجات", icon: null },
+  { value: "Best Seller", labelEn: "Best Sellers", labelAr: "الأكثر مبيعاً", icon: Star },
+  { value: "New Arrival", labelEn: "New Arrivals", labelAr: "وصل حديثاً", icon: Sparkles },
   { value: "Trending", labelEn: "Trending", labelAr: "رائج", icon: TrendingUp },
   { value: "Featured", labelEn: "Featured", labelAr: "مميز", icon: Award },
 ];
@@ -174,6 +233,7 @@ export const ProductCatalog = () => {
     setIsQuickViewOpen(false);
     setTimeout(() => setSelectedProduct(null), 300);
   };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -182,7 +242,7 @@ export const ProductCatalog = () => {
           .from('products')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(8);
+          .limit(12);
 
         if (error) throw error;
         setProducts(data || []);
@@ -204,42 +264,22 @@ export const ProductCatalog = () => {
   }, [products, activeFilter]);
 
   return (
-    <section className="py-16 md:py-24 bg-cream relative overflow-hidden">
-      {/* Decorative top accent */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
-
-      <div className="luxury-container">
-        {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          {/* Icon Badge */}
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 mb-6 shadow-gold-badge">
-            <ShoppingBag className="w-6 h-6 text-gold" />
-          </div>
-
-          {/* Subheading */}
-          <p className="luxury-subheading text-gold mb-3">
-            {language === 'ar' ? 'مجموعتنا المميزة' : 'Our Collection'}
+    <section className="py-12 md:py-20 bg-gray-50">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Section Header - Clean, minimal like BeautyBox */}
+        <div className="text-center mb-10">
+          <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2 font-medium">
+            {language === 'ar' ? 'مجموعتنا' : 'Our Collection'}
           </p>
-
-          {/* Main Heading */}
-          <h2 className="luxury-heading text-3xl md:text-4xl lg:text-5xl font-semibold mb-4">
-            {language === 'ar' ? 'منتجات فاخرة' : 'Luxury Essentials'}
+          <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">
+            {language === 'ar' ? 'منتجات الجمال الفاخرة' : 'Premium Beauty Products'}
           </h2>
-
-          {/* Divider */}
-          <div className="luxury-divider mt-6" />
-
-          {/* Description */}
-          <p className="font-body text-muted-foreground max-w-2xl mx-auto mt-6 leading-relaxed">
-            {language === 'ar' 
-              ? 'اكتشفي مجموعتنا المنتقاة بعناية من منتجات العناية بالبشرة والجمال الفاخرة'
-              : 'Discover our carefully curated collection of premium skincare and beauty products'}
-          </p>
+          <div className="w-12 h-0.5 bg-burgundy mx-auto" />
         </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex justify-center mb-10">
-          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-full max-w-3xl">
+        {/* Category Filter Tabs - Clean pill style */}
+        <div className="flex justify-center mb-8 overflow-x-auto pb-2">
+          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-full max-w-4xl">
             <TabsList className="w-full flex flex-wrap justify-center gap-2 bg-transparent h-auto p-0">
               {CATEGORY_FILTERS.map((filter) => {
                 const IconComponent = filter.icon;
@@ -247,7 +287,7 @@ export const ProductCatalog = () => {
                   <TabsTrigger
                     key={filter.value}
                     value={filter.value}
-                    className="px-4 py-2.5 rounded-full font-body text-xs uppercase tracking-wider border border-gold/20 bg-white text-muted-foreground data-[state=active]:bg-burgundy data-[state=active]:text-white data-[state=active]:border-burgundy data-[state=active]:shadow-gold-md hover:border-gold/50 transition-all duration-300"
+                    className="px-4 py-2 rounded-full text-xs font-medium border border-gray-200 bg-white text-gray-600 data-[state=active]:bg-burgundy data-[state=active]:text-white data-[state=active]:border-burgundy hover:border-gray-300 transition-all duration-200"
                   >
                     {IconComponent && (
                       <IconComponent className="w-3.5 h-3.5 me-1.5" />
@@ -263,14 +303,14 @@ export const ProductCatalog = () => {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-gold animate-spin" />
+            <Loader2 className="w-8 h-8 text-burgundy animate-spin" />
           </div>
         )}
 
         {/* Error State */}
         {error && !isLoading && (
           <div className="text-center py-20">
-            <p className="text-muted-foreground">
+            <p className="text-gray-500">
               {language === 'ar' ? 'حدث خطأ في تحميل المنتجات' : 'Failed to load products'}
             </p>
           </div>
@@ -279,7 +319,7 @@ export const ProductCatalog = () => {
         {/* Empty State */}
         {!isLoading && !error && filteredProducts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-muted-foreground">
+            <p className="text-gray-500">
               {language === 'ar' 
                 ? activeFilter === "all" ? 'لا توجد منتجات متاحة' : 'لا توجد منتجات في هذه الفئة'
                 : activeFilter === "all" ? 'No products available' : 'No products in this category'}
@@ -287,37 +327,33 @@ export const ProductCatalog = () => {
           </div>
         )}
 
-        {/* Product Grid with animation wrapper */}
+        {/* Product Grid - 4 columns on desktop, responsive */}
         {!isLoading && !error && filteredProducts.length > 0 && (
           <div 
             key={activeFilter} 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
           >
             {filteredProducts.map((product, index) => (
-              <div
-                key={product.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <ProductCard product={product} onQuickView={handleQuickView} />
-              </div>
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onQuickView={handleQuickView}
+                index={index}
+              />
             ))}
           </div>
         )}
 
         {/* View All Button */}
-        <div className="text-center mt-12 md:mt-16">
+        <div className="text-center mt-10">
           <Button
             variant="outline"
-            className="luxury-button-secondary px-8 py-4 font-body text-sm uppercase tracking-widest border-2 border-gold text-burgundy hover:bg-gold/10"
+            className="px-8 py-3 text-sm font-medium border-2 border-burgundy text-burgundy hover:bg-burgundy hover:text-white transition-colors duration-200"
           >
             {language === 'ar' ? 'عرض جميع المنتجات' : 'View All Products'}
           </Button>
         </div>
       </div>
-
-      {/* Decorative bottom accent */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
 
       {/* Quick View Modal */}
       <ProductQuickView

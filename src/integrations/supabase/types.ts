@@ -73,34 +73,49 @@ export type Database = {
       }
       products: {
         Row: {
+          brand: string | null
           category: string
           created_at: string
           description: string | null
+          discount_percent: number | null
           id: string
           image_url: string | null
+          is_on_sale: boolean | null
+          original_price: number | null
           price: number
           title: string
           updated_at: string
+          volume_ml: string | null
         }
         Insert: {
+          brand?: string | null
           category?: string
           created_at?: string
           description?: string | null
+          discount_percent?: number | null
           id?: string
           image_url?: string | null
+          is_on_sale?: boolean | null
+          original_price?: number | null
           price: number
           title: string
           updated_at?: string
+          volume_ml?: string | null
         }
         Update: {
+          brand?: string | null
           category?: string
           created_at?: string
           description?: string | null
+          discount_percent?: number | null
           id?: string
           image_url?: string | null
+          is_on_sale?: boolean | null
+          original_price?: number | null
           price?: number
           title?: string
           updated_at?: string
+          volume_ml?: string | null
         }
         Relationships: []
       }
