@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Lock, LogOut, Shield, ShieldCheck, Trash2, QrCode } from 'lucide-react';
+import { Loader2, LogOut, Shield, ShieldCheck, Trash2, QrCode, AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import {
@@ -50,6 +51,11 @@ export default function Account() {
   const [verifyCode, setVerifyCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [factorToDelete, setFactorToDelete] = useState<string | null>(null);
+
+  // Account deletion state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteEmail, setDeleteEmail] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -116,6 +122,53 @@ export default function Account() {
       toast.error('Failed to remove authenticator');
     } else {
       toast.success('Authenticator removed');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.email) return;
+    
+    if (deleteEmail.toLowerCase() !== user.email.toLowerCase()) {
+      toast.error('Email does not match your account email');
+      return;
+    }
+
+    setIsDeleting(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast.error('Session expired. Please sign in again.');
+        navigate('/auth');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { confirmEmail: deleteEmail },
+      });
+
+      if (error) {
+        console.error('Delete account error:', error);
+        toast.error(error.message || 'Failed to delete account');
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('Your account has been permanently deleted');
+        // Sign out and redirect
+        await signOut();
+        navigate('/');
+      } else {
+        toast.error(data?.error || 'Failed to delete account');
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setDeleteEmail('');
     }
   };
 
@@ -334,6 +387,91 @@ export default function Account() {
                     </p>
                   )}
                 </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Account Deletion Section */}
+          <Card className="border-destructive/30">
+            <CardHeader>
+              <CardTitle className="font-display text-2xl flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Delete Account
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!showDeleteConfirm ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    This action is irreversible. All your data including profile information, 
+                    preferences, and authentication credentials will be permanently deleted 
+                    in accordance with GDPR regulations.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="text-destructive border-destructive/50 hover:bg-destructive/10"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete My Account
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-4 p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <p className="font-medium text-destructive">This action cannot be undone</p>
+                      <p className="text-sm text-muted-foreground">
+                        To confirm deletion, please enter your email address: <strong>{user.email}</strong>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-email">Confirm Email Address</Label>
+                    <Input
+                      id="confirm-email"
+                      type="email"
+                      value={deleteEmail}
+                      onChange={(e) => setDeleteEmail(e.target.value)}
+                      placeholder="Enter your email to confirm"
+                      className="border-destructive/30"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting || deleteEmail.toLowerCase() !== user.email?.toLowerCase()}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Permanently Delete Account
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteEmail('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

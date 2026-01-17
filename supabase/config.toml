@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.create-cod-order]
 verify_jwt = false
+
+[functions.get-order-status]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
