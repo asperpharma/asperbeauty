@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import AnimatedShaderHero from "@/components/ui/animated-shader-hero";
 import { AmmanEdit } from "@/components/AmmanEdit";
+import { ProductCatalog } from "@/components/ProductCatalog";
 import { FeaturedBrands } from "@/components/FeaturedBrands";
 import { Testimonials } from "@/components/Testimonials";
 import { InstagramFeed } from "@/components/InstagramFeed";
@@ -64,6 +65,7 @@ const Index = () => {
           }}
         />
         <AmmanEdit />
+        <ProductCatalog />
         <FeaturedBrands />
         <Testimonials />
         <InstagramFeed />
