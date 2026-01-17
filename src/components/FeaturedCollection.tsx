@@ -1,43 +1,24 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { LuxuryProductCard } from "@/components/LuxuryProductCard";
-
-// Mock data to visualize the result. 
-// In production, fetch this from Supabase: 
-// const { data } = await supabase.from('products').select('*').limit(4);
-const FEATURED_PRODUCTS = [
-  {
-    id: "1",
-    title: "Midnight Recovery Concentrate",
-    category: "Skin Care",
-    price: "42.000",
-    image_url: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=800",
-    is_new: true,
-  },
-  {
-    id: "2",
-    title: "Velvet Matte Lip Elixir",
-    category: "Makeup",
-    price: "24.500",
-    image_url: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "3",
-    title: "Gold Repair Shampoo",
-    category: "Hair Care",
-    price: "18.000",
-    image_url: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "4",
-    title: "Radiance Boost Serum",
-    category: "Skin Care",
-    price: "36.000",
-    image_url: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&q=80&w=800",
-    is_new: true,
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const FeaturedCollection = () => {
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <section id="featured-collection" className="bg-cream py-20 md:py-28">
       <div className="container mx-auto max-w-7xl px-4">
@@ -55,9 +36,32 @@ export const FeaturedCollection = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {FEATURED_PRODUCTS.map((product) => (
-            <LuxuryProductCard key={product.id} product={product} />
-          ))}
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex flex-col">
+                <Skeleton className="aspect-[3/4] w-full bg-cream-dark" />
+                <div className="p-4">
+                  <Skeleton className="mb-2 h-3 w-16 bg-cream-dark" />
+                  <Skeleton className="mb-3 h-5 w-full bg-cream-dark" />
+                  <Skeleton className="h-4 w-20 bg-cream-dark" />
+                </div>
+              </div>
+            ))
+          ) : (
+            products?.map((product) => (
+              <LuxuryProductCard
+                key={product.id}
+                product={{
+                  id: product.id,
+                  title: product.title,
+                  category: product.category,
+                  price: product.price,
+                  image_url: product.image_url || "/placeholder.svg",
+                  is_new: !product.is_on_sale && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                }}
+              />
+            ))
+          )}
         </div>
 
       </div>

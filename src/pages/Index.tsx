@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { LuxuryHero } from "@/components/LuxuryHero";
+import { FeaturedCollection } from "@/components/FeaturedCollection";
 import { AmmanEdit } from "@/components/AmmanEdit";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { FeaturedBrands } from "@/components/FeaturedBrands";
@@ -42,6 +43,7 @@ const Index = () => {
       <Header />
       <main>
         <LuxuryHero />
+        <FeaturedCollection />
         <AmmanEdit />
         <ProductCatalog />
         <FeaturedBrands />
