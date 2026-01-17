@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +13,13 @@ import {
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Loader2, CheckCircle, MapPin, Phone, User, Mail, FileText } from "lucide-react";
+import { Loader2, CheckCircle, MapPin, Phone, User, Mail, FileText, ShieldCheck } from "lucide-react";
 import { translateTitle } from "@/lib/productUtils";
 import { z } from "zod";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
+// hCaptcha site key (public - safe to include in code)
+const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Test key - replace with your real key
 
 // Validation schema
 const orderFormSchema = z.object({
@@ -55,6 +59,9 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
   const isArabic = language === 'ar';
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
+  
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
@@ -82,12 +89,24 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
     return true;
   };
 
+  const handleCaptchaVerify = (token: string) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     if (items.length === 0) {
       toast.error(isArabic ? "سلة التسوق فارغة" : "Cart is empty");
+      return;
+    }
+    if (!captchaToken) {
+      toast.error(isArabic ? "يرجى التحقق من أنك لست روبوت" : "Please verify you're not a robot");
       return;
     }
 
@@ -107,7 +126,7 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
         imageUrl: item.product.node.images?.edges?.[0]?.node?.url || null,
       }));
 
-      // Call secure edge function instead of direct database insert
+      // Call secure edge function with CAPTCHA token
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cod-order`,
         {
@@ -127,6 +146,7 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
             subtotal: subtotal,
             shippingCost: shippingCost,
             total: total,
+            captchaToken: captchaToken,
           }),
         }
       );
@@ -134,6 +154,9 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
       const result = await response.json();
 
       if (!response.ok) {
+        // Reset captcha on error
+        captchaRef.current?.resetCaptcha();
+        setCaptchaToken(null);
         throw new Error(result.error || 'Failed to create order');
       }
 
@@ -284,6 +307,29 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
         </div>
       </div>
 
+      {/* CAPTCHA Verification */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-sm">
+          <ShieldCheck className="w-4 h-4 text-gold" />
+          {isArabic ? 'التحقق الأمني' : 'Security Verification'} *
+        </Label>
+        <div className="flex justify-center bg-cream/30 rounded-lg p-3">
+          <HCaptcha
+            ref={captchaRef}
+            sitekey={HCAPTCHA_SITE_KEY}
+            onVerify={handleCaptchaVerify}
+            onExpire={handleCaptchaExpire}
+            languageOverride={isArabic ? 'ar' : 'en'}
+          />
+        </div>
+        {captchaToken && (
+          <p className="text-xs text-green-600 flex items-center gap-1 justify-center">
+            <CheckCircle className="w-3 h-3" />
+            {isArabic ? 'تم التحقق بنجاح' : 'Verified successfully'}
+          </p>
+        )}
+      </div>
+
       {/* COD Notice */}
       <div className="bg-gold/10 border border-gold/30 rounded-lg p-3 text-center">
         <p className="text-sm text-foreground font-medium">
@@ -307,7 +353,7 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || items.length === 0}
+          disabled={isSubmitting || items.length === 0 || !captchaToken}
           className="flex-1 bg-burgundy hover:bg-burgundy-light text-white"
         >
           {isSubmitting ? (

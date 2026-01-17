@@ -34,7 +34,35 @@ const orderSchema = z.object({
   subtotal: z.number().positive().max(10000),
   shippingCost: z.number().min(0).max(100),
   total: z.number().positive().max(10100),
+  captchaToken: z.string().min(1, "CAPTCHA verification required"),
 });
+
+// Verify hCaptcha token
+async function verifyHCaptcha(token: string): Promise<boolean> {
+  const secretKey = Deno.env.get('HCAPTCHA_SECRET_KEY');
+  
+  if (!secretKey) {
+    console.error('HCAPTCHA_SECRET_KEY not configured');
+    return false;
+  }
+
+  try {
+    const response = await fetch('https://hcaptcha.com/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `response=${encodeURIComponent(token)}&secret=${encodeURIComponent(secretKey)}`,
+    });
+
+    const result = await response.json();
+    console.log('hCaptcha verification result:', result.success);
+    return result.success === true;
+  } catch (error) {
+    console.error('hCaptcha verification error:', error);
+    return false;
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -56,6 +84,16 @@ serve(async (req) => {
     }
 
     const data = validationResult.data;
+
+    // Verify CAPTCHA first
+    const captchaValid = await verifyHCaptcha(data.captchaToken);
+    if (!captchaValid) {
+      console.warn('CAPTCHA verification failed');
+      return new Response(
+        JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create Supabase client with service role for bypassing RLS
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -104,6 +142,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Order created successfully:', order.order_number);
 
     // Return only the order number (not the confirmation token - that's for future use if needed)
     return new Response(
