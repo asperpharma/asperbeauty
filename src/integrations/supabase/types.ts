@@ -83,6 +83,9 @@ export type Database = {
           is_on_sale: boolean | null
           original_price: number | null
           price: number
+          skin_concerns: string[] | null
+          subcategory: string | null
+          tags: string[] | null
           title: string
           updated_at: string
           volume_ml: string | null
@@ -98,6 +101,9 @@ export type Database = {
           is_on_sale?: boolean | null
           original_price?: number | null
           price: number
+          skin_concerns?: string[] | null
+          subcategory?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
           volume_ml?: string | null
@@ -113,6 +119,9 @@ export type Database = {
           is_on_sale?: boolean | null
           original_price?: number | null
           price?: number
+          skin_concerns?: string[] | null
+          subcategory?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
           volume_ml?: string | null
