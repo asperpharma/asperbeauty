@@ -5,6 +5,7 @@ import { FeaturedCollection } from "@/components/FeaturedCollection";
 import { AmmanEdit } from "@/components/AmmanEdit";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { FeaturedBrands } from "@/components/FeaturedBrands";
+import { BrandMarquee } from "@/components/BrandMarquee";
 import { Testimonials } from "@/components/Testimonials";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import { Newsletter } from "@/components/Newsletter";
@@ -43,6 +44,7 @@ const Index = () => {
       <Header />
       <main>
         <LuxuryHero />
+        <BrandMarquee />
         <FeaturedCollection />
         <AmmanEdit />
         <ProductCatalog />
