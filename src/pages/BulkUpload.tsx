@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useImageQueue, QueueItem } from "@/lib/imageGenerationQueue";
 
 interface ProcessedProduct {
@@ -124,7 +124,7 @@ export default function BulkUpload() {
     return `${hours}h ${mins}m`;
   };
 
-  // Parse Excel/CSV file using xlsx library
+  // Parse Excel/CSV file using exceljs library
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -136,52 +136,69 @@ export default function BulkUpload() {
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
       
       // Get the first sheet
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error("No worksheet found in the Excel file");
+      }
       
-      // Convert to JSON with headers
-      const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, { 
-        defval: "",
-        raw: false 
+      // Get headers from the first row
+      const headerRow = worksheet.getRow(1);
+      const headers: string[] = [];
+      headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        headers[colNumber - 1] = String(cell.value || "").trim();
       });
 
-      if (jsonData.length === 0) {
-        throw new Error("No data found in the Excel file");
+      if (headers.length === 0) {
+        throw new Error("No headers found in the Excel file");
       }
 
-      // Get headers from the first row
-      const headers = Object.keys(jsonData[0]);
       console.log("Found headers:", headers);
 
       // Find matching columns
-      const skuCol = findColumn(headers, COLUMN_MAPPINGS.sku);
-      const nameCol = findColumn(headers, COLUMN_MAPPINGS.name);
-      const costCol = findColumn(headers, COLUMN_MAPPINGS.costPrice);
-      const priceCol = findColumn(headers, COLUMN_MAPPINGS.sellingPrice);
+      const skuColIdx = headers.findIndex(h => COLUMN_MAPPINGS.sku.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const nameColIdx = headers.findIndex(h => COLUMN_MAPPINGS.name.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const costColIdx = headers.findIndex(h => COLUMN_MAPPINGS.costPrice.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const priceColIdx = headers.findIndex(h => COLUMN_MAPPINGS.sellingPrice.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
 
-      console.log("Mapped columns:", { skuCol, nameCol, costCol, priceCol });
+      console.log("Mapped columns:", { skuColIdx, nameColIdx, costColIdx, priceColIdx });
 
-      if (!nameCol) {
+      if (nameColIdx === -1) {
         throw new Error(`Could not find product name column. Found columns: ${headers.join(", ")}`);
       }
 
-      // Parse products
-      const parsedProducts: RawProduct[] = jsonData
-        .map((row, index) => {
-          const name = String(row[nameCol] || "").trim();
-          if (!name) return null;
+      // Parse products from rows (skip header row)
+      const parsedProducts: RawProduct[] = [];
+      worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header row
+        
+        const getCellValue = (colIdx: number): string => {
+          if (colIdx === -1) return "";
+          const cell = row.getCell(colIdx + 1);
+          return String(cell.value || "").trim();
+        };
 
-          return {
-            sku: String(row[skuCol || ""] || `SKU-${index + 1}`).trim(),
-            name,
-            costPrice: parseFloat(String(row[costCol || ""] || "0").replace(/[^0-9.]/g, "")) || 0,
-            sellingPrice: parseFloat(String(row[priceCol || ""] || "0").replace(/[^0-9.]/g, "")) || 0,
-          };
-        })
-        .filter((p): p is RawProduct => p !== null && p.name.length > 0);
+        const name = getCellValue(nameColIdx);
+        if (!name) return;
+
+        parsedProducts.push({
+          sku: getCellValue(skuColIdx) || `SKU-${rowNumber}`,
+          name,
+          costPrice: parseFloat(getCellValue(costColIdx).replace(/[^0-9.]/g, "")) || 0,
+          sellingPrice: parseFloat(getCellValue(priceColIdx).replace(/[^0-9.]/g, "")) || 0,
+        });
+      });
 
       if (parsedProducts.length === 0) {
         throw new Error("No valid products found in the file");
@@ -212,45 +229,64 @@ export default function BulkUpload() {
       if (!response.ok) throw new Error("Failed to fetch file");
       
       const arrayBuffer = await response.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
       
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error("No worksheet found in the Excel file");
+      }
       
-      const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, { 
-        defval: "",
-        raw: false 
+      // Get headers from the first row
+      const headerRow = worksheet.getRow(1);
+      const headers: string[] = [];
+      headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        headers[colNumber - 1] = String(cell.value || "").trim();
       });
 
-      if (jsonData.length === 0) {
-        throw new Error("No data found in the Excel file");
+      if (headers.length === 0) {
+        throw new Error("No headers found in the Excel file");
       }
 
-      const headers = Object.keys(jsonData[0]);
       console.log("Found headers:", headers);
 
-      const skuCol = findColumn(headers, COLUMN_MAPPINGS.sku);
-      const nameCol = findColumn(headers, COLUMN_MAPPINGS.name);
-      const costCol = findColumn(headers, COLUMN_MAPPINGS.costPrice);
-      const priceCol = findColumn(headers, COLUMN_MAPPINGS.sellingPrice);
+      const skuColIdx = headers.findIndex(h => COLUMN_MAPPINGS.sku.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const nameColIdx = headers.findIndex(h => COLUMN_MAPPINGS.name.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const costColIdx = headers.findIndex(h => COLUMN_MAPPINGS.costPrice.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
+      const priceColIdx = headers.findIndex(h => COLUMN_MAPPINGS.sellingPrice.some(m => 
+        h.toLowerCase().trim() === m.toLowerCase().trim() || h.includes(m) || m.includes(h)
+      ));
 
-      if (!nameCol) {
+      if (nameColIdx === -1) {
         throw new Error(`Could not find product name column. Found columns: ${headers.join(", ")}`);
       }
 
-      const parsedProducts: RawProduct[] = jsonData
-        .map((row, index) => {
-          const name = String(row[nameCol] || "").trim();
-          if (!name) return null;
+      const parsedProducts: RawProduct[] = [];
+      worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber === 1) return;
+        
+        const getCellValue = (colIdx: number): string => {
+          if (colIdx === -1) return "";
+          const cell = row.getCell(colIdx + 1);
+          return String(cell.value || "").trim();
+        };
 
-          return {
-            sku: String(row[skuCol || ""] || `SKU-${index + 1}`).trim(),
-            name,
-            costPrice: parseFloat(String(row[costCol || ""] || "0").replace(/[^0-9.]/g, "")) || 0,
-            sellingPrice: parseFloat(String(row[priceCol || ""] || "0").replace(/[^0-9.]/g, "")) || 0,
-          };
-        })
-        .filter((p): p is RawProduct => p !== null && p.name.length > 0);
+        const name = getCellValue(nameColIdx);
+        if (!name) return;
+
+        parsedProducts.push({
+          sku: getCellValue(skuColIdx) || `SKU-${rowNumber}`,
+          name,
+          costPrice: parseFloat(getCellValue(costColIdx).replace(/[^0-9.]/g, "")) || 0,
+          sellingPrice: parseFloat(getCellValue(priceColIdx).replace(/[^0-9.]/g, "")) || 0,
+        });
+      });
 
       if (parsedProducts.length === 0) {
         throw new Error("No valid products found in the file");
