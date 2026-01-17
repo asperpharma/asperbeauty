@@ -23,6 +23,7 @@ import BulkUpload from "./pages/BulkUpload";
 import AdminOrders from "./pages/AdminOrders";
 import TrackOrder from "./pages/TrackOrder";
 import ManageProducts from "./pages/ManageProducts";
+import Shop from "./pages/Shop";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/shop" element={<Shop />} />
             <Route path="/product/:handle" element={<ProductDetail />} />
             <Route path="/collections" element={<Collections />} />
             <Route path="/collections/:slug" element={<CollectionDetail />} />
