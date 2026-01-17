@@ -68,9 +68,15 @@ export const BestSellersSection = () => {
                   id: product.id,
                   title: product.title,
                   category: product.category,
+                  brand: product.brand || undefined,
                   price: product.price,
+                  original_price: product.original_price,
+                  discount_percent: product.discount_percent,
                   image_url: product.image_url || "/placeholder.svg",
+                  description: product.description || undefined,
+                  volume_ml: product.volume_ml || undefined,
                   is_new: false,
+                  is_on_sale: product.is_on_sale || false,
                 }}
               />
             ))
