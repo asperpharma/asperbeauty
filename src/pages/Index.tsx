@@ -13,6 +13,7 @@ import { BeautyAssistant } from "@/components/BeautyAssistant";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { FloatingSocials } from "@/components/FloatingSocials";
 import { PageLoadingSkeleton } from "@/components/PageLoadingSkeleton";
+import { MobileNav } from "@/components/MobileNav";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +72,9 @@ const Index = () => {
       <BeautyAssistant />
       <ScrollToTop />
       <FloatingSocials />
+      <MobileNav />
+      {/* Add bottom padding on mobile for the fixed nav */}
+      <div className="h-16 lg:hidden" />
     </div>
   );
 };
