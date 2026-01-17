@@ -25,6 +25,7 @@ import AdminOrders from "./pages/AdminOrders";
 import TrackOrder from "./pages/TrackOrder";
 import ManageProducts from "./pages/ManageProducts";
 import Shop from "./pages/Shop";
+import DriverDashboard from "./pages/DriverDashboard";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/admin/orders" element={<AdminOrders />} />
               <Route path="/admin/products" element={<ManageProducts />} />
               <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/driver" element={<DriverDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
