@@ -69,6 +69,10 @@
     --shiny-gold: 46 66% 52%;
     --soft-ivory: 25 47% 91%;
     --dark-charcoal: 350 25% 14%;
+    
+    /* Luxury Black/Charcoal #1A1A1A, #2D2D2D */
+    --luxury-black: 0 0% 10%;
+    --luxury-charcoal: 0 0% 18%;
 
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', 'Lato', sans-serif;

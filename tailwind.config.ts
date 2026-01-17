@@ -82,6 +82,10 @@ export default {
         "shiny-gold": "hsl(var(--shiny-gold))",
         "soft-ivory": "hsl(var(--soft-ivory))",
         "dark-charcoal": "hsl(var(--dark-charcoal))",
+        luxury: {
+          black: "hsl(var(--luxury-black))",
+          charcoal: "hsl(var(--luxury-charcoal))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
