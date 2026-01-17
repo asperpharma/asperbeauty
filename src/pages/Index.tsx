@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { LuxuryHero } from "@/components/LuxuryHero";
-import { FeaturedCollection } from "@/components/FeaturedCollection";
-import { AmmanEdit } from "@/components/AmmanEdit";
-import { ProductCatalog } from "@/components/ProductCatalog";
-import { FeaturedBrands } from "@/components/FeaturedBrands";
 import { BrandMarquee } from "@/components/BrandMarquee";
-import { Testimonials } from "@/components/Testimonials";
-import { InstagramFeed } from "@/components/InstagramFeed";
-import { Newsletter } from "@/components/Newsletter";
-import { TrustBanner } from "@/components/TrustBanner";
+import { FeaturedCollection } from "@/components/FeaturedCollection";
 import { Footer } from "@/components/Footer";
 import { BeautyAssistant } from "@/components/BeautyAssistant";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -22,7 +15,6 @@ const Index = () => {
   useEffect(() => {
     const handleLoad = () => setIsLoading(false);
     
-    // Hide skeleton once window loads or timeout finishes (whichever comes last for safety)
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
@@ -40,19 +32,17 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream animate-fade-in">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header />
       <main>
+        {/* 1. The High-End Editorial Banner */}
         <LuxuryHero />
+        
+        {/* 2. The Real Brand Logos (Dior, CeraVe, etc.) */}
         <BrandMarquee />
+        
+        {/* 3. The Actual Products (Olaplex, Ordinary, etc.) */}
         <FeaturedCollection />
-        <AmmanEdit />
-        <ProductCatalog />
-        <FeaturedBrands />
-        <Testimonials />
-        <InstagramFeed />
-        <Newsletter />
-        <TrustBanner />
       </main>
       <Footer />
       <BeautyAssistant />
