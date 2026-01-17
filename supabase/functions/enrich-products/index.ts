@@ -1,11 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+interface FirecrawlResponse {
+  success: boolean;
+  data?: {
+    metadata?: {
+      ogImage?: string;
+      title?: string;
+    };
+    screenshot?: string;
+    markdown?: string;
+  };
+  error?: string;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -14,13 +26,18 @@ serve(async (req) => {
   }
 
   try {
+    const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
+    if (!firecrawlApiKey) {
+      throw new Error("Firecrawl API key not configured. Please connect Firecrawl in Settings → Connectors.");
+    }
+
     // Use service role to bypass RLS for updates
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    console.log("🕵️‍♀️ Starting Product Data Enrichment...");
+    console.log("🕵️‍♀️ Starting Product Enrichment with Firecrawl...");
 
     // Find products that have a source_url but NO image
     const { data: products, error } = await supabase
@@ -42,33 +59,34 @@ serve(async (req) => {
       console.log(`\nProcessing: ${product.title}...`);
 
       try {
-        // Fetch the HTML from source URL
-        const response = await fetch(product.source_url!, {
+        // Use Firecrawl to scrape the page with screenshot and metadata
+        const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
           headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Authorization": `Bearer ${firecrawlApiKey}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            url: product.source_url,
+            formats: ["screenshot", "markdown"],
+            onlyMainContent: false,
+            waitFor: 2000, // Wait for images to load
+          }),
         });
 
-        if (!response.ok) {
-          results.push({ id: product.id, title: product.title, status: "fetch_failed" });
+        const firecrawlData: FirecrawlResponse = await firecrawlResponse.json();
+
+        if (!firecrawlData.success) {
+          console.error(`   ⚠️ Firecrawl error: ${firecrawlData.error}`);
+          results.push({ id: product.id, title: product.title, status: "scrape_failed" });
           continue;
         }
 
-        const html = await response.text();
-        const $ = cheerio.load(html);
+        // Try to get OG image from metadata first, then fall back to screenshot
+        let imageUrl = firecrawlData.data?.metadata?.ogImage;
 
-        // Extract image using OpenGraph meta tag (most reliable)
-        let imageUrl = $('meta[property="og:image"]').attr("content");
-
-        // Fallback: Try common e-commerce selectors
-        if (!imageUrl) {
-          imageUrl = $("#image-main").attr("src") || 
-                     $(".product-image img").attr("src") ||
-                     $(".product-gallery img").first().attr("src") ||
-                     $('img[itemprop="image"]').attr("src");
-        }
-
-        // Update Supabase if image found
+        // If no OG image, we could use the screenshot (base64)
+        // For now, we'll only use the OG image since storing base64 is complex
         if (imageUrl) {
           const { error: updateError } = await supabase
             .from("products")
@@ -76,29 +94,33 @@ serve(async (req) => {
             .eq("id", product.id);
 
           if (!updateError) {
-            console.log(`   ✅ Image Saved: ${imageUrl.substring(0, 50)}...`);
+            console.log(`   ✅ Image found: ${imageUrl.substring(0, 60)}...`);
             results.push({ id: product.id, title: product.title, status: "success", image_url: imageUrl });
           } else {
             console.error(`   ❌ Update Failed:`, updateError.message);
             results.push({ id: product.id, title: product.title, status: "update_failed" });
           }
         } else {
-          console.log(`   ⚠️ Could not find image on page.`);
+          console.log(`   ⚠️ No OG image found on page.`);
           results.push({ id: product.id, title: product.title, status: "no_image_found" });
         }
       } catch (err) {
-        console.error(`   ❌ Failed to process: ${product.source_url}`);
+        console.error(`   ❌ Failed to process: ${product.source_url}`, err);
         results.push({ id: product.id, title: product.title, status: "error" });
       }
 
-      // Be polite - wait between requests to avoid rate limiting
-      await new Promise((r) => setTimeout(r, 1000));
+      // Rate limiting - wait between requests
+      await new Promise((r) => setTimeout(r, 500));
     }
+
+    const successCount = results.filter(r => r.status === "success").length;
+    console.log(`\n✨ Enrichment complete. ${successCount}/${products?.length || 0} products enriched.`);
 
     return new Response(
       JSON.stringify({
         success: true,
         total: products?.length || 0,
+        enriched: successCount,
         results,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
