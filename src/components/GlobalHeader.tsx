@@ -4,18 +4,17 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   Search, 
-  User, 
   ShoppingBag, 
   Heart, 
   Menu, 
-  X,
-  ChevronDown
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { LuxurySearch } from "./LuxurySearch";
+import { AccountDropdown } from "./AccountDropdown";
 
 export const GlobalHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -141,14 +140,8 @@ export const GlobalHeader = () => {
                 <Search className="h-5 w-5" />
               </button>
 
-              {/* User Account */}
-              <Link 
-                to="/account"
-                className="flex items-center gap-1 text-foreground hover:text-primary transition-colors"
-              >
-                <User className="h-5 w-5" />
-                <ChevronDown className="h-3 w-3 hidden md:block" />
-              </Link>
+              {/* User Account Dropdown */}
+              <AccountDropdown isScrolled={isScrolled} />
 
               {/* Wishlist */}
               <Link to="/wishlist" className="relative text-foreground hover:text-primary transition-colors">
