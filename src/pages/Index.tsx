@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-import AnimatedShaderHero from "@/components/ui/animated-shader-hero";
+import { LuxuryHero } from "@/components/LuxuryHero";
 import { AmmanEdit } from "@/components/AmmanEdit";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { FeaturedBrands } from "@/components/FeaturedBrands";
@@ -17,7 +16,6 @@ import { PageLoadingSkeleton } from "@/components/PageLoadingSkeleton";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleLoad = () => setIsLoading(false);
@@ -43,27 +41,7 @@ const Index = () => {
     <div className="min-h-screen bg-cream animate-fade-in">
       <Header />
       <main>
-        <AnimatedShaderHero
-          trustBadge={{
-            text: "Trusted by 50,000+ Beauty Enthusiasts",
-            icons: ["✨", "💎", "🌟"]
-          }}
-          headline={{
-            line1: "Discover Luxury",
-            line2: "Beauty & Skincare"
-          }}
-          subtitle="Curated collections of premium beauty products from the world's most prestigious brands. Experience the art of self-care."
-          buttons={{
-            primary: {
-              text: "Explore Collections",
-              onClick: () => navigate("/collections")
-            },
-            secondary: {
-              text: "Shop Best Sellers",
-              onClick: () => navigate("/best-sellers")
-            }
-          }}
-        />
+        <LuxuryHero />
         <AmmanEdit />
         <ProductCatalog />
         <FeaturedBrands />
