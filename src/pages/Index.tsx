@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Header } from "@/components/Header";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { LuxuryHero } from "@/components/LuxuryHero";
 import { BrandMarquee } from "@/components/BrandMarquee";
 import { LuxuryCategories } from "@/components/LuxuryCategories";
@@ -38,7 +38,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <Header />
+      <GlobalHeader />
       <main>
         {/* 1. EMOTIONAL LAYER: The Cinematic Hero */}
         <LuxuryHero />
