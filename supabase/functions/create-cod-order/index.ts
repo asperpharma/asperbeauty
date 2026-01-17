@@ -82,7 +82,11 @@ const orderItemSchema = z.object({
   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
   currency: z.string().length(3),
   quantity: z.number().int().positive().max(99),
-  selectedOptions: z.record(z.string()).optional(),
+  // Accept both array format [{name, value}] and object format {name: value}
+  selectedOptions: z.union([
+    z.array(z.object({ name: z.string(), value: z.string() })),
+    z.record(z.string())
+  ]).optional(),
   imageUrl: z.string().url().nullable().optional(),
 });
 

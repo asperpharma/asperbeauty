@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Package, 
   Clock, 
@@ -40,12 +42,18 @@ import {
   RefreshCw,
   Eye,
   FileText,
-  Printer
+  Printer,
+  Download,
+  Search,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, subDays, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 
 interface OrderItem {
   productId: string;
@@ -95,6 +103,9 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<CODOrder | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("orders");
 
   // Check if user is admin
   useEffect(() => {
@@ -155,8 +166,151 @@ export default function AdminOrders() {
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
+      
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('cod_orders_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'cod_orders'
+          },
+          (payload) => {
+            console.log('Order change received:', payload);
+            if (payload.eventType === 'INSERT') {
+              const newOrder = {
+                ...payload.new,
+                items: typeof payload.new.items === 'string' 
+                  ? JSON.parse(payload.new.items) 
+                  : payload.new.items,
+              } as CODOrder;
+              setOrders(prev => [newOrder, ...prev]);
+              toast.info(`New order received: ${newOrder.order_number}`);
+            } else if (payload.eventType === 'UPDATE') {
+              const updatedOrder = {
+                ...payload.new,
+                items: typeof payload.new.items === 'string' 
+                  ? JSON.parse(payload.new.items) 
+                  : payload.new.items,
+              } as CODOrder;
+              setOrders(prev => 
+                prev.map(order => 
+                  order.id === updatedOrder.id ? updatedOrder : order
+                )
+              );
+            } else if (payload.eventType === 'DELETE') {
+              setOrders(prev => 
+                prev.filter(order => order.id !== payload.old.id)
+              );
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isAdmin]);
+
+  // Filter orders by status, search, and date
+  const filteredOrders = orders.filter(order => {
+    // Status filter
+    if (statusFilter !== "all" && order.status !== statusFilter) {
+      return false;
+    }
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        order.order_number.toLowerCase().includes(query) ||
+        order.customer_name.toLowerCase().includes(query) ||
+        order.customer_phone.includes(query) ||
+        (order.customer_email && order.customer_email.toLowerCase().includes(query)) ||
+        order.city.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+    
+    // Date filter
+    if (dateFilter !== "all") {
+      const orderDate = new Date(order.created_at);
+      const now = new Date();
+      
+      switch (dateFilter) {
+        case "today":
+          if (!isWithinInterval(orderDate, { 
+            start: startOfDay(now), 
+            end: endOfDay(now) 
+          })) return false;
+          break;
+        case "week":
+          if (!isWithinInterval(orderDate, { 
+            start: startOfDay(subDays(now, 7)), 
+            end: endOfDay(now) 
+          })) return false;
+          break;
+        case "month":
+          if (!isWithinInterval(orderDate, { 
+            start: startOfDay(subDays(now, 30)), 
+            end: endOfDay(now) 
+          })) return false;
+          break;
+      }
+    }
+    
+    return true;
+  });
+
+  // Export orders to CSV
+  const exportToCSV = useCallback(() => {
+    const headers = [
+      'Order Number',
+      'Date',
+      'Customer Name',
+      'Phone',
+      'Email',
+      'City',
+      'Address',
+      'Items',
+      'Subtotal',
+      'Shipping',
+      'Total',
+      'Status',
+      'Notes'
+    ];
+    
+    const rows = filteredOrders.map(order => [
+      order.order_number,
+      format(new Date(order.created_at), 'yyyy-MM-dd HH:mm'),
+      order.customer_name,
+      order.customer_phone,
+      order.customer_email || '',
+      order.city,
+      order.delivery_address.replace(/,/g, ';'),
+      order.items.map(i => `${i.productTitle} x${i.quantity}`).join('; '),
+      order.subtotal.toFixed(2),
+      order.shipping_cost.toFixed(2),
+      order.total.toFixed(2),
+      order.status,
+      order.notes?.replace(/,/g, ';') || ''
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `orders-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    
+    toast.success('Orders exported successfully');
+  }, [filteredOrders]);
 
   // Update order status
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -168,12 +322,6 @@ export default function AdminOrders() {
         .eq('id', orderId);
 
       if (error) throw error;
-
-      setOrders(prev => 
-        prev.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
       
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
@@ -183,11 +331,6 @@ export default function AdminOrders() {
       setIsUpdating(null);
     }
   };
-
-  // Filter orders by status
-  const filteredOrders = statusFilter === "all" 
-    ? orders 
-    : orders.filter(order => order.status === statusFilter);
 
   // Print invoice
   const printInvoice = (order: CODOrder) => {
@@ -386,6 +529,19 @@ export default function AdminOrders() {
     confirmed: orders.filter(o => o.status === 'confirmed').length,
     shipped: orders.filter(o => o.status === 'shipped').length,
     delivered: orders.filter(o => o.status === 'delivered').length,
+    cancelled: orders.filter(o => o.status === 'cancelled').length,
+    totalRevenue: orders
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + o.total, 0),
+    todayOrders: orders.filter(o => 
+      isWithinInterval(new Date(o.created_at), { 
+        start: startOfDay(new Date()), 
+        end: endOfDay(new Date()) 
+      })
+    ).length,
+    pendingValue: orders
+      .filter(o => ['pending', 'confirmed', 'preparing', 'shipped'].includes(o.status))
+      .reduce((sum, o) => sum + o.total, 0),
   };
 
   return (
@@ -397,20 +553,26 @@ export default function AdminOrders() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="font-display text-3xl font-bold text-foreground">
-              COD Orders
+              Order Management
             </h1>
             <p className="text-muted-foreground mt-1">
-              Manage Cash on Delivery orders
+              Manage and track Cash on Delivery orders
             </p>
           </div>
-          <Button onClick={fetchOrders} variant="outline" className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={exportToCSV} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+            <Button onClick={fetchOrders} variant="outline" className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        {/* Analytics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           <Card>
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
@@ -422,24 +584,13 @@ export default function AdminOrders() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <Clock className="w-8 h-8 text-yellow-500" />
                 <div>
-                  <p className="text-2xl font-bold">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-yellow-700">{stats.pending}</p>
                   <p className="text-xs text-muted-foreground">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-8 h-8 text-blue-500" />
-                <div>
-                  <p className="text-2xl font-bold">{stats.confirmed}</p>
-                  <p className="text-xs text-muted-foreground">Confirmed</p>
                 </div>
               </div>
             </CardContent>
@@ -450,7 +601,18 @@ export default function AdminOrders() {
                 <Truck className="w-8 h-8 text-indigo-500" />
                 <div>
                   <p className="text-2xl font-bold">{stats.shipped}</p>
-                  <p className="text-xs text-muted-foreground">Shipped</p>
+                  <p className="text-xs text-muted-foreground">In Transit</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+                <div>
+                  <p className="text-2xl font-bold text-green-700">{stats.delivered}</p>
+                  <p className="text-xs text-muted-foreground">Delivered</p>
                 </div>
               </div>
             </CardContent>
@@ -458,33 +620,74 @@ export default function AdminOrders() {
           <Card>
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
-                <CheckCircle className="w-8 h-8 text-green-500" />
+                <DollarSign className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold">{stats.delivered}</p>
-                  <p className="text-xs text-muted-foreground">Delivered</p>
+                  <p className="text-2xl font-bold">{stats.totalRevenue.toFixed(0)}</p>
+                  <p className="text-xs text-muted-foreground">Revenue (JOD)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-blue-500" />
+                <div>
+                  <p className="text-2xl font-bold">{stats.todayOrders}</p>
+                  <p className="text-xs text-muted-foreground">Today</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filter */}
-        <div className="flex items-center gap-4 mb-6">
-          <span className="text-sm text-muted-foreground">Filter by status:</span>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              {ORDER_STATUSES.map(status => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search orders, customers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-[140px]">
+                <Calendar className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {ORDER_STATUSES.map(status => (
+                  <SelectItem key={status.value} value={status.value}>
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        {/* Results count */}
+        {(searchQuery || statusFilter !== "all" || dateFilter !== "all") && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+            <AlertCircle className="w-4 h-4" />
+            Showing {filteredOrders.length} of {orders.length} orders
+          </div>
+        )}
 
         {/* Orders Table */}
         <Card>
