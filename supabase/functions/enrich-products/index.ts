@@ -6,21 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface FirecrawlResponse {
-  success: boolean;
-  data?: {
-    metadata?: {
-      ogImage?: string;
-      title?: string;
-    };
-    screenshot?: string;
-    markdown?: string;
-  };
-  error?: string;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,88 +14,90 @@ serve(async (req) => {
   try {
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlApiKey) {
-      throw new Error("Firecrawl API key not configured. Please connect Firecrawl in Settings → Connectors.");
+      throw new Error("Firecrawl API key not configured");
     }
 
-    // Use service role to bypass RLS for updates
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    console.log("🕵️‍♀️ Starting Product Enrichment with Firecrawl...");
+    console.log("🕵️‍♀️ Starting Product Enrichment with Firecrawl Search...");
 
-    // Find products that have a source_url but NO image
+    // Find products without images
     const { data: products, error } = await supabase
       .from("products")
-      .select("id, title, source_url")
-      .not("source_url", "is", null)
-      .is("image_url", null);
+      .select("id, title, brand")
+      .is("image_url", null)
+      .limit(10);
 
-    if (error) {
-      throw new Error(`Database Error: ${error.message}`);
-    }
+    if (error) throw new Error(`Database Error: ${error.message}`);
 
     console.log(`🎯 Found ${products?.length || 0} products to enrich.`);
 
     const results: { id: string; title: string; status: string; image_url?: string }[] = [];
 
-    // Loop through each product
     for (const product of products || []) {
-      console.log(`\nProcessing: ${product.title}...`);
+      console.log(`\nSearching for: ${product.title}...`);
 
       try {
-        // Use Firecrawl to scrape the page with screenshot and metadata
-        const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        // Search for the product to find images
+        const searchQuery = `${product.brand || ""} ${product.title} product image`;
+        
+        const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${firecrawlApiKey}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            url: product.source_url,
-            formats: ["screenshot", "markdown"],
-            onlyMainContent: false,
-            waitFor: 2000, // Wait for images to load
+            query: searchQuery,
+            limit: 3,
           }),
         });
 
-        const firecrawlData: FirecrawlResponse = await firecrawlResponse.json();
+        const searchData = await searchResponse.json();
 
-        if (!firecrawlData.success) {
-          console.error(`   ⚠️ Firecrawl error: ${firecrawlData.error}`);
-          results.push({ id: product.id, title: product.title, status: "scrape_failed" });
+        if (!searchData.success || !searchData.data?.length) {
+          console.log(`   ⚠️ No search results found`);
+          results.push({ id: product.id, title: product.title, status: "no_results" });
           continue;
         }
 
-        // Try to get OG image from metadata first, then fall back to screenshot
-        let imageUrl = firecrawlData.data?.metadata?.ogImage;
+        // Look for OG images in search results
+        let foundImage: string | null = null;
+        
+        for (const result of searchData.data) {
+          if (result.metadata?.ogImage && 
+              !result.metadata.ogImage.includes('logo') &&
+              !result.metadata.ogImage.includes('icon')) {
+            foundImage = result.metadata.ogImage;
+            break;
+          }
+        }
 
-        // If no OG image, we could use the screenshot (base64)
-        // For now, we'll only use the OG image since storing base64 is complex
-        if (imageUrl) {
+        if (foundImage) {
           const { error: updateError } = await supabase
             .from("products")
-            .update({ image_url: imageUrl })
+            .update({ image_url: foundImage })
             .eq("id", product.id);
 
           if (!updateError) {
-            console.log(`   ✅ Image found: ${imageUrl.substring(0, 60)}...`);
-            results.push({ id: product.id, title: product.title, status: "success", image_url: imageUrl });
+            console.log(`   ✅ Image found: ${foundImage.substring(0, 60)}...`);
+            results.push({ id: product.id, title: product.title, status: "success", image_url: foundImage });
           } else {
-            console.error(`   ❌ Update Failed:`, updateError.message);
             results.push({ id: product.id, title: product.title, status: "update_failed" });
           }
         } else {
-          console.log(`   ⚠️ No OG image found on page.`);
+          console.log(`   ⚠️ No suitable image in results`);
           results.push({ id: product.id, title: product.title, status: "no_image_found" });
         }
       } catch (err) {
-        console.error(`   ❌ Failed to process: ${product.source_url}`, err);
+        console.error(`   ❌ Error:`, err);
         results.push({ id: product.id, title: product.title, status: "error" });
       }
 
-      // Rate limiting - wait between requests
+      // Rate limiting
       await new Promise((r) => setTimeout(r, 500));
     }
 
