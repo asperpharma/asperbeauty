@@ -84,6 +84,7 @@ export type Database = {
           original_price: number | null
           price: number
           skin_concerns: string[] | null
+          source_url: string | null
           subcategory: string | null
           tags: string[] | null
           title: string
@@ -102,6 +103,7 @@ export type Database = {
           original_price?: number | null
           price: number
           skin_concerns?: string[] | null
+          source_url?: string | null
           subcategory?: string | null
           tags?: string[] | null
           title: string
@@ -120,6 +122,7 @@ export type Database = {
           original_price?: number | null
           price?: number
           skin_concerns?: string[] | null
+          source_url?: string | null
           subcategory?: string | null
           tags?: string[] | null
           title?: string
