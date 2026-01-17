@@ -11,12 +11,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCartStore } from "@/stores/cartStore";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Loader2, CheckCircle, MapPin, Phone, User, Mail, FileText } from "lucide-react";
 import { translateTitle } from "@/lib/productUtils";
+import { z } from "zod";
 
+// Validation schema
+const orderFormSchema = z.object({
+  customerName: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
+  customerPhone: z.string().trim().regex(/^07[789]\d{7}$/, "Invalid phone number format (07XXXXXXXX)"),
+  customerEmail: z.string().email("Invalid email").max(255).optional().or(z.literal('')),
+  deliveryAddress: z.string().trim().min(10, "Address must be at least 10 characters").max(500, "Address too long"),
+  city: z.string().min(1, "Please select a city"),
+  notes: z.string().trim().max(500, "Notes too long").optional().or(z.literal('')),
+});
 const JORDAN_CITIES = [
   "Amman",
   "Zarqa",
@@ -63,21 +72,11 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const validateForm = () => {
-    if (!formData.customerName.trim()) {
-      toast.error(isArabic ? "الرجاء إدخال الاسم" : "Please enter your name");
-      return false;
-    }
-    if (!formData.customerPhone.trim()) {
-      toast.error(isArabic ? "الرجاء إدخال رقم الهاتف" : "Please enter your phone number");
-      return false;
-    }
-    if (!formData.deliveryAddress.trim()) {
-      toast.error(isArabic ? "الرجاء إدخال عنوان التوصيل" : "Please enter delivery address");
-      return false;
-    }
-    if (!formData.city) {
-      toast.error(isArabic ? "الرجاء اختيار المدينة" : "Please select a city");
+  const validateForm = (): boolean => {
+    const result = orderFormSchema.safeParse(formData);
+    if (!result.success) {
+      const firstError = result.error.issues[0];
+      toast.error(firstError.message);
       return false;
     }
     return true;
@@ -95,44 +94,51 @@ export const CODCheckoutForm = ({ onSuccess, onCancel }: CODCheckoutFormProps) =
     setIsSubmitting(true);
 
     try {
-      // Prepare order items
+      // Prepare order items with sanitized data
       const orderItems = items.map(item => ({
-        productId: item.product.node.id,
-        productTitle: item.product.node.title,
-        variantId: item.variantId,
-        variantTitle: item.variantTitle,
-        price: item.price.amount,
-        currency: item.price.currencyCode,
-        quantity: item.quantity,
-        selectedOptions: item.selectedOptions,
+        productId: String(item.product.node.id).slice(0, 100),
+        productTitle: String(item.product.node.title).slice(0, 200),
+        variantId: String(item.variantId).slice(0, 100),
+        variantTitle: item.variantTitle ? String(item.variantTitle).slice(0, 100) : undefined,
+        price: String(item.price.amount),
+        currency: String(item.price.currencyCode),
+        quantity: Math.min(Math.max(1, item.quantity), 99),
+        selectedOptions: item.selectedOptions || {},
         imageUrl: item.product.node.images?.edges?.[0]?.node?.url || null,
       }));
 
-      // Generate a temporary order number for insert (will be replaced by trigger)
-      const tempOrderNumber = 'ASP-' + Date.now().toString().slice(-8);
+      // Call secure edge function instead of direct database insert
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cod-order`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            customerName: formData.customerName.trim(),
+            customerPhone: formData.customerPhone.trim(),
+            customerEmail: formData.customerEmail.trim() || '',
+            deliveryAddress: formData.deliveryAddress.trim(),
+            city: formData.city,
+            notes: formData.notes.trim() || '',
+            items: orderItems,
+            subtotal: subtotal,
+            shippingCost: shippingCost,
+            total: total,
+          }),
+        }
+      );
 
-      const { data, error } = await supabase
-        .from('cod_orders')
-        .insert({
-          order_number: tempOrderNumber,
-          customer_name: formData.customerName.trim(),
-          customer_phone: formData.customerPhone.trim(),
-          customer_email: formData.customerEmail.trim() || null,
-          delivery_address: formData.deliveryAddress.trim(),
-          city: formData.city,
-          notes: formData.notes.trim() || null,
-          items: orderItems,
-          subtotal: subtotal,
-          shipping_cost: shippingCost,
-          total: total,
-        })
-        .select('order_number')
-        .single();
+      const result = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create order');
+      }
 
       clearCart();
-      onSuccess(data.order_number);
+      onSuccess(result.orderNumber);
       
     } catch (error) {
       console.error('Failed to place COD order:', error);

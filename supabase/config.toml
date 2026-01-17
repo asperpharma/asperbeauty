@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.bulk-product-upload]
 verify_jwt = false
+
+[functions.create-cod-order]
+verify_jwt = false

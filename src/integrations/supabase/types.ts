@@ -17,6 +17,7 @@ export type Database = {
       cod_orders: {
         Row: {
           city: string
+          confirmation_token: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
@@ -34,6 +35,7 @@ export type Database = {
         }
         Insert: {
           city: string
+          confirmation_token?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
@@ -51,6 +53,7 @@ export type Database = {
         }
         Update: {
           city?: string
+          confirmation_token?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
