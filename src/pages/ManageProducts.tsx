@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Upload, Loader2, Image as ImageIcon, ShieldCheck, Wand2, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Loader2, Image as ImageIcon, ShieldCheck, Wand2, RefreshCw, Sparkles } from "lucide-react";
 import { getProductImage } from "@/lib/productImageUtils";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -62,6 +62,7 @@ const ManageProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isEnriching, setIsEnriching] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [enrichResults, setEnrichResults] = useState<{ id: string; title: string; status: string; image_url?: string }[] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -307,6 +308,44 @@ const ManageProducts = () => {
     }
   };
 
+  const handleGenerateAIImages = async () => {
+    try {
+      setIsGeneratingAI(true);
+      setEnrichResults(null);
+      
+      toast.info('Generating AI images for products without images...');
+      
+      const { data, error } = await supabase.functions.invoke('generate-product-images', {
+        body: { limit: 5 }
+      });
+      
+      if (error) throw error;
+      
+      setEnrichResults(data.results || []);
+      
+      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      
+      if (successCount > 0) {
+        toast.success(`Generated ${successCount} AI product images`);
+        // Refresh products list
+        const { data: refreshedProducts } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (refreshedProducts) setProducts(refreshedProducts);
+      } else if (data.total === 0) {
+        toast.info('All products already have images!');
+      } else {
+        toast.warning('AI image generation had issues. Check console for details.');
+      }
+    } catch (error: any) {
+      console.error('AI Generation error:', error);
+      toast.error('Failed to generate AI images');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   if (!authChecked || (authChecked && !isAdmin)) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
@@ -334,8 +373,22 @@ const ManageProducts = () => {
             
             <div className="flex items-center gap-3">
               <Button
+                onClick={handleGenerateAIImages}
+                disabled={isGeneratingAI || isEnriching}
+                variant="outline"
+                className="border-primary/30 text-primary hover:bg-primary/10"
+              >
+                {isGeneratingAI ? (
+                  <RefreshCw className="w-4 h-4 me-2 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4 me-2" />
+                )}
+                {isGeneratingAI ? 'Generating...' : 'Generate AI Images'}
+              </Button>
+              
+              <Button
                 onClick={handleEnrichProducts}
-                disabled={isEnriching}
+                disabled={isEnriching || isGeneratingAI}
                 variant="outline"
                 className="border-gold/30 text-gold hover:bg-gold/10"
               >
@@ -344,7 +397,7 @@ const ManageProducts = () => {
                 ) : (
                   <Wand2 className="w-4 h-4 me-2" />
                 )}
-                {isEnriching ? 'Enriching...' : 'Auto-Enrich Images'}
+                {isEnriching ? 'Enriching...' : 'Auto-Enrich'}
               </Button>
               
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
