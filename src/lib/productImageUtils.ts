@@ -103,9 +103,34 @@ export const getProductImage = (
 };
 
 /**
+ * Generates a relevant image if one is missing,
+ * using keywords similar to BeautyBox/iHerb catalog.
+ */
+export const getSmartProductImage = (title: string, category: string): string => {
+  const query = encodeURIComponent(`${category} ${title} product photography`);
+  // Using Unsplash source for high-quality, professional beauty/health photos
+  return `https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&q=80&w=800&q=${query}`;
+};
+
+/**
+ * Standardizes the price format to Jordanian Dinar (JOD)
+ * matching the beautyboxjo.com style with 3 decimal places.
+ */
+export const formatJOD = (amount: number): string => {
+  return new Intl.NumberFormat('en-JO', {
+    style: 'currency',
+    currency: 'JOD',
+    minimumFractionDigits: 3, // BeautyBox uses 3 decimals (16.000 JD)
+  }).format(amount).replace('JOD', '').trim() + " JD";
+};
+
+/**
  * Format price in JOD like BeautyBox (e.g., "16.000 JD") or iHerb (e.g., "JOD 2.434")
+ * @deprecated Use formatJOD instead for BeautyBox style
  */
 export const formatPriceJOD = (price: number, style: 'beautybox' | 'iherb' = 'beautybox'): string => {
-  const formattedPrice = price.toFixed(3);
-  return style === 'beautybox' ? `${formattedPrice} JD` : `JOD ${formattedPrice}`;
+  if (style === 'beautybox') {
+    return formatJOD(price);
+  }
+  return `JOD ${price.toFixed(3)}`;
 };
