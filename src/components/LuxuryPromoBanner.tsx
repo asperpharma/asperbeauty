@@ -5,69 +5,93 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LuxuryPromoBannerProps {
+  title?: string;
+  subtitle?: string;
+  image?: string;
+  position?: "left" | "right";
   variant?: "primary" | "secondary";
 }
 
-export const LuxuryPromoBanner = ({ variant = "primary" }: LuxuryPromoBannerProps) => {
+export const LuxuryPromoBanner = ({ 
+  title, 
+  subtitle, 
+  image,
+  position = "left",
+  variant = "primary"
+}: LuxuryPromoBannerProps) => {
   const { language } = useLanguage();
   const isAr = language === "ar";
 
-  const content = {
+  // Default content based on variant
+  const defaultContent = {
     primary: {
-      eyebrow: isAr ? "عرض حصري" : "Exclusive Offer",
-      headline: isAr ? "مجموعة الشتاء" : "Winter Collection",
-      subheadline: isAr ? "خصم 25% على جميع منتجات العناية بالبشرة" : "25% Off All Skincare",
-      cta: isAr ? "تسوق الآن" : "Shop Now",
-      href: "/offers",
-      bgClass: "bg-gradient-to-r from-primary/90 via-primary to-primary/80",
+      title: isAr ? "مجموعة الشتاء الفاخرة" : "Winter Luxury Collection",
+      subtitle: isAr ? "خصم 25% على جميع منتجات العناية بالبشرة المتميزة" : "25% Off All Premium Skincare Essentials",
+      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
     },
     secondary: {
-      eyebrow: isAr ? "وصل حديثاً" : "Just Arrived",
-      headline: isAr ? "مجموعة الربيع الجديدة" : "Spring Essentials",
-      subheadline: isAr ? "اكتشف أحدث المنتجات" : "Discover Fresh Arrivals",
-      cta: isAr ? "اكتشف المزيد" : "Explore",
-      href: "/shop",
-      bgClass: "bg-gradient-to-r from-muted via-muted/80 to-muted",
+      title: isAr ? "وصل حديثاً - مجموعة الربيع" : "New Arrivals — Spring Edit",
+      subtitle: isAr ? "اكتشف أحدث المنتجات من أفضل العلامات التجارية" : "Discover the freshest picks from world-class brands",
+      image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
     },
   };
 
-  const c = content[variant];
-  const isSecondary = variant === "secondary";
+  const content = defaultContent[variant];
+  const displayTitle = title || content.title;
+  const displaySubtitle = subtitle || content.subtitle;
+  const displayImage = image || content.image;
+
+  const isImageLeft = position === "left";
 
   return (
-    <section className={`${c.bgClass} py-16 md:py-20`}>
-      <div className="container mx-auto max-w-4xl px-4 text-center">
+    <section className="relative grid min-h-[500px] overflow-hidden bg-muted md:grid-cols-2 md:min-h-[600px]">
+      {/* Content Side */}
+      <div 
+        className={`flex flex-col items-center justify-center px-8 py-16 text-center md:items-start md:px-16 md:py-24 md:text-left ${
+          isImageLeft ? "md:order-2" : "md:order-1"
+        }`}
+      >
         {/* Eyebrow */}
-        <span className={`mb-3 inline-block font-sans text-xs font-bold uppercase tracking-[0.3em] ${isSecondary ? "text-primary" : "text-primary-foreground/80"}`}>
-          {c.eyebrow}
+        <span className="mb-4 font-sans text-xs font-bold uppercase tracking-[0.3em] text-primary">
+          {isAr ? "عرض لفترة محدودة" : "Limited Time Only"}
         </span>
 
-        {/* Main Headline */}
-        <h2 className={`font-serif text-4xl font-light tracking-tight md:text-5xl lg:text-6xl ${isSecondary ? "text-foreground" : "text-primary-foreground"}`}>
-          {c.headline}
+        {/* Main Title */}
+        <h2 className="font-serif text-4xl font-light leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+          {displayTitle}
         </h2>
 
-        {/* Subheadline */}
-        <p className={`mx-auto mt-4 max-w-md font-sans text-lg ${isSecondary ? "text-muted-foreground" : "text-primary-foreground/70"}`}>
-          {c.subheadline}
+        {/* Subtitle */}
+        <p className="mt-4 max-w-md font-sans text-base leading-relaxed text-muted-foreground md:text-lg">
+          {displaySubtitle}
         </p>
 
         {/* CTA Button */}
         <Button
           asChild
           size="lg"
-          variant={isSecondary ? "default" : "outline"}
-          className={`group mt-8 px-8 py-6 font-sans text-sm font-medium uppercase tracking-widest transition-all duration-300 ${
-            isSecondary 
-              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-              : "border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-          }`}
+          className="group mt-8 bg-primary px-8 py-6 font-sans text-sm font-medium uppercase tracking-widest text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:shadow-lg"
         >
-          <Link to={c.href}>
-            {c.cta}
+          <Link to="/offers">
+            {isAr ? "اكتشف الآن" : "Discover Now"}
             <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </Button>
+      </div>
+
+      {/* Image Side */}
+      <div 
+        className={`relative min-h-[300px] overflow-hidden md:min-h-full ${
+          isImageLeft ? "md:order-1" : "md:order-2"
+        }`}
+      >
+        <img
+          src={displayImage}
+          alt={displayTitle}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+        />
+        {/* Subtle Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-muted/20 to-transparent" />
       </div>
     </section>
   );

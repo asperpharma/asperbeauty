@@ -52,8 +52,8 @@ const Index = () => {
         {/* 4. URGENCY LAYER: iHerb-style "Deal of the Day" */}
         <DealOfTheDay />
 
-        {/* 5. ADVERTISEMENT LAYER: The "High-End" Promo */}
-        <LuxuryPromoBanner variant="primary" />
+        {/* 5. ADVERTISEMENT LAYER: The "High-End" Promo - Image Left */}
+        <LuxuryPromoBanner variant="primary" position="left" />
 
         {/* 6. DISCOVERY LAYER: Featured Collection */}
         <FeaturedCollection />
@@ -61,8 +61,8 @@ const Index = () => {
         {/* 7. BEST SELLERS LAYER: Global Favorites */}
         <BestSellersSection />
 
-        {/* 8. ADVERTISEMENT LAYER 2: Secondary Promo */}
-        <LuxuryPromoBanner variant="secondary" />
+        {/* 8. ADVERTISEMENT LAYER 2: Secondary Promo - Image Right */}
+        <LuxuryPromoBanner variant="secondary" position="right" />
 
         {/* 9. NEWSLETTER LAYER: Email Capture */}
         <Newsletter />
