@@ -1,6 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,6 +38,13 @@ const orderSchema = z.object({
   captchaToken: z.string().min(1, "CAPTCHA verification required"),
 });
 
+interface OrderItem {
+  productTitle: string;
+  variantTitle?: string;
+  price: string;
+  quantity: number;
+}
+
 // Verify hCaptcha token
 async function verifyHCaptcha(token: string): Promise<boolean> {
   const secretKey = Deno.env.get('HCAPTCHA_SECRET_KEY');
@@ -60,6 +68,217 @@ async function verifyHCaptcha(token: string): Promise<boolean> {
     return result.success === true;
   } catch (error) {
     console.error('hCaptcha verification error:', error);
+    return false;
+  }
+}
+
+// Generate order confirmation email HTML
+function generateOrderEmailHtml(
+  customerName: string,
+  orderNumber: string,
+  items: OrderItem[],
+  subtotal: number,
+  shippingCost: number,
+  total: number,
+  deliveryAddress: string,
+  city: string,
+  customerPhone: string
+): string {
+  const itemsHtml = items.map(item => `
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">
+        <strong>${item.productTitle}</strong>
+        ${item.variantTitle ? `<br><span style="color: #666; font-size: 13px;">${item.variantTitle}</span>` : ''}
+      </td>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${item.quantity}</td>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right;">${parseFloat(item.price).toFixed(2)} JOD</td>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right;">${(parseFloat(item.price) * item.quantity).toFixed(2)} JOD</td>
+    </tr>
+  `).join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - Asper Beauty</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f5f2;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #4A0E19 0%, #6b1525 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="margin: 0; color: #D4AF37; font-size: 28px; font-weight: 700; letter-spacing: 1px;">ASPER BEAUTY</h1>
+              <p style="margin: 8px 0 0; color: #F3E5DC; font-size: 14px;">Your Luxury Beauty Destination in Jordan</p>
+            </td>
+          </tr>
+          
+          <!-- Order Confirmation -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 70px; height: 70px; background-color: #d4edda; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                  <span style="color: #28a745; font-size: 36px;">✓</span>
+                </div>
+                <h2 style="margin: 0; color: #4A0E19; font-size: 24px;">Order Confirmed!</h2>
+                <p style="margin: 10px 0 0; color: #666;">Thank you for your order, ${customerName}!</p>
+              </div>
+              
+              <div style="background-color: #f8f5f2; border-radius: 8px; padding: 20px; margin-bottom: 30px; text-align: center;">
+                <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Order Number</p>
+                <p style="margin: 0; color: #4A0E19; font-size: 22px; font-weight: 700;">${orderNumber}</p>
+              </div>
+              
+              <!-- Order Items -->
+              <h3 style="color: #4A0E19; font-size: 18px; margin: 0 0 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">Order Details</h3>
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                  <tr style="background-color: #f8f5f2;">
+                    <th style="padding: 12px; text-align: left; color: #4A0E19; font-size: 13px;">Product</th>
+                    <th style="padding: 12px; text-align: center; color: #4A0E19; font-size: 13px;">Qty</th>
+                    <th style="padding: 12px; text-align: right; color: #4A0E19; font-size: 13px;">Price</th>
+                    <th style="padding: 12px; text-align: right; color: #4A0E19; font-size: 13px;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+              
+              <!-- Order Summary -->
+              <table role="presentation" style="width: 100%; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 8px 0; color: #666;">Subtotal</td>
+                  <td style="padding: 8px 0; text-align: right; color: #333;">${subtotal.toFixed(2)} JOD</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666;">Shipping</td>
+                  <td style="padding: 8px 0; text-align: right; color: ${shippingCost === 0 ? '#28a745' : '#333'};">${shippingCost === 0 ? 'FREE' : shippingCost.toFixed(2) + ' JOD'}</td>
+                </tr>
+                <tr style="border-top: 2px solid #D4AF37;">
+                  <td style="padding: 15px 0 0; color: #4A0E19; font-size: 18px; font-weight: 700;">Total</td>
+                  <td style="padding: 15px 0 0; text-align: right; color: #4A0E19; font-size: 18px; font-weight: 700;">${total.toFixed(2)} JOD</td>
+                </tr>
+              </table>
+              
+              <!-- Delivery Info -->
+              <h3 style="color: #4A0E19; font-size: 18px; margin: 0 0 15px; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">Delivery Information</h3>
+              <table role="presentation" style="width: 100%; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 8px 0; color: #666; width: 120px;">Name:</td>
+                  <td style="padding: 8px 0; color: #333;">${customerName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666;">Phone:</td>
+                  <td style="padding: 8px 0; color: #333;">${customerPhone}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666;">City:</td>
+                  <td style="padding: 8px 0; color: #333;">${city}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; vertical-align: top;">Address:</td>
+                  <td style="padding: 8px 0; color: #333;">${deliveryAddress}</td>
+                </tr>
+              </table>
+              
+              <!-- Payment Method -->
+              <div style="background-color: #fff8e1; border: 1px solid #D4AF37; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 30px;">
+                <p style="margin: 0; color: #4A0E19; font-size: 16px; font-weight: 600;">💵 Cash on Delivery</p>
+                <p style="margin: 8px 0 0; color: #666; font-size: 14px;">Please have ${total.toFixed(2)} JOD ready upon delivery</p>
+              </div>
+              
+              <!-- What's Next -->
+              <div style="background-color: #f8f5f2; border-radius: 8px; padding: 20px;">
+                <h4 style="margin: 0 0 15px; color: #4A0E19; font-size: 16px;">What's Next?</h4>
+                <ol style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+                  <li>We'll call you to confirm your order</li>
+                  <li>Your order will be prepared and shipped</li>
+                  <li>Pay cash when your order arrives</li>
+                </ol>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #4A0E19; padding: 25px; text-align: center; border-radius: 0 0 12px 12px;">
+              <p style="margin: 0 0 10px; color: #D4AF37; font-size: 14px;">Need help? Contact us:</p>
+              <p style="margin: 0; color: #F3E5DC; font-size: 13px;">📞 +962 XXX XXXX | 📧 support@asperbeauty.com</p>
+              <p style="margin: 15px 0 0; color: #999; font-size: 12px;">© 2024 Asper Beauty. All rights reserved.</p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+// Send order confirmation email
+async function sendOrderConfirmationEmail(
+  customerEmail: string,
+  customerName: string,
+  orderNumber: string,
+  items: OrderItem[],
+  subtotal: number,
+  shippingCost: number,
+  total: number,
+  deliveryAddress: string,
+  city: string,
+  customerPhone: string
+): Promise<boolean> {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  
+  if (!resendApiKey) {
+    console.warn('RESEND_API_KEY not configured - skipping email');
+    return false;
+  }
+
+  if (!customerEmail) {
+    console.log('No customer email provided - skipping confirmation email');
+    return false;
+  }
+
+  try {
+    const resend = new Resend(resendApiKey);
+    
+    const emailHtml = generateOrderEmailHtml(
+      customerName,
+      orderNumber,
+      items,
+      subtotal,
+      shippingCost,
+      total,
+      deliveryAddress,
+      city,
+      customerPhone
+    );
+
+    const { data, error } = await resend.emails.send({
+      from: 'Asper Beauty <onboarding@resend.dev>', // Use your verified domain in production
+      to: [customerEmail],
+      subject: `Order Confirmed - ${orderNumber} | Asper Beauty`,
+      html: emailHtml,
+    });
+
+    if (error) {
+      console.error('Failed to send confirmation email:', error);
+      return false;
+    }
+
+    console.log('Confirmation email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
     return false;
   }
 }
@@ -145,7 +364,23 @@ serve(async (req) => {
 
     console.log('Order created successfully:', order.order_number);
 
-    // Return only the order number (not the confirmation token - that's for future use if needed)
+    // Send confirmation email (don't fail the order if email fails)
+    if (data.customerEmail) {
+      await sendOrderConfirmationEmail(
+        data.customerEmail,
+        data.customerName,
+        order.order_number,
+        sanitizedItems,
+        data.subtotal,
+        data.shippingCost,
+        data.total,
+        data.deliveryAddress,
+        data.city,
+        data.customerPhone
+      );
+    }
+
+    // Return only the order number
     return new Response(
       JSON.stringify({ 
         success: true, 
