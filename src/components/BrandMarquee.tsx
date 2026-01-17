@@ -27,16 +27,16 @@ export const BrandMarquee = () => {
   const isAr = language === "ar";
 
   return (
-    <section className="w-full bg-gradient-to-b from-cream-50 to-background py-16 md:py-24 overflow-hidden">
+    <section className="w-full bg-gradient-to-b from-cream to-background py-16 md:py-24 overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Elegant Header */}
         <div className="text-center mb-12 md:mb-16">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold-500/50" />
-            <span className="text-gold-600 text-xs tracking-[0.4em] uppercase font-medium">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
+            <span className="text-gold text-xs tracking-[0.4em] uppercase font-medium">
               ✦
             </span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold-500/50" />
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
           </div>
           <p className="font-serif text-xs md:text-sm uppercase tracking-[0.3em] text-muted-foreground">
             {isAr ? "موزع معتمد للعلامات الفاخرة" : "Authorized Luxury Retailer"}
@@ -50,17 +50,17 @@ export const BrandMarquee = () => {
               key={brand.name}
               className="group relative flex items-center justify-center p-6 md:p-8 
                          bg-white/80 backdrop-blur-sm rounded-xl
-                         border border-cream-200/50 
+                         border border-cream-dark/50 
                          shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)]
                          hover:shadow-[0_8px_32px_-4px_rgba(212,175,55,0.15)]
-                         hover:border-gold-300/50
+                         hover:border-gold/50
                          transition-all duration-500 ease-out
                          hover:-translate-y-1"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Subtle gold glow on hover */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-gold-100/0 to-gold-200/0 
-                              group-hover:from-gold-100/20 group-hover:to-gold-200/10 
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-gold-light/0 to-gold/0 
+                              group-hover:from-gold-light/20 group-hover:to-gold/10 
                               transition-all duration-500" />
               
               <img
@@ -75,7 +75,7 @@ export const BrandMarquee = () => {
                   e.currentTarget.style.display = 'none';
                   if (e.currentTarget.parentElement) {
                     const fallback = document.createElement('span');
-                    fallback.className = 'relative font-serif text-sm md:text-base font-medium text-foreground/80 tracking-wider group-hover:text-burgundy-700 transition-colors duration-300';
+                    fallback.className = 'relative font-serif text-sm md:text-base font-medium text-foreground/80 tracking-wider group-hover:text-burgundy transition-colors duration-300';
                     fallback.textContent = brand.name;
                     e.currentTarget.parentElement.appendChild(fallback);
                   }
@@ -87,11 +87,11 @@ export const BrandMarquee = () => {
 
         {/* Bottom decorative element */}
         <div className="flex items-center justify-center gap-4 mt-12">
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
-          <span className="text-gold-500/60 text-[10px] tracking-[0.5em] uppercase">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+          <span className="text-gold/60 text-[10px] tracking-[0.5em] uppercase">
             {isAr ? "أصالة مضمونة" : "Authenticity Guaranteed"}
           </span>
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold-500/30 to-transparent" />
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         </div>
       </div>
     </section>
