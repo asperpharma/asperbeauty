@@ -434,7 +434,7 @@ const AnimatedShaderHero: React.FC<HeroProps> = ({
     const handleScroll = () => {
       if (portraitRef.current) {
         const scrollY = window.scrollY;
-        const parallaxSpeed = 0.3;
+        const parallaxSpeed = 0.15;
         portraitRef.current.style.transform = `translateY(${scrollY * parallaxSpeed}px)`;
       }
     };
