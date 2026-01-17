@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getProductImage, formatPriceJOD } from "@/lib/productImageUtils";
+import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { ProductQuickView } from "./ProductQuickView";
 import { useCartStore } from "@/stores/cartStore";
 
@@ -182,11 +182,11 @@ const ProductCard = ({
           <div className="flex items-baseline gap-2 mb-3">
             {isOnSale && product.original_price && (
               <span className="text-sm text-gray-400 line-through">
-                {formatPriceJOD(product.original_price)}
+                {formatJOD(product.original_price)}
               </span>
             )}
             <span className={`text-base font-bold ${isOnSale ? 'text-[#E53E3E]' : 'text-gray-900'}`}>
-              {formatPriceJOD(product.price)}
+              {formatJOD(product.price)}
             </span>
           </div>
 

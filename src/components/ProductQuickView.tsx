@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ShoppingBag, Minus, Plus, Star, Sparkles, X, Percent, Truck, Shield, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getProductImage, formatPriceJOD } from "@/lib/productImageUtils";
+import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { useCartStore } from "@/stores/cartStore";
 
 interface Product {
@@ -169,16 +169,16 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               <div className="flex items-baseline gap-3">
                 {isOnSale && product.original_price && (
                   <span className="text-lg text-gray-400 line-through">
-                    {formatPriceJOD(product.original_price)}
+                    {formatJOD(product.original_price)}
                   </span>
                 )}
                 <span className={`text-2xl font-bold ${isOnSale ? 'text-[#E53E3E]' : 'text-gray-900'}`}>
-                  {formatPriceJOD(product.price)}
+                  {formatJOD(product.price)}
                 </span>
               </div>
               {isOnSale && (
                 <p className="text-sm text-[#E53E3E] mt-1 font-medium">
-                  {language === 'ar' ? `وفر ${formatPriceJOD(product.original_price! - product.price)}` : `Save ${formatPriceJOD(product.original_price! - product.price)}`}
+                  {language === 'ar' ? `وفر ${formatJOD(product.original_price! - product.price)}` : `Save ${formatJOD(product.original_price! - product.price)}`}
                 </p>
               )}
             </div>
@@ -220,7 +220,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               className="w-full bg-burgundy hover:bg-burgundy-light text-white text-sm uppercase tracking-wide py-6 shadow-md hover:shadow-lg transition-all duration-200"
             >
               <ShoppingBag className="w-5 h-5 me-2" />
-              {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'} - {formatPriceJOD(product.price * quantity)}
+              {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'} - {formatJOD(product.price * quantity)}
             </Button>
 
             {/* Trust Badges - iHerb/BeautyBox style */}
