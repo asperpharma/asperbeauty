@@ -1,5 +1,6 @@
 import React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Award, ShieldCheck, Sparkles, Crown, Gem } from "lucide-react";
 
 // Premium brand logos with elegant styling
 import ceraveLogo from "@/assets/brands/cerave-logo.webp";
@@ -29,14 +30,19 @@ export const BrandMarquee = () => {
   return (
     <section className="w-full bg-gradient-to-b from-cream to-background py-16 md:py-24 overflow-hidden">
       <div className="container mx-auto px-4">
-        {/* Elegant Header */}
+        {/* Elegant Header with Premium Icons */}
         <div className="text-center mb-12 md:mb-16">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-gold/50" />
-            <span className="text-gold text-xs tracking-[0.4em] uppercase font-medium">
-              ✦
-            </span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-gold/50" />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-gold/60" />
+            <div className="relative flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gold/70 animate-pulse" />
+              <div className="relative">
+                <Crown className="w-8 h-8 md:w-10 md:h-10 text-gold drop-shadow-[0_2px_8px_rgba(212,175,55,0.4)]" strokeWidth={1.5} />
+                <div className="absolute inset-0 bg-gold/20 rounded-full blur-xl animate-pulse" />
+              </div>
+              <Sparkles className="w-4 h-4 text-gold/70 animate-pulse" style={{ animationDelay: '0.5s' }} />
+            </div>
+            <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-gold/60" />
           </div>
           <p className="font-serif text-xs md:text-sm uppercase tracking-[0.3em] text-muted-foreground">
             {isAr ? "موزع معتمد للعلامات الفاخرة" : "Authorized Luxury Retailer"}
@@ -85,13 +91,17 @@ export const BrandMarquee = () => {
           ))}
         </div>
 
-        {/* Bottom decorative element */}
-        <div className="flex items-center justify-center gap-4 mt-12">
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-          <span className="text-gold/60 text-[10px] tracking-[0.5em] uppercase">
-            {isAr ? "أصالة مضمونة" : "Authenticity Guaranteed"}
-          </span>
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+        {/* Bottom decorative element with Premium Icons */}
+        <div className="flex items-center justify-center gap-3 mt-12 md:mt-16">
+          <div className="h-px w-16 md:w-28 bg-gradient-to-r from-transparent via-gold/40 to-gold/60" />
+          <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-gold/5 via-gold/10 to-gold/5 rounded-full border border-gold/20">
+            <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-gold drop-shadow-[0_1px_4px_rgba(212,175,55,0.3)]" strokeWidth={1.5} />
+            <span className="text-gold text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase">
+              {isAr ? "أصالة مضمونة" : "Authenticity Guaranteed"}
+            </span>
+            <Award className="w-5 h-5 md:w-6 md:h-6 text-gold drop-shadow-[0_1px_4px_rgba(212,175,55,0.3)]" strokeWidth={1.5} />
+          </div>
+          <div className="h-px w-16 md:w-28 bg-gradient-to-l from-transparent via-gold/40 to-gold/60" />
         </div>
       </div>
     </section>
