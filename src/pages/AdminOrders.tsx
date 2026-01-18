@@ -337,6 +337,14 @@ export default function AdminOrders() {
     }
   };
 
+  // HTML escape function to prevent XSS attacks
+  const escapeHtml = (text: string | null | undefined): string => {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
   // Print invoice
   const printInvoice = (order: CODOrder) => {
     const printWindow = window.open('', '_blank');
@@ -351,7 +359,7 @@ export default function AdminOrders() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Invoice - ${order.order_number}</title>
+        <title>Invoice - ${escapeHtml(order.order_number)}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -388,7 +396,7 @@ export default function AdminOrders() {
           <div class="logo">ASPER Beauty</div>
           <div class="invoice-title">
             <h1>INVOICE</h1>
-            <p>${order.order_number}</p>
+            <p>${escapeHtml(order.order_number)}</p>
             <p>${format(new Date(order.created_at), 'MMMM d, yyyy')}</p>
           </div>
         </div>
@@ -396,22 +404,22 @@ export default function AdminOrders() {
         <div class="info-section">
           <div class="info-block">
             <h3>Bill To</h3>
-            <p><strong>${order.customer_name}</strong></p>
-            <p>${order.delivery_address}</p>
-            <p>${order.city}</p>
-            <p>${order.customer_phone}</p>
-            ${order.customer_email ? `<p>${order.customer_email}</p>` : ''}
+            <p><strong>${escapeHtml(order.customer_name)}</strong></p>
+            <p>${escapeHtml(order.delivery_address)}</p>
+            <p>${escapeHtml(order.city)}</p>
+            <p>${escapeHtml(order.customer_phone)}</p>
+            ${order.customer_email ? `<p>${escapeHtml(order.customer_email)}</p>` : ''}
           </div>
           <div class="info-block" style="text-align: right;">
             <h3>Order Status</h3>
-            <span class="status-badge">${statusLabel}</span>
+            <span class="status-badge">${escapeHtml(statusLabel)}</span>
           </div>
         </div>
 
         ${order.notes ? `
         <div class="notes">
           <h3>Order Notes</h3>
-          <p>${order.notes}</p>
+          <p>${escapeHtml(order.notes)}</p>
         </div>
         ` : ''}
 
@@ -428,8 +436,8 @@ export default function AdminOrders() {
             ${order.items.map(item => `
               <tr>
                 <td>
-                  <div class="item-name">${item.productTitle}</div>
-                  ${item.variantTitle !== "Default Title" ? `<div class="item-variant">${item.selectedOptions.map(o => o.value).join(' / ')}</div>` : ''}
+                  <div class="item-name">${escapeHtml(item.productTitle)}</div>
+                  ${item.variantTitle !== "Default Title" ? `<div class="item-variant">${item.selectedOptions.map(o => escapeHtml(o.value)).join(' / ')}</div>` : ''}
                 </td>
                 <td class="text-right">${parseFloat(item.price).toFixed(2)} JOD</td>
                 <td class="text-right">${item.quantity}</td>
