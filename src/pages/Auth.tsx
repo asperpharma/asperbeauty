@@ -3,15 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  useLoginRateLimiter, 
+  useSignupRateLimiter, 
+  usePasswordResetRateLimiter, 
+  useMFARateLimiter 
+} from '@/hooks/useRateLimiter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail, User, AlertTriangle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Validation schemas
 const emailSchema = z.string().trim().email('Invalid email address').max(255, 'Email too long');
@@ -29,9 +36,32 @@ const signupSchema = z.object({
   fullName: nameSchema,
 });
 
+// Helper function to format lockout time
+const formatLockoutTime = (seconds: number): string => {
+  if (seconds < 60) return `${seconds} seconds`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes < 60) {
+    return remainingSeconds > 0 
+      ? `${minutes} minute${minutes > 1 ? 's' : ''} ${remainingSeconds} second${remainingSeconds > 1 ? 's' : ''}`
+      : `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes > 0
+    ? `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}`
+    : `${hours} hour${hours > 1 ? 's' : ''}`;
+};
+
 export default function Auth() {
   const navigate = useNavigate();
   const { user, loading, mfaRequired, signIn, signUp, verifyMFA, factors } = useAuth();
+  
+  // Rate limiters for brute force protection
+  const loginRateLimiter = useLoginRateLimiter();
+  const signupRateLimiter = useSignupRateLimiter();
+  const passwordResetRateLimiter = usePasswordResetRateLimiter();
+  const mfaRateLimiter = useMFARateLimiter();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,20 +114,28 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm(true)) return;
+    
+    // Check rate limit
+    if (!loginRateLimiter.canAttempt) {
+      toast.error(`Too many login attempts. Try again in ${formatLockoutTime(loginRateLimiter.lockoutRemaining)}`);
+      return;
+    }
 
     setIsSubmitting(true);
     const { error } = await signIn(email, password);
     setIsSubmitting(false);
 
     if (error) {
+      loginRateLimiter.recordAttempt();
       if (error.message.includes('Invalid login credentials')) {
-        toast.error('Invalid email or password');
+        toast.error(`Invalid email or password. ${loginRateLimiter.remainingAttempts - 1} attempts remaining.`);
       } else if (error.message.includes('Email not confirmed')) {
         toast.error('Please confirm your email before logging in');
       } else {
         toast.error(error.message);
       }
     } else {
+      loginRateLimiter.recordSuccess();
       toast.success('Welcome back!');
     }
   };
@@ -105,8 +143,15 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm(false)) return;
+    
+    // Check rate limit
+    if (!signupRateLimiter.canAttempt) {
+      toast.error(`Too many signup attempts. Try again in ${formatLockoutTime(signupRateLimiter.lockoutRemaining)}`);
+      return;
+    }
 
     setIsSubmitting(true);
+    signupRateLimiter.recordAttempt();
     const { error } = await signUp(email, password, fullName);
     setIsSubmitting(false);
 
@@ -117,6 +162,7 @@ export default function Auth() {
         toast.error(error.message);
       }
     } else {
+      signupRateLimiter.recordSuccess();
       toast.success('Account created successfully!');
     }
   };
@@ -133,8 +179,15 @@ export default function Auth() {
       }
       return;
     }
+    
+    // Check rate limit
+    if (!passwordResetRateLimiter.canAttempt) {
+      toast.error(`Too many password reset requests. Try again in ${formatLockoutTime(passwordResetRateLimiter.lockoutRemaining)}`);
+      return;
+    }
 
     setIsSubmitting(true);
+    passwordResetRateLimiter.recordAttempt();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?reset=true`,
     });
@@ -154,15 +207,23 @@ export default function Auth() {
       toast.error('Please enter verification code');
       return;
     }
+    
+    // Check rate limit
+    if (!mfaRateLimiter.canAttempt) {
+      toast.error(`Too many verification attempts. Try again in ${formatLockoutTime(mfaRateLimiter.lockoutRemaining)}`);
+      return;
+    }
 
     setIsSubmitting(true);
     const { error } = await verifyMFA(selectedFactorId, mfaCode);
     setIsSubmitting(false);
 
     if (error) {
-      toast.error('Invalid verification code');
+      mfaRateLimiter.recordAttempt();
+      toast.error(`Invalid verification code. ${mfaRateLimiter.remainingAttempts - 1} attempts remaining.`);
       setMfaCode('');
     } else {
+      mfaRateLimiter.recordSuccess();
       toast.success('Verification successful!');
     }
   };
@@ -193,6 +254,14 @@ export default function Auth() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleMFAVerify} className="space-y-6">
+                {!mfaRateLimiter.canAttempt && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      Too many attempts. Try again in {formatLockoutTime(mfaRateLimiter.lockoutRemaining)}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="mfa-code">Verification Code</Label>
                   <Input
@@ -205,12 +274,13 @@ export default function Auth() {
                     placeholder="000000"
                     className="text-center text-2xl tracking-widest"
                     maxLength={6}
+                    disabled={!mfaRateLimiter.canAttempt}
                   />
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isSubmitting || mfaCode.length !== 6}
+                  disabled={isSubmitting || mfaCode.length !== 6 || !mfaRateLimiter.canAttempt}
                 >
                   {isSubmitting ? (
                     <>
@@ -270,6 +340,14 @@ export default function Auth() {
                 </div>
               ) : (
                 <form onSubmit={handleForgotPassword} className="space-y-4">
+                  {!passwordResetRateLimiter.canAttempt && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Too many requests. Try again in {formatLockoutTime(passwordResetRateLimiter.lockoutRemaining)}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="reset-email">Email</Label>
                     <div className="relative">
@@ -281,13 +359,14 @@ export default function Auth() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
+                        disabled={!passwordResetRateLimiter.canAttempt}
                       />
                     </div>
                     {errors.email && (
                       <p className="text-sm text-destructive">{errors.email}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || !passwordResetRateLimiter.canAttempt}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -339,6 +418,14 @@ export default function Auth() {
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
+                  {!loginRateLimiter.canAttempt && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Too many login attempts. Try again in {formatLockoutTime(loginRateLimiter.lockoutRemaining)}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <div className="relative">
@@ -350,6 +437,7 @@ export default function Auth() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
+                        disabled={!loginRateLimiter.canAttempt}
                       />
                     </div>
                     {errors.email && (
@@ -367,11 +455,13 @@ export default function Auth() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="pl-10 pr-10"
+                        disabled={!loginRateLimiter.canAttempt}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        disabled={!loginRateLimiter.canAttempt}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -389,7 +479,7 @@ export default function Auth() {
                       Forgot password?
                     </button>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || !loginRateLimiter.canAttempt}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -404,6 +494,14 @@ export default function Auth() {
 
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
+                  {!signupRateLimiter.canAttempt && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Too many signup attempts. Try again in {formatLockoutTime(signupRateLimiter.lockoutRemaining)}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name (optional)</Label>
                     <div className="relative">
@@ -415,6 +513,7 @@ export default function Auth() {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         className="pl-10"
+                        disabled={!signupRateLimiter.canAttempt}
                       />
                     </div>
                     {errors.fullName && (
@@ -432,6 +531,7 @@ export default function Auth() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
+                        disabled={!signupRateLimiter.canAttempt}
                       />
                     </div>
                     {errors.email && (
@@ -449,11 +549,13 @@ export default function Auth() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="pl-10 pr-10"
+                        disabled={!signupRateLimiter.canAttempt}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        disabled={!signupRateLimiter.canAttempt}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -462,7 +564,7 @@ export default function Auth() {
                       <p className="text-sm text-destructive">{errors.password}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || !signupRateLimiter.canAttempt}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
