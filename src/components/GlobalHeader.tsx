@@ -99,7 +99,7 @@ export const GlobalHeader = () => {
             <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
               <Link to="/" className="block">
                 <h1 className="font-serif text-2xl font-light tracking-wider text-foreground md:text-3xl">
-                  <span className="font-normal">ASPER</span>
+                  <span className="font-normal text-gold">ASPER</span>
                   <span className="text-primary ml-1 text-sm font-sans tracking-widest uppercase">Beauty</span>
                 </h1>
               </Link>
@@ -113,7 +113,7 @@ export const GlobalHeader = () => {
             </nav>
 
             {/* RIGHT: Tools (Search, Account, Wishlist, Cart) */}
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-3 md:gap-4 text-gold">
               
               {/* Desktop Search Trigger */}
               <div onClick={() => setSearchOpen(true)} className="hidden md:flex items-center cursor-pointer group">
