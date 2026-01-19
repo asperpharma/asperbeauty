@@ -107,7 +107,7 @@ export const GlobalHeader = () => {
 
             {/* MIDDLE: Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-              {navItems.map(item => <Link key={item.name} to={item.href} className="group flex items-center gap-1 font-sans text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:text-primary">
+              {navItems.map(item => <Link key={item.name} to={item.href} className="group flex items-center gap-1 font-sans text-sm font-medium uppercase tracking-widest transition-colors text-rose-50">
                   {isAr ? item.nameAr : item.name}
                 </Link>)}
             </nav>
