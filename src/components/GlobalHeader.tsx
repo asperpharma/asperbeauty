@@ -85,7 +85,7 @@ export const GlobalHeader = () => {
   }];
   return <>
       <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-500", isScrolled ? "bg-background/95 backdrop-blur-lg shadow-sm border-b border-muted" : "bg-transparent")}>
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 text-gold">
           <div className="flex h-20 items-center justify-between text-gold">
             
             {/* LEFT: Mobile Menu & Search Trigger */}
