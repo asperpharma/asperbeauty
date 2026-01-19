@@ -2,15 +2,15 @@ import React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Award, ShieldCheck, Sparkles, Crown, Gem } from "lucide-react";
 
-// Premium brand logos with elegant styling
-import ceraveLogo from "@/assets/brands/cerave-logo.webp";
-import theOrdinaryLogo from "@/assets/brands/the-ordinary-logo.webp";
-import laRochePosayLogo from "@/assets/brands/la-roche-posay-logo.webp";
-import paulasChoiceLogo from "@/assets/brands/paulas-choice-logo.webp";
-import olaplexLogo from "@/assets/brands/olaplex-logo.webp";
-import diorLogo from "@/assets/brands/dior-logo.webp";
-import esteeLauderLogo from "@/assets/brands/estee-lauder-logo.webp";
-import kerastaseLogo from "@/assets/brands/kerastase-logo.webp";
+// Premium brand logos with elegant styling - High quality luxury logos
+import ceraveLogo from "@/assets/brands/cerave-luxury.png";
+import theOrdinaryLogo from "@/assets/brands/the-ordinary-luxury.png";
+import laRochePosayLogo from "@/assets/brands/la-roche-posay-luxury.png";
+import paulasChoiceLogo from "@/assets/brands/paulas-choice-luxury.png";
+import olaplexLogo from "@/assets/brands/olaplex-luxury.png";
+import diorLogo from "@/assets/brands/dior-luxury.png";
+import esteeLauderLogo from "@/assets/brands/estee-lauder-luxury.png";
+import kerastaseLogo from "@/assets/brands/kerastase-luxury.png";
 
 const BRANDS = [
   { name: "CeraVe", logo: ceraveLogo },
