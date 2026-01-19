@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -15,11 +16,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail, User, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail, User, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PasswordStrengthIndicator, isStrongPassword } from '@/components/PasswordStrengthIndicator';
+
+// hCaptcha site key from environment
+const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY || '';
 
 // Validation schemas
 const emailSchema = z.string().trim().email('Invalid email address').max(255, 'Email too long');
@@ -85,6 +89,11 @@ export default function Auth() {
   // MFA state
   const [mfaCode, setMfaCode] = useState('');
   const [selectedFactorId, setSelectedFactorId] = useState<string | null>(null);
+  
+  // hCaptcha state
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const captchaRef = useRef<HCaptcha>(null);
 
   useEffect(() => {
     if (user && !loading && !mfaRequired) {
@@ -98,6 +107,44 @@ export default function Auth() {
       setSelectedFactorId(factors.totp[0].id);
     }
   }, [mfaRequired, factors, selectedFactorId]);
+
+  // Verify captcha token with backend
+  const verifyCaptcha = async (token: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-captcha', {
+        body: { token }
+      });
+      if (error) {
+        console.error('Captcha verification error:', error);
+        return false;
+      }
+      return data?.success === true;
+    } catch (err) {
+      console.error('Captcha verification failed:', err);
+      return false;
+    }
+  };
+
+  const handleCaptchaVerify = async (token: string) => {
+    setCaptchaToken(token);
+    const isValid = await verifyCaptcha(token);
+    setCaptchaVerified(isValid);
+    if (!isValid) {
+      toast.error('Captcha verification failed. Please try again.');
+      captchaRef.current?.resetCaptcha();
+    }
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
+    setCaptchaVerified(false);
+  };
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    setCaptchaVerified(false);
+    captchaRef.current?.resetCaptcha();
+  };
 
   const validateForm = (isLogin: boolean) => {
     try {
@@ -125,6 +172,12 @@ export default function Auth() {
     e.preventDefault();
     if (!validateForm(true)) return;
     
+    // Check captcha (only if site key is configured)
+    if (HCAPTCHA_SITE_KEY && !captchaVerified) {
+      toast.error('Please complete the captcha verification');
+      return;
+    }
+    
     // Check rate limit
     if (!loginRateLimiter.canAttempt) {
       toast.error(`Too many login attempts. Try again in ${formatLockoutTime(loginRateLimiter.lockoutRemaining)}`);
@@ -137,6 +190,7 @@ export default function Auth() {
 
     if (error) {
       loginRateLimiter.recordAttempt();
+      resetCaptcha();
       if (error.message.includes('Invalid login credentials')) {
         toast.error(`Invalid email or password. ${loginRateLimiter.remainingAttempts - 1} attempts remaining.`);
       } else if (error.message.includes('Email not confirmed')) {
@@ -154,6 +208,12 @@ export default function Auth() {
     e.preventDefault();
     if (!validateForm(false)) return;
     
+    // Check captcha (only if site key is configured)
+    if (HCAPTCHA_SITE_KEY && !captchaVerified) {
+      toast.error('Please complete the captcha verification');
+      return;
+    }
+    
     // Check rate limit
     if (!signupRateLimiter.canAttempt) {
       toast.error(`Too many signup attempts. Try again in ${formatLockoutTime(signupRateLimiter.lockoutRemaining)}`);
@@ -166,6 +226,7 @@ export default function Auth() {
     setIsSubmitting(false);
 
     if (error) {
+      resetCaptcha();
       if (error.message.includes('already registered')) {
         toast.error('An account with this email already exists');
       } else {
@@ -489,7 +550,30 @@ export default function Auth() {
                       Forgot password?
                     </button>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting || !loginRateLimiter.canAttempt}>
+                  
+                  {/* hCaptcha for login */}
+                  {HCAPTCHA_SITE_KEY && (
+                    <div className="flex flex-col items-center space-y-2">
+                      <HCaptcha
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={handleCaptchaVerify}
+                        onExpire={handleCaptchaExpire}
+                        ref={captchaRef}
+                      />
+                      {captchaVerified && (
+                        <div className="flex items-center gap-1.5 text-xs text-green-600">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          <span>Verified</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting || !loginRateLimiter.canAttempt || (HCAPTCHA_SITE_KEY && !captchaVerified)}
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -575,7 +659,30 @@ export default function Auth() {
                       <p className="text-sm text-destructive">{errors.password}</p>
                     )}
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting || !signupRateLimiter.canAttempt}>
+                  
+                  {/* hCaptcha for signup */}
+                  {HCAPTCHA_SITE_KEY && (
+                    <div className="flex flex-col items-center space-y-2">
+                      <HCaptcha
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={handleCaptchaVerify}
+                        onExpire={handleCaptchaExpire}
+                        ref={captchaRef}
+                      />
+                      {captchaVerified && (
+                        <div className="flex items-center gap-1.5 text-xs text-green-600">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          <span>Verified</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting || !signupRateLimiter.canAttempt || (HCAPTCHA_SITE_KEY && !captchaVerified)}
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
