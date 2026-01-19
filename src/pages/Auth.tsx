@@ -19,11 +19,21 @@ import { ArrowLeft, Eye, EyeOff, Loader2, Lock, Mail, User, AlertTriangle } from
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PasswordStrengthIndicator, isStrongPassword } from '@/components/PasswordStrengthIndicator';
 
 // Validation schemas
 const emailSchema = z.string().trim().email('Invalid email address').max(255, 'Email too long');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters').max(72, 'Password too long');
+const passwordSchema = z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password too long');
 const nameSchema = z.string().trim().max(100, 'Name too long').optional();
+
+// Strong password schema for signup
+const strongPasswordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(72, 'Password too long')
+  .refine((val) => /[A-Z]/.test(val), 'Must contain an uppercase letter')
+  .refine((val) => /[a-z]/.test(val), 'Must contain a lowercase letter')
+  .refine((val) => /\d/.test(val), 'Must contain a number')
+  .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), 'Must contain a special character');
 
 const loginSchema = z.object({
   email: emailSchema,
@@ -32,7 +42,7 @@ const loginSchema = z.object({
 
 const signupSchema = z.object({
   email: emailSchema,
-  password: passwordSchema,
+  password: strongPasswordSchema,
   fullName: nameSchema,
 });
 
@@ -560,6 +570,7 @@ export default function Auth() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    <PasswordStrengthIndicator password={password} />
                     {errors.password && (
                       <p className="text-sm text-destructive">{errors.password}</p>
                     )}
