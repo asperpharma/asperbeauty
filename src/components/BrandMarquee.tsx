@@ -1,6 +1,7 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Award, ShieldCheck, Sparkles, Crown, Gem } from "lucide-react";
+import { Award, ShieldCheck, Sparkles, Crown, Gem, ArrowRight } from "lucide-react";
 
 // Premium brand logos with elegant styling - High quality luxury logos
 import ceraveLogo from "@/assets/brands/cerave-luxury.png";
@@ -11,16 +12,22 @@ import olaplexLogo from "@/assets/brands/olaplex-luxury.png";
 import diorLogo from "@/assets/brands/dior-luxury.png";
 import esteeLauderLogo from "@/assets/brands/estee-lauder-luxury.png";
 import kerastaseLogo from "@/assets/brands/kerastase-luxury.png";
+import cliniqueLogo from "@/assets/brands/clinique-luxury.png";
+import lancomeLogo from "@/assets/brands/lancome-luxury.png";
+import yslLogo from "@/assets/brands/ysl-luxury.png";
 
 const BRANDS = [
-  { name: "CeraVe", logo: ceraveLogo },
-  { name: "The Ordinary", logo: theOrdinaryLogo },
-  { name: "La Roche-Posay", logo: laRochePosayLogo },
-  { name: "Paula's Choice", logo: paulasChoiceLogo },
-  { name: "Olaplex", logo: olaplexLogo },
   { name: "Dior", logo: diorLogo },
   { name: "Estée Lauder", logo: esteeLauderLogo },
+  { name: "Lancôme", logo: lancomeLogo },
+  { name: "YSL Beauty", logo: yslLogo },
+  { name: "Clinique", logo: cliniqueLogo },
   { name: "Kérastase", logo: kerastaseLogo },
+  { name: "La Roche-Posay", logo: laRochePosayLogo },
+  { name: "CeraVe", logo: ceraveLogo },
+  { name: "The Ordinary", logo: theOrdinaryLogo },
+  { name: "Paula's Choice", logo: paulasChoiceLogo },
+  { name: "Olaplex", logo: olaplexLogo },
 ];
 
 export const BrandMarquee = () => {
@@ -49,9 +56,9 @@ export const BrandMarquee = () => {
           </p>
         </div>
         
-        {/* Luxury Brand Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6 md:gap-8">
-          {BRANDS.map((brand, index) => (
+        {/* Luxury Brand Grid - Show first 8 on large screens */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4 md:gap-6">
+          {BRANDS.slice(0, 6).map((brand, index) => (
             <div
               key={brand.name}
               className="group relative flex items-center justify-center p-6 md:p-8 
@@ -123,8 +130,40 @@ export const BrandMarquee = () => {
           ))}
         </div>
 
+        {/* View All Brands Button */}
+        <div className="flex justify-center mt-10 md:mt-14">
+          <Link
+            to="/brands"
+            className="group relative inline-flex items-center gap-3 px-8 py-4
+                       bg-gradient-to-r from-burgundy via-burgundy to-burgundy-dark
+                       hover:from-burgundy-dark hover:via-burgundy hover:to-burgundy
+                       text-cream font-medium tracking-wider uppercase text-sm
+                       rounded-full overflow-hidden
+                       shadow-[0_4px_20px_-4px_rgba(74,14,25,0.4)]
+                       hover:shadow-[0_8px_30px_-4px_rgba(74,14,25,0.6)]
+                       transition-all duration-500 ease-out
+                       hover:scale-105 hover:-translate-y-1"
+          >
+            {/* Animated shimmer effect */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full 
+                            bg-gradient-to-r from-transparent via-white/20 to-transparent
+                            transition-transform duration-1000 ease-out" />
+            
+            {/* Button content */}
+            <Crown className="w-5 h-5 text-gold drop-shadow-[0_1px_4px_rgba(212,175,55,0.5)]" strokeWidth={1.5} />
+            <span className="relative">
+              {isAr ? "استكشف جميع العلامات التجارية" : "View All Brands"}
+            </span>
+            <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+            
+            {/* Decorative sparkles */}
+            <Sparkles className="absolute top-1 right-3 w-3 h-3 text-gold/60 opacity-0 
+                                 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+          </Link>
+        </div>
+
         {/* Bottom decorative element with Premium Icons */}
-        <div className="flex items-center justify-center gap-3 mt-12 md:mt-16">
+        <div className="flex items-center justify-center gap-3 mt-10 md:mt-14">
           <div className="h-px w-16 md:w-28 bg-gradient-to-r from-transparent via-gold/40 to-gold/60" />
           <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-gold/5 via-gold/10 to-gold/5 rounded-full border border-gold/20">
             <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-gold drop-shadow-[0_1px_4px_rgba(212,175,55,0.3)]" strokeWidth={1.5} />
