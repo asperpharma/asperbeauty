@@ -89,6 +89,50 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_access_logs: {
+        Row: {
+          accessed_fields: string[] | null
+          action_type: string
+          created_at: string
+          driver_id: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          order_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_fields?: string[] | null
+          action_type: string
+          created_at?: string
+          driver_id: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_fields?: string[] | null
+          action_type?: string
+          created_at?: string
+          driver_id?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_access_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cod_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string | null
