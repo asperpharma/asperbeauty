@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useDriverAuditLog } from '@/hooks/useDriverAuditLog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,12 +69,14 @@ const statusConfig: Record<string, { label: string; labelAr: string; color: stri
 export default function DriverDashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { logOrdersListView, logOrderDetailsView, logStatusUpdate, logPhoneAccess, logNavigationAccess } = useDriverAuditLog();
   const [orders, setOrders] = useState<DriverOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<DriverOrder | null>(null);
   const [deliveryNote, setDeliveryNote] = useState('');
   const [updating, setUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
+  const hasLoggedListView = useRef(false);
 
   useEffect(() => {
     if (!user) {
@@ -124,6 +127,12 @@ export default function DriverDashboard() {
       }));
       
       setOrders(typedOrders);
+      
+      // Log orders list view (only once per session to avoid spam)
+      if (!hasLoggedListView.current && typedOrders.length > 0) {
+        hasLoggedListView.current = true;
+        logOrdersListView(typedOrders.length);
+      }
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to load orders');
@@ -134,6 +143,9 @@ export default function DriverDashboard() {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(true);
+    const currentOrder = orders.find(o => o.id === orderId);
+    const oldStatus = currentOrder?.status || 'unknown';
+    
     try {
       const updateData: Record<string, unknown> = { 
         status: newStatus,
@@ -151,6 +163,11 @@ export default function DriverDashboard() {
 
       if (error) throw error;
 
+      // Log status update for audit
+      if (currentOrder) {
+        logStatusUpdate(orderId, currentOrder.order_number, oldStatus, newStatus);
+      }
+
       toast.success(`Order marked as ${statusConfig[newStatus]?.label || newStatus}`);
       setSelectedOrder(null);
       setDeliveryNote('');
@@ -165,9 +182,13 @@ export default function DriverDashboard() {
 
   const openNavigation = (order: DriverOrder) => {
     const address = encodeURIComponent(`${order.delivery_address}, ${order.city}, Jordan`);
+    const hasCoordinates = !!(order.customer_lat && order.customer_lng);
+    
+    // Log navigation access for audit
+    logNavigationAccess(order.id, order.order_number, hasCoordinates, 'google_maps');
     
     // Check if coordinates are available
-    if (order.customer_lat && order.customer_lng) {
+    if (hasCoordinates) {
       // Use coordinates for more accurate navigation
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${order.customer_lat},${order.customer_lng}`, '_blank');
     } else {
@@ -177,7 +198,12 @@ export default function DriverDashboard() {
   };
 
   const openWaze = (order: DriverOrder) => {
-    if (order.customer_lat && order.customer_lng) {
+    const hasCoordinates = !!(order.customer_lat && order.customer_lng);
+    
+    // Log navigation access for audit
+    logNavigationAccess(order.id, order.order_number, hasCoordinates, 'waze');
+    
+    if (hasCoordinates) {
       window.open(`https://waze.com/ul?ll=${order.customer_lat},${order.customer_lng}&navigate=yes`, '_blank');
     } else {
       const address = encodeURIComponent(`${order.delivery_address}, ${order.city}, Jordan`);
@@ -185,14 +211,24 @@ export default function DriverDashboard() {
     }
   };
 
-  const callCustomer = (phone: string) => {
+  const callCustomer = (phone: string, order: DriverOrder) => {
+    // Log phone access for audit
+    logPhoneAccess(order.id, order.order_number, 'initiate_call');
     window.open(`tel:${phone}`, '_self');
   };
 
-  const whatsappCustomer = (phone: string, orderNumber: string) => {
-    const message = encodeURIComponent(`مرحباً، أنا سائق التوصيل من Asper Beauty. طلبك رقم ${orderNumber} في الطريق إليك.`);
+  const whatsappCustomer = (phone: string, order: DriverOrder) => {
+    // Log phone access for audit
+    logPhoneAccess(order.id, order.order_number, 'initiate_whatsapp');
+    const message = encodeURIComponent(`مرحباً، أنا سائق التوصيل من Asper Beauty. طلبك رقم ${order.order_number} في الطريق إليك.`);
     const formattedPhone = phone.replace(/\D/g, '');
     window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
+  };
+
+  const handleOrderSelect = (order: DriverOrder) => {
+    // Log order details view for audit
+    logOrderDetailsView(order.id, order.order_number);
+    setSelectedOrder(order);
   };
 
   const handleSignOut = async () => {
@@ -303,7 +339,7 @@ export default function DriverDashboard() {
             <Card 
               key={order.id} 
               className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setSelectedOrder(order)}
+              onClick={() => handleOrderSelect(order)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -372,7 +408,7 @@ export default function DriverDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => callCustomer(selectedOrder.customer_phone)}
+                        onClick={() => callCustomer(selectedOrder.customer_phone, selectedOrder)}
                         className="flex-1"
                       >
                         <Phone className="h-4 w-4 mr-1" /> Call
@@ -380,7 +416,7 @@ export default function DriverDashboard() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => whatsappCustomer(selectedOrder.customer_phone, selectedOrder.order_number)}
+                        onClick={() => whatsappCustomer(selectedOrder.customer_phone, selectedOrder)}
                         className="flex-1 text-green-600 border-green-600 hover:bg-green-50"
                       >
                         <MessageSquare className="h-4 w-4 mr-1" /> WhatsApp
