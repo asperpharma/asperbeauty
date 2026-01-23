@@ -5,8 +5,12 @@
  * Usage: node scripts/convert-csv-to-shopify.js
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Input and output paths
 const INPUT_CSV = path.join(__dirname, '../../dataset_productss_2026-01-15_23-29-45-343 (1).csv');
@@ -31,10 +35,10 @@ function parseCSVLine(line) {
     const result = [];
     let current = '';
     let inQuotes = false;
-    
+
     for (let i = 0; i < line.length; i++) {
         const char = line[i];
-        
+
         if (char === '"') {
             if (inQuotes && line[i + 1] === '"') {
                 current += '"';
@@ -93,7 +97,7 @@ function cleanDescription(desc) {
  */
 function mapCategory(category, title, brand) {
     const combined = `${category} ${title} ${brand}`.toLowerCase();
-    
+
     if (combined.includes('serum') || combined.includes('cream') || combined.includes('moistur')) {
         return 'Skin Care';
     }
@@ -117,7 +121,7 @@ function mapCategory(category, title, brand) {
  */
 async function convertCSVToShopify() {
     console.log('🔄 Starting CSV conversion...\n');
-    
+
     if (!fs.existsSync(INPUT_CSV)) {
         console.error(`❌ Input file not found: ${INPUT_CSV}`);
         console.log('Available CSV files in parent directory:');
@@ -129,7 +133,7 @@ async function convertCSVToShopify() {
 
     const content = fs.readFileSync(INPUT_CSV, 'utf-8');
     const lines = content.split('\n').filter(line => line.trim());
-    
+
     if (lines.length < 2) {
         console.error('❌ CSV file is empty or has no data rows');
         return;
@@ -169,7 +173,7 @@ async function convertCSVToShopify() {
     for (let i = 1; i < lines.length; i++) {
         try {
             const row = parseCSVLine(lines[i]);
-            
+
             const title = row[titleCol] || '';
             if (!title || title.length < 3) {
                 skipped++;
@@ -185,7 +189,7 @@ async function convertCSVToShopify() {
             const sku = row[skuCol] || `ASPER-${Date.now()}-${i}`;
             const handle = createHandle(title);
             const productType = mapCategory(category, title, brand);
-            
+
             // Build tags
             const tags = [];
             if (row[tagsCol0]) tags.push(row[tagsCol0]);
@@ -248,7 +252,7 @@ async function convertCSVToShopify() {
             });
 
             processed++;
-            
+
             if (processed % 1000 === 0) {
                 console.log(`  ✓ Processed ${processed} products...`);
             }
@@ -277,7 +281,7 @@ async function convertCSVToShopify() {
         });
         csvLines.push(values.join(','));
     });
-    
+
     fs.writeFileSync(OUTPUT_CSV, csvLines.join('\n'), 'utf-8');
     console.log(`\n✅ Shopify CSV saved: ${OUTPUT_CSV}`);
 
