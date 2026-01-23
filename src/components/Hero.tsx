@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
@@ -11,6 +11,16 @@ import heroVideo from "@/assets/hero/hero-video.mp4";
 // Toggle between video and image background
 const USE_VIDEO_BACKGROUND = true;
 
+// Preload hero image
+const preloadImage = (src: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = src;
+  });
+};
+
 export const Hero = () => {
   const { language } = useLanguage();
   const isArabic = language === "ar";
@@ -20,13 +30,26 @@ export const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(videoRef.current.muted);
     }
-  };
+  }, []);
+
+  const handleVideoReady = useCallback(() => {
+    setIsVideoReady(true);
+  }, []);
+
+  // Preload hero image on mount
+  useEffect(() => {
+    preloadImage(heroLifestyle)
+      .then(() => setIsImageLoaded(true))
+      .catch(() => setIsImageLoaded(true)); // Still show even if preload fails
+  }, []);
 
   // Enhanced parallax effect with multiple layers
   useEffect(() => {
@@ -59,10 +82,18 @@ export const Hero = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isMediaReady = USE_VIDEO_BACKGROUND ? (isImageLoaded || isVideoReady) : isImageLoaded;
+
   return (
-    <section className="relative min-h-[70vh] lg:min-h-[85vh] overflow-hidden">
+    <section className="relative min-h-[70vh] lg:min-h-[85vh] overflow-hidden bg-burgundy">
+      {/* Loading placeholder with brand color */}
+      <div 
+        className={`absolute inset-0 bg-gradient-to-r from-burgundy via-burgundy/90 to-burgundy/70 z-0 transition-opacity duration-700 ${isMediaReady ? 'opacity-0' : 'opacity-100'}`}
+        aria-hidden="true"
+      />
+      
       {/* Full-width background image with parallax */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${isMediaReady ? 'opacity-100' : 'opacity-0'}`}>
         <div 
           ref={parallaxRef}
           className="absolute inset-[-10%] scale-115 will-change-transform transition-transform duration-100 ease-out"
@@ -77,6 +108,8 @@ export const Hero = () => {
               playsInline
               poster={heroLifestyle}
               className="w-full h-full object-cover"
+              onCanPlay={handleVideoReady}
+              onLoadedData={handleVideoReady}
             >
               <source src={heroVideo} type="video/mp4" />
               {/* Fallback to image if video fails */}
@@ -95,6 +128,7 @@ export const Hero = () => {
               width={1920}
               height={1080}
               decoding="async"
+              onLoad={() => setIsImageLoaded(true)}
             />
           )}
         </div>
