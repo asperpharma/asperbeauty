@@ -18,8 +18,8 @@ import { translateTitle } from "@/lib/productUtils";
 import { z } from "zod";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 
-// hCaptcha site key (public - safe to include in code)
-const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Test key - replace with your real key
+// hCaptcha site key from environment variable (falls back to test key for development)
+const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001";
 
 // Validation schema
 const orderFormSchema = z.object({
