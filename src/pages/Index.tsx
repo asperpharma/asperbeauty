@@ -14,7 +14,6 @@ import { MobileNav } from "@/components/MobileNav";
 import { CategoryHighlights } from "@/components/CategoryHighlights";
 
 const Index = () => {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,7 +37,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <Header />
+      <GlobalHeader />
       <main>
         {/* 1. EMOTIONAL LAYER: The Cinematic Hero */}
         <LuxuryHero />
