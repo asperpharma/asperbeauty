@@ -5,3 +5,24 @@ verify_jwt = false
 
 [functions.bulk-product-upload]
 verify_jwt = false
+
+[functions.create-cod-order]
+verify_jwt = false
+
+[functions.get-order-status]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.enrich-products]
+verify_jwt = false
+
+[functions.scrape-product]
+verify_jwt = false
+
+[functions.generate-product-images]
+verify_jwt = false
+
+[functions.remove-background]
+verify_jwt = false

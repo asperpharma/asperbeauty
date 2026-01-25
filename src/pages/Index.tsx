@@ -33,12 +33,10 @@ const SectionSkeleton = ({ height = "h-64" }: { height?: string }) => (
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleLoad = () => setIsLoading(false);
     
-    // Hide skeleton once window loads or timeout finishes (whichever comes last for safety)
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
@@ -56,8 +54,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream animate-fade-in">
-      <Header />
+    <div className="min-h-screen bg-background animate-fade-in">
+      <GlobalHeader />
       <main>
         <AnimatedShaderHero
           trustBadge={{

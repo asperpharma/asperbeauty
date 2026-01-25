@@ -1,0 +1,81 @@
+name: Enhancement
+description: Suggest an improvement to existing functionality
+title: "[ENHANCEMENT]: "
+labels: ["enhancement", "improvement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an enhancement! This template is for improving existing features.
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: Describe how the feature currently works
+      placeholder: Currently, the feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-behavior
+    attributes:
+      label: Proposed Behavior
+      description: Describe how you think it should work
+      placeholder: It should...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: What benefits will this enhancement provide?
+      placeholder: |
+        - Improved user experience
+        - Better performance
+        - Easier maintenance
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which area does this enhancement affect?
+      multiple: true
+      options:
+        - UI/UX
+        - Performance
+        - Accessibility
+        - Code Quality
+        - Documentation
+        - Testing
+        - DevOps
+        - Security
+        - SEO
+        - Analytics
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: Any technical details or suggestions for implementation
+      placeholder: Technical considerations...
+
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: Implementation Sub-Tasks
+      description: Break down the work into smaller tasks
+      placeholder: |
+        - [ ] Research and design
+        - [ ] Update components
+        - [ ] Add/update tests
+        - [ ] Update documentation
+        - [ ] Performance testing
+        - [ ] Deploy and monitor

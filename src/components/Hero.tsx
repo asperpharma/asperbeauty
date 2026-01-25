@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Sparkles } from "lucide-react";
+import { AnimatedTrustBadge } from "./AnimatedTrustBadge";
 
 // Hero assets
 import heroLifestyle from "@/assets/hero/hero-lifestyle.webp";
@@ -188,33 +189,59 @@ export const Hero = () => {
         style={{ transform: 'translateY(0)', opacity: 1 }}
       >
         <div className={`max-w-xl ${isArabic ? 'text-right mr-auto' : 'text-left'}`}>
+          {/* Animated Trust Badge Component */}
+          <div 
+            className="mb-6 animate-fade-in"
+            style={{ animationDelay: '0.05s' }}
+          >
+            <AnimatedTrustBadge />
+          </div>
+          
           {/* Script Sub-header with staggered animation */}
           <span 
-            className="font-script text-2xl lg:text-3xl text-gold mb-4 block animate-fade-in"
+            className="font-script text-2xl lg:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold mb-4 block animate-fade-in drop-shadow-[0_2px_10px_rgba(212,175,55,0.3)]"
             style={{ 
               animationDelay: '0.1s',
               transform: `translateY(${scrollY * 0.1}px)`,
-              transition: 'transform 0.1s ease-out'
+              transition: 'transform 0.1s ease-out',
+              animation: 'gold-pulse 3s ease-in-out infinite'
             }}
           >
             {isArabic ? 'علم باريسي. أناقة أردنية.' : 'Parisian Science.'}
           </span>
           
-          {/* Main Headline with different parallax rate */}
-          <h1 
-            className="font-display text-4xl lg:text-5xl xl:text-6xl text-white leading-tight mb-6 animate-fade-in" 
-            style={{ 
-              animationDelay: '0.2s',
-              transform: `translateY(${scrollY * 0.08}px)`,
-              transition: 'transform 0.1s ease-out'
-            }}
-          >
-            {isArabic ? 'المعيار الجديد للجمال' : 'Jordanian Elegance.'}
-          </h1>
+          {/* Main Headline with Gold Underline */}
+          <div className="mb-6">
+            <h1 
+              className="font-display text-4xl lg:text-5xl xl:text-6xl text-white leading-tight animate-fade-in drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]" 
+              style={{ 
+                animationDelay: '0.2s',
+                transform: `translateY(${scrollY * 0.08}px)`,
+                transition: 'transform 0.1s ease-out'
+              }}
+            >
+              {isArabic ? 'المعيار الجديد للجمال' : 'Jordanian Elegance.'}
+            </h1>
+            {/* Gold Underline */}
+            <div 
+              className="h-0.5 w-32 mt-3 bg-gradient-to-r from-gold via-gold-light to-transparent rounded-full animate-fade-in"
+              style={{ animationDelay: '0.25s' }}
+            />
+          </div>
           
-          {/* Subtext with subtle parallax */}
+          {/* Luxury Divider */}
+          <div 
+            className="flex items-center gap-3 mb-6 animate-fade-in"
+            style={{ animationDelay: '0.28s' }}
+          >
+            <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-gold/50" />
+            <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+            <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-gold/50" />
+          </div>
+          
+          {/* Subtext with gold-tinted shadow */}
           <p 
-            className="font-body text-lg text-cream/90 mb-10 leading-relaxed animate-fade-in" 
+            className="font-body text-lg text-cream/90 mb-10 leading-relaxed animate-fade-in tracking-wide drop-shadow-[0_2px_8px_rgba(212,175,55,0.1)]" 
             style={{ 
               animationDelay: '0.3s',
               transform: `translateY(${scrollY * 0.05}px)`,
@@ -227,23 +254,51 @@ export const Hero = () => {
             }
           </p>
           
-          {/* CTA Button with hover lift effect */}
-          <Link 
-            to="/collections/skin-care" 
-            className="inline-block animate-fade-in" 
+          {/* CTA Buttons with luxury styling */}
+          <div 
+            className="flex flex-wrap gap-4 animate-fade-in" 
             style={{ 
               animationDelay: '0.4s',
               transform: `translateY(${scrollY * 0.03}px)`,
               transition: 'transform 0.1s ease-out'
             }}
           >
-            <Button 
-              className="bg-gold text-burgundy hover:bg-gold-light font-display text-sm tracking-widest uppercase px-10 py-6 
-                transition-all duration-400 shadow-lg hover:shadow-2xl hover:-translate-y-1 hover:scale-105"
-            >
-              {isArabic ? 'استكشف المختبر' : 'Explore the Laboratory'}
-            </Button>
-          </Link>
+            {/* Primary CTA */}
+            <Link to="/collections/skin-care">
+              <Button 
+                className="relative overflow-hidden bg-gradient-to-r from-burgundy via-burgundy to-burgundy-light text-white 
+                  hover:border-gold border-2 border-transparent
+                  font-display text-sm tracking-widest uppercase px-10 py-6 rounded-full
+                  transition-all duration-500 shadow-lg hover:shadow-[0_8px_30px_rgba(212,175,55,0.3)] 
+                  hover:-translate-y-1 hover:scale-105 group"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  {isArabic ? 'استكشف المختبر' : 'Explore the Laboratory'}
+                </span>
+                {/* Shine effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              </Button>
+            </Link>
+            
+            {/* Secondary CTA */}
+            <Link to="/brands">
+              <Button 
+                variant="outline"
+                className="relative overflow-hidden bg-transparent backdrop-blur-sm
+                  border-2 border-gold/40 hover:border-gold text-cream hover:text-gold
+                  font-display text-sm tracking-widest uppercase px-8 py-6 rounded-full
+                  transition-all duration-500 hover:bg-gold/10 hover:shadow-[0_6px_25px_rgba(212,175,55,0.2)]
+                  hover:-translate-y-1 group"
+              >
+                <span className="relative z-10">
+                  {isArabic ? 'تسوق حسب العلامة التجارية' : 'Shop by Brand'}
+                </span>
+                {/* Shine effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
       
@@ -255,10 +310,13 @@ export const Hero = () => {
         <span className="text-cream/70 text-xs font-body tracking-widest uppercase">
           {isArabic ? 'اكتشف المزيد' : 'Scroll to explore'}
         </span>
-        <div className="w-6 h-10 border-2 border-cream/40 rounded-full flex justify-center pt-2">
-          <div className="w-1.5 h-3 bg-gold rounded-full animate-bounce" />
+        <div className="w-6 h-10 border-2 border-gold/40 rounded-full flex justify-center pt-2 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+          <div className="w-1.5 h-3 bg-gold rounded-full animate-bounce shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
         </div>
       </div>
+      
+      {/* Decorative Gold Accent Line - Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
 
       {/* Video Sound Control Button */}
       {USE_VIDEO_BACKGROUND && (

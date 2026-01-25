@@ -45,12 +45,20 @@ export const WishlistDrawer = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
       <SheetContent 
-        className={`w-full sm:max-w-md flex flex-col h-full bg-cream ${isRTL ? 'border-r border-l-0' : 'border-l'} border-gold/20`}
+        className={`w-full sm:max-w-md flex flex-col h-full bg-cream ${isRTL ? 'border-r border-l-0' : 'border-l'} border-gold/40 shadow-gold-lg`}
         side={isRTL ? 'left' : 'right'}
+        style={{
+          transition: 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)',
+        }}
       >
-        <SheetHeader className="flex-shrink-0 border-b border-gold/20 pb-4">
-          <SheetTitle className="font-display text-2xl text-foreground flex items-center gap-2">
-            <Heart className="w-5 h-5 text-gold fill-gold" />
+        {/* Decorative Gold Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent" />
+        
+        <SheetHeader className="flex-shrink-0 border-b border-gold/30 pb-4 pt-2 bg-gradient-to-b from-white/50 to-transparent">
+          <SheetTitle className="font-display text-2xl text-foreground flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/30 via-gold/20 to-transparent border border-gold/40 flex items-center justify-center shadow-gold-sm">
+              <Heart className="w-5 h-5 text-gold fill-gold" />
+            </div>
             {language === 'ar' ? 'قائمة الرغبات' : 'My Wishlist'}
           </SheetTitle>
         </SheetHeader>
@@ -58,7 +66,7 @@ export const WishlistDrawer = () => {
         <div className="flex-1 overflow-y-auto py-6">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
-              <div className="w-20 h-20 rounded-full bg-gold/10 flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 flex items-center justify-center mb-4 shadow-gold-md">
                 <Heart className="w-10 h-10 text-gold" />
               </div>
               <h3 className="font-display text-xl text-foreground mb-2">
@@ -69,7 +77,7 @@ export const WishlistDrawer = () => {
               </p>
               <Button
                 variant="outline"
-                className="border-gold/30 hover:border-gold"
+                className="border-gold/40 hover:border-gold hover:bg-gold/10 transition-all duration-500"
                 onClick={() => setOpen(false)}
               >
                 {language === 'ar' ? 'متابعة التسوق' : 'Continue Shopping'}
@@ -84,19 +92,19 @@ export const WishlistDrawer = () => {
                 return (
                   <div
                     key={product.node.id}
-                    className="flex gap-4 p-3 bg-white/50 border border-gold/10 hover:border-gold/30 transition-colors"
+                    className="flex gap-4 p-3 bg-white/80 border border-gold/20 hover:border-gold/50 hover:shadow-gold-sm transition-all duration-500 rounded-lg group"
                   >
                     {/* Image */}
                     <Link
                       to={`/product/${product.node.handle}`}
                       onClick={() => setOpen(false)}
-                      className="w-20 h-24 flex-shrink-0 bg-cream overflow-hidden"
+                      className="w-20 h-24 flex-shrink-0 bg-cream overflow-hidden rounded-lg border border-gold/10 shadow-gold-sm"
                     >
                       {firstImage ? (
                         <img
                           src={firstImage.url}
                           alt={firstImage.altText || product.node.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-cream">
@@ -110,11 +118,11 @@ export const WishlistDrawer = () => {
                         <Link
                           to={`/product/${product.node.handle}`}
                           onClick={() => setOpen(false)}
-                          className="font-display text-sm text-foreground hover:text-gold transition-colors line-clamp-2 mb-1"
+                          className="font-display text-sm text-foreground hover:text-gold transition-colors duration-500 line-clamp-2 mb-1"
                         >
                           {translateTitle(product.node.title, language)}
                         </Link>
-                        <p className="font-display text-gold text-sm mb-auto">
+                        <p className="font-display text-burgundy text-sm mb-auto font-semibold">
                           {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
                         </p>
 
@@ -123,7 +131,7 @@ export const WishlistDrawer = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 h-8 text-xs border-gold/30 hover:bg-gold hover:text-cream hover:border-gold"
+                            className="flex-1 h-8 text-xs border-gold/40 hover:bg-gradient-to-r hover:from-gold hover:to-gold-light hover:text-burgundy hover:border-gold transition-all duration-500 shadow-gold-sm"
                             onClick={() => handleAddToCart(product)}
                           >
                             <ShoppingBag className="w-3 h-3 me-1" />
@@ -132,7 +140,7 @@ export const WishlistDrawer = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-red-500"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-burgundy hover:bg-burgundy/10 transition-colors duration-500"
                           onClick={() => removeItem(product.node.id)}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -147,7 +155,7 @@ export const WishlistDrawer = () => {
         </div>
 
         {items.length > 0 && (
-          <div className="flex-shrink-0 border-t border-gold/20 pt-4 space-y-3">
+          <div className="flex-shrink-0 border-t border-gold/30 pt-4 pb-2 space-y-3 bg-gradient-to-t from-white/50 to-transparent px-4">
             <p className="font-body text-sm text-muted-foreground text-center">
               {language === 'ar' 
                 ? `${items.length} ${items.length === 1 ? 'منتج محفوظ' : 'منتجات محفوظة'}`
@@ -155,7 +163,7 @@ export const WishlistDrawer = () => {
             </p>
             <Button
               variant="outline"
-              className="w-full border-gold/30 hover:border-gold"
+              className="w-full border-gold/40 hover:border-gold hover:bg-gold/10 transition-all duration-500"
               onClick={() => setOpen(false)}
             >
               {language === 'ar' ? 'متابعة التسوق' : 'Continue Shopping'}

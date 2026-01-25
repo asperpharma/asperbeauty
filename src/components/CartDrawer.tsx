@@ -25,9 +25,10 @@ export const CartDrawer = () => {
     isOpen,
     updateQuantity, 
     removeItem, 
-    createCheckout,
     setOpen,
     getTotalPrice,
+    getCheckoutUrl,
+    syncCart,
   } = useCartStore();
   
   const totalPrice = getTotalPrice();
@@ -39,20 +40,20 @@ export const CartDrawer = () => {
   const shippingProgress = Math.min(100, (totalPrice / FREE_SHIPPING_THRESHOLD) * 100);
   const hasFreeShipping = totalPrice >= FREE_SHIPPING_THRESHOLD;
 
-  const handleCheckout = async () => {
-    try {
-      await createCheckout();
-      const checkoutUrl = useCartStore.getState().checkoutUrl;
-      if (checkoutUrl) {
-        window.open(checkoutUrl, '_blank');
-        setOpen(false);
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Checkout failed:', error);
-      }
-      toast.error("Checkout failed. Please try again.");
+  const handleCheckout = () => {
+    const checkoutUrl = getCheckoutUrl();
+    if (checkoutUrl) {
+      window.open(checkoutUrl, '_blank');
+      setOpen(false);
+    } else {
+      toast.error("Checkout not available. Please try again.");
     }
+  };
+
+  // Sync cart when drawer opens
+  const handleDrawerOpen = (open: boolean) => {
+    if (open) syncCart();
+    handleOpenChange(open);
   };
 
   const handleCODSuccess = (orderNum: string) => {
@@ -79,26 +80,23 @@ export const CartDrawer = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+    <Sheet open={isOpen} onOpenChange={handleDrawerOpen}>
       <SheetContent 
-        className={`w-full sm:max-w-md flex flex-col h-full bg-white p-0 ${isRTL ? 'border-r border-l-0' : 'border-l'} border-gold/30`}
+        className={`w-full sm:max-w-md flex flex-col h-full bg-background p-0 ${isRTL ? 'border-r border-l-0' : 'border-l'} border-gold/20`}
         side={isRTL ? 'left' : 'right'}
-        style={{
-          transition: 'transform 0.4s ease-in-out',
-        }}
       >
         {/* Header */}
-        <SheetHeader className="flex-shrink-0 p-6 pb-4 border-b border-gold/20">
+        <SheetHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gold/20">
           <div className="flex items-center justify-between">
             {checkoutMode === 'cod' && (
               <button 
                 onClick={handleBackToCart}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-400 mr-2"
+                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors mr-2"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <SheetTitle className="font-display text-2xl text-foreground tracking-wide flex-1">
+            <SheetTitle className="font-serif text-xl text-foreground tracking-wide flex-1">
               {checkoutMode === 'success' 
                 ? (isArabic ? 'تم الطلب' : 'Order Placed')
                 : checkoutMode === 'cod' 
@@ -108,22 +106,22 @@ export const CartDrawer = () => {
             </SheetTitle>
             <button 
               onClick={() => handleOpenChange(false)}
-              className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-400"
+              className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
           
           {/* Shipping Progress Bar - Only show in cart mode */}
-          {checkoutMode === 'cart' && (
+          {checkoutMode === 'cart' && items.length > 0 && (
             <div className="mt-4">
-              <div className="h-1.5 bg-cream rounded-full overflow-hidden">
+              <div className="h-1 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gold transition-all duration-500 ease-out rounded-full"
                   style={{ width: `${shippingProgress}%` }}
                 />
               </div>
-              <p className="font-body text-xs text-muted-foreground mt-2 text-center">
+              <p className="text-xs text-muted-foreground mt-2 text-center">
                 {hasFreeShipping 
                   ? (isArabic ? '🎁 شحن مجاني مفعّل!' : '🎁 Complimentary Shipping Unlocked!')
                   : (isArabic 
@@ -136,7 +134,7 @@ export const CartDrawer = () => {
           )}
         </SheetHeader>
         
-        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Success Mode */}
           {checkoutMode === 'success' && (
             <div className="flex-1 p-6">
@@ -160,7 +158,7 @@ export const CartDrawer = () => {
               {items.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center p-6">
                   <div className="text-center">
-                    <p className="text-muted-foreground font-body text-sm">
+                    <p className="text-muted-foreground text-sm">
                       {isArabic ? 'سلتك فارغة' : 'Your selection is empty'}
                     </p>
                   </div>
@@ -168,12 +166,12 @@ export const CartDrawer = () => {
               ) : (
                 <>
                   {/* Cart Items - Scrollable */}
-                  <div className="flex-1 overflow-y-auto p-6 min-h-0">
+                  <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
                     <div className="space-y-4">
                       {items.map((item) => (
-                        <div key={item.variantId} className="flex gap-4 py-4 border-b border-gold/10">
+                        <div key={item.variantId} className="flex gap-4 group">
                           {/* Thumbnail */}
-                          <div className="w-16 h-16 bg-cream rounded overflow-hidden flex-shrink-0">
+                          <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                             {item.product.node.images?.edges?.[0]?.node && (
                               <img
                                 src={item.product.node.images.edges[0].node.url}
@@ -184,17 +182,15 @@ export const CartDrawer = () => {
                           </div>
                           
                           {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-display text-sm text-foreground leading-tight line-clamp-2">
+                          <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {item.product.node.vendor || 'Brand'}
+                            </p>
+                            <h4 className="font-serif text-sm text-foreground leading-tight line-clamp-2 mt-0.5">
                               {translateTitle(item.product.node.title, language)}
                             </h4>
-                            {item.variantTitle !== "Default Title" && (
-                              <p className="text-xs text-muted-foreground font-body mt-1">
-                                {item.selectedOptions.map(option => option.value).join(' / ')}
-                              </p>
-                            )}
-                            <p className="font-display text-sm text-burgundy mt-1">
-                              {item.price.currencyCode} {parseFloat(item.price.amount).toFixed(2)}
+                            <p className="text-sm text-foreground mt-1">
+                              {parseFloat(item.price.amount).toFixed(3)} {item.price.currencyCode}
                             </p>
                           </div>
                           
@@ -202,25 +198,25 @@ export const CartDrawer = () => {
                           <div className="flex flex-col items-end justify-between flex-shrink-0">
                             <button
                               onClick={() => removeItem(item.variantId)}
-                              className="text-muted-foreground hover:text-foreground transition-colors duration-400"
+                              className="text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
                             
                             {/* Stepper */}
-                            <div className="flex items-center border border-gold/30 rounded">
+                            <div className="flex items-center border border-border rounded overflow-hidden">
                               <button
                                 onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                                className="w-7 h-7 flex items-center justify-center text-foreground hover:bg-gold/10 transition-colors duration-400"
+                                className="w-7 h-7 flex items-center justify-center text-foreground hover:bg-muted transition-colors"
                               >
                                 <Minus className="h-3 w-3" />
                               </button>
-                              <span className="w-8 text-center text-sm font-body text-foreground">
+                              <span className="w-8 text-center text-sm text-foreground">
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                                className="w-7 h-7 flex items-center justify-center text-foreground hover:bg-gold/10 transition-colors duration-400"
+                                className="w-7 h-7 flex items-center justify-center text-foreground hover:bg-muted transition-colors"
                               >
                                 <Plus className="h-3 w-3" />
                               </button>
@@ -232,34 +228,32 @@ export const CartDrawer = () => {
                   </div>
                   
                   {/* Footer - Pinned to Bottom */}
-                  <div className="flex-shrink-0 p-6 border-t border-gold/20 bg-white">
+                  <div className="flex-shrink-0 p-6 border-t border-gold/20 bg-background">
                     {/* Subtotal */}
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-display text-lg text-foreground">
+                      <span className="text-muted-foreground">
                         {isArabic ? 'المجموع الفرعي' : 'Subtotal'}
                       </span>
-                      <span className="font-display text-xl font-bold text-foreground">
-                        {items[0]?.price.currencyCode || 'JOD'} {totalPrice.toFixed(2)}
+                      <span className="font-serif text-lg text-foreground">
+                        {totalPrice.toFixed(3)} {items[0]?.price.currencyCode || 'JOD'}
                       </span>
                     </div>
                     
-                    {/* COD Button - Primary */}
+                    {/* Checkout Button */}
                     <button 
                       onClick={() => setCheckoutMode('cod')}
-                      disabled={items.length === 0}
-                      className="w-full py-4 px-8 bg-burgundy text-white font-display text-sm tracking-widest uppercase transition-all duration-400 hover:bg-burgundy-light hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center gap-2"
+                      disabled={items.length === 0 || isLoading}
+                      className="w-full py-3.5 bg-foreground text-background font-medium text-sm tracking-wide uppercase transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      <Truck className="w-4 h-4" />
-                      {isArabic ? 'الدفع عند الاستلام' : 'Cash on Delivery'}
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          {isArabic ? 'الدفع — آمن' : 'Checkout — Securely'}
+                        </>
+                      )}
                     </button>
-                    
-                    {/* Trust Badge */}
-                    <div className="flex items-center justify-center gap-2 mt-4">
-                      <Lock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground font-body">
-                        {isArabic ? 'توصيل آمن' : 'Secure Delivery'}
-                      </span>
-                    </div>
                   </div>
                 </>
               )}

@@ -90,9 +90,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <Link to={`/product/${node.handle}`} className="group block">
+    <Link to={`/product/${node.handle}`} className="group block hover-lift">
       {/* Luxury Card Container */}
-      <div className="bg-white rounded-lg overflow-hidden transition-all duration-400 ease-in-out border border-transparent group-hover:border-gold group-hover:shadow-lg">
+      <div className="bg-white rounded-lg overflow-hidden transition-all duration-500 ease-in-out border border-gold/20 shadow-gold-md group-hover:border-gold group-hover:shadow-gold-lg">
         
         {/* Image Container */}
         <div className="aspect-square bg-secondary overflow-hidden relative">
@@ -101,7 +101,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               <OptimizedImage
                 src={firstImage.url}
                 alt={firstImage.altText || node.title}
-                className="w-full h-full object-cover transition-transform duration-400 ease-in-out group-hover:scale-105"
+                className="w-full h-full object-contain mix-blend-multiply transition-transform duration-400 ease-in-out group-hover:scale-105"
                 loading="lazy"
                 width={400}
                 height={400}

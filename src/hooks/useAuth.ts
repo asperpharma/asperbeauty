@@ -7,7 +7,6 @@ interface AuthState {
   session: Session | null;
   loading: boolean;
   mfaRequired: boolean;
-  isAdmin: boolean;
 }
 
 interface MFAFactors {
@@ -21,29 +20,13 @@ export function useAuth() {
     session: null,
     loading: true,
     mfaRequired: false,
-    isAdmin: false,
   });
   const [factors, setFactors] = useState<MFAFactors>({ totp: [], phone: [] });
-
-  const checkAdminRole = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .single();
-      
-      return !error && data?.role === 'admin';
-    } catch {
-      return false;
-    }
-  }, []);
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setState(prev => ({
           ...prev,
           session,
@@ -52,21 +35,17 @@ export function useAuth() {
           mfaRequired: false,
         }));
 
-        // Defer MFA factor fetch and admin check with setTimeout
+        // Defer MFA factor fetch with setTimeout
         if (session?.user) {
-          setTimeout(async () => {
+          setTimeout(() => {
             fetchMFAFactors();
-            const isAdmin = await checkAdminRole(session.user.id);
-            setState(prev => ({ ...prev, isAdmin }));
           }, 0);
-        } else {
-          setState(prev => ({ ...prev, isAdmin: false }));
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setState(prev => ({
         ...prev,
         session,
@@ -75,13 +54,11 @@ export function useAuth() {
       }));
       if (session?.user) {
         fetchMFAFactors();
-        const isAdmin = await checkAdminRole(session.user.id);
-        setState(prev => ({ ...prev, isAdmin }));
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [checkAdminRole]);
+  }, []);
 
   const fetchMFAFactors = async () => {
     try {
