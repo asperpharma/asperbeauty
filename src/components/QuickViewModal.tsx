@@ -8,6 +8,7 @@ import { ShoppingBag, Minus, Plus, Eye, ChevronLeft, ChevronRight } from "lucide
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { translateTitle, getLocalizedDescription } from "@/lib/productUtils";
+import { BlurUpImage } from "@/components/BlurUpImage";
 
 interface QuickViewModalProps {
   product: ShopifyProduct;
@@ -73,10 +74,11 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
           <div className="relative bg-gradient-to-br from-cream to-cream/80 aspect-square md:aspect-auto md:h-full">
             {images.length > 0 ? (
               <>
-                <img
+                <BlurUpImage
                   src={images[currentImageIndex]?.node.url}
                   alt={images[currentImageIndex]?.node.altText || node.title}
                   className="w-full h-full object-cover"
+                  containerClassName="w-full h-full"
                 />
                 
                 {/* Image Navigation */}
