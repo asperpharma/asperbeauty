@@ -134,6 +134,10 @@ export default {
           "0%": { transform: "scale(1)" },
           "100%": { transform: "scale(1.1)" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -143,6 +147,7 @@ export default {
         "scale-in": "scaleIn 0.5s ease-out forwards",
         "fade-in-up": "fade-in-up 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
         "slow-zoom": "slow-zoom 20s linear infinite alternate",
+        shimmer: "shimmer 2s linear infinite",
       },
     },
   },
