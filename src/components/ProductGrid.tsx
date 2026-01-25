@@ -2,8 +2,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { fetchProductsPaginated, ShopifyProduct, PaginatedProductsResponse } from "@/lib/shopify";
 import { ProductCard } from "./ProductCard";
 import { ProductFilters, FilterState } from "./ProductFilters";
-import { ProductCardSkeleton } from "./ProductCardSkeleton";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { categorizeProduct } from "@/lib/categoryMapping";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -164,32 +163,13 @@ export const ProductGrid = ({
           </div>
         )}
 
-        {/* Loading State with Skeleton Grid */}
+        {/* Loading State */}
         {loading && (
-          <div className={showFilters ? "flex flex-col lg:flex-row gap-8" : ""}>
-            {showFilters && (
-              <div className="w-full lg:w-64 flex-shrink-0">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-8 bg-taupe/20 rounded w-24" />
-                  <div className="space-y-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="h-6 bg-taupe/10 rounded" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="flex-1">
-              <div className={`grid gap-8 lg:gap-10 ${
-                showFilters 
-                  ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' 
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              }`}>
-                {Array.from({ length: showFilters ? 6 : 8 }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))}
-              </div>
-            </div>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-shiny-gold" />
+            <p className="font-body text-sm text-muted-foreground">
+              {language === 'ar' ? 'جاري تحميل المنتجات...' : 'Loading products...'}
+            </p>
           </div>
         )}
 

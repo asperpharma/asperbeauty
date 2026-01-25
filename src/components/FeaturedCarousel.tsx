@@ -8,7 +8,6 @@ import { useCartStore } from "@/stores/cartStore";
 import { translateTitle } from "@/lib/productUtils";
 import { toast } from "sonner";
 import { OptimizedImage } from "./OptimizedImage";
-import { ProductCardSkeleton } from "./ProductCardSkeleton";
 
 export const FeaturedCarousel = () => {
   const { language, isRTL } = useLanguage();
@@ -75,9 +74,14 @@ export const FeaturedCarousel = () => {
             </h2>
             <div className="w-24 h-px bg-gradient-to-r from-transparent via-shiny-gold to-transparent mx-auto" />
           </div>
-          <div className="flex gap-6 overflow-x-hidden px-14">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <ProductCardSkeleton key={i} className="flex-shrink-0 w-64 md:w-72" />
+          <div className="flex gap-6 overflow-hidden">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex-shrink-0 w-72 animate-pulse">
+                <div className="bg-gray-200 aspect-square rounded-lg mb-4" />
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-5 bg-gray-200 rounded w-1/4" />
+              </div>
             ))}
           </div>
         </div>
