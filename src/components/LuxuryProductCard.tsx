@@ -5,6 +5,7 @@ import { ProductQuickViewModal } from "./ProductQuickViewModal";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { BlurUpImage } from "./BlurUpImage";
 
 interface ProductProps {
   id: string;
@@ -115,10 +116,14 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
             </span>
           )}
           
-          <img 
-            src={product.image_url} 
-            className="h-full w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+          {/* Progressive blur-up image loading */}
+          <BlurUpImage
+            src={product.image_url}
             alt={product.title}
+            className="h-full w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+            containerClassName="h-full w-full"
+            blurAmount={15}
+            transitionDuration={400}
           />
           
           {/* Hover Actions - Quick View & Add to Cart */}

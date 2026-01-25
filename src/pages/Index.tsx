@@ -32,6 +32,7 @@ const SectionSkeleton = ({ height = "h-64" }: { height?: string }) => (
 );
 
 const Index = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,7 +56,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <GlobalHeader />
+      <Header />
       <main>
         <AnimatedShaderHero
           trustBadge={{
