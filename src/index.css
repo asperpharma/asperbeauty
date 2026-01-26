@@ -218,11 +218,11 @@
   }
 
   .luxury-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);
     box-shadow: 
-      0 20px 40px -12px hsl(var(--warm-brown) / 0.15),
+      0 30px 60px -12px hsl(var(--warm-brown) / 0.12),
       0 0 0 1px hsl(var(--gold) / 0.15),
-      0 0 40px -20px hsl(var(--gold) / 0.2);
+      0 0 50px -20px hsl(var(--gold) / 0.3);
   }
 
   .luxury-card-image {
