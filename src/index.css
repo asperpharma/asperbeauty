@@ -8,23 +8,23 @@
   :root {
     /* Asper Beauty Quiet Luxury Palette */
     
-    /* Cream #F3E5DC = HSL 25 47% 91% - Global Background */
-    --cream: 25 47% 91%;
-    --cream-dark: 25 35% 85%;
+    /* Cream #FDFBF7 = HSL 40 40% 98% - Global Background (Cleaner Ivory) */
+    --cream: 40 40% 98%;
+    --cream-dark: 40 30% 94%;
     
-    /* Gold Foil #D4AF37 = HSL 46 66% 52% - Accents & Borders */
-    --gold: 46 66% 52%;
-    --gold-light: 46 66% 62%;
-    --gold-glow: 46 66% 70%;
+    /* Gold Foil #C5A059 = HSL 40 46% 56% - Muted Sophisticated Gold */
+    --gold: 40 46% 56%;
+    --gold-light: 40 46% 66%;
+    --gold-glow: 40 46% 76%;
     
-    /* Deep Burgundy #4A0E19 = HSL 348 68% 17% - Header/Footer */
-    --burgundy: 348 68% 17%;
-    --burgundy-light: 348 58% 25%;
-    --burgundy-dark: 348 68% 12%;
+    /* Deep Royal Burgundy #3D0A14 = HSL 348 71% 14% - Primary Deep Contrast */
+    --burgundy: 348 71% 14%;
+    --burgundy-light: 348 61% 22%;
+    --burgundy-dark: 348 71% 10%;
     
-    /* Dark Warm Brown #2C1A1D = HSL 350 25% 14% - Text */
-    --warm-brown: 350 25% 14%;
-    --warm-brown-light: 350 20% 35%;
+    /* Charcoal Warm Brown #1E1617 = HSL 351 15% 10% - High Readability Text */
+    --warm-brown: 351 15% 10%;
+    --warm-brown-light: 351 10% 30%;
     
     /* Primary backgrounds - Cream base */
     --background: 25 47% 91%;
