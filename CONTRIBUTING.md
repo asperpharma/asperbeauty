@@ -116,23 +116,7 @@ src/
 
 ## 🐛 Reporting Bugs
 
-We use structured issue templates to help organize bug reports and feature requests. When creating an issue:
-
-1. Go to the [Issues](https://github.com/Asper-Beauty-Shop/asperbeauty/issues) page
-2. Click "New Issue"
-3. Select the appropriate template:
-   - **Bug Report** - For reporting bugs or issues
-   - **Feature Request** - For suggesting new features
-   - **Enhancement** - For improving existing functionality
-   - **Epic** - For large features with multiple sub-issues
-
-All templates include sub-task checklists to help break down work into manageable pieces.
-
-For detailed guidance on using issue templates, see [Issue Template Guide](.github/ISSUE_TEMPLATE_GUIDE.md).
-
-### Bug Report Template
-
-When reporting bugs, the template will guide you to include:
+When reporting bugs, please include:
 
 1. **Description**: Clear description of the issue
 2. **Steps to Reproduce**: How to trigger the bug
@@ -140,17 +124,15 @@ When reporting bugs, the template will guide you to include:
 4. **Actual Behavior**: What actually happens
 5. **Screenshots**: If applicable
 6. **Environment**: Browser, OS, device
-7. **Sub-Tasks**: Built-in checklist for tracking the fix
 
 ## 💡 Feature Requests
 
-For feature requests, our template will help you provide:
+For feature requests, please provide:
 
 1. **Problem Statement**: What problem does this solve?
 2. **Proposed Solution**: How should it work?
 3. **Alternatives Considered**: Other approaches you've thought about
 4. **Additional Context**: Mockups, examples, etc.
-5. **Implementation Sub-Tasks**: Break down the work into smaller pieces
 
 ## 📚 Resources
 
