@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import ChatProductCard from './ChatProductCard';
 
-type Message = { role: 'user' | 'assistant'; content: string };
+type Message = { role: 'user' | 'assistant'; content: string; products?: any[] };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/beauty-assistant`;
 
@@ -30,7 +31,6 @@ export const BeautyAssistant = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
   const translations = {
     en: {
       title: 'Asper Digital Consult',
@@ -76,7 +76,7 @@ export const BeautyAssistant = () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ messages: userMessages }),
+      body: JSON.stringify({ messages: userMessages.map(m => ({ role: m.role, content: m.content })) }),
     });
 
     if (!resp.ok || !resp.body) {
@@ -90,6 +90,7 @@ export const BeautyAssistant = () => {
     const decoder = new TextDecoder();
     let textBuffer = '';
     let assistantContent = '';
+    let products: any[] = [];
 
     while (true) {
       const { done, value } = await reader.read();
@@ -111,6 +112,13 @@ export const BeautyAssistant = () => {
 
         try {
           const parsed = JSON.parse(jsonStr);
+          
+          // Check if this is a products event
+          if (parsed.type === 'products' && parsed.products) {
+            products = parsed.products;
+            continue;
+          }
+          
           const content = parsed.choices?.[0]?.delta?.content as string | undefined;
           if (content) {
             assistantContent += content;
@@ -118,10 +126,10 @@ export const BeautyAssistant = () => {
               const last = prev[prev.length - 1];
               if (last?.role === 'assistant' && prev.length > 1) {
                 return prev.map((m, i) => 
-                  i === prev.length - 1 ? { ...m, content: assistantContent } : m
+                  i === prev.length - 1 ? { ...m, content: assistantContent, products } : m
                 );
               }
-              return [...prev, { role: 'assistant', content: assistantContent }];
+              return [...prev, { role: 'assistant', content: assistantContent, products }];
             });
           }
         } catch {
@@ -228,19 +236,32 @@ export const BeautyAssistant = () => {
         <ScrollArea className="h-[320px] p-4 bg-cream/30" ref={scrollRef}>
           <div className="space-y-4">
             {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+              <div key={idx} className="space-y-3">
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                    msg.role === 'user'
-                      ? 'bg-burgundy text-white rounded-br-sm'
-                      : 'bg-white border border-gold/20 text-foreground rounded-bl-sm shadow-sm'
-                  }`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-body">{msg.content}</p>
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+                      msg.role === 'user'
+                        ? 'bg-burgundy text-white rounded-br-sm'
+                        : 'bg-white border border-gold/20 text-foreground rounded-bl-sm shadow-sm'
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap font-body">{msg.content}</p>
+                  </div>
                 </div>
+                
+                {/* Product Cards */}
+                {msg.role === 'assistant' && msg.products && msg.products.length > 0 && (
+                  <div className="space-y-2 ml-2">
+                    <p className="text-[10px] text-gold font-medium uppercase tracking-wider">
+                      {language === 'ar' ? 'المنتجات الموصى بها' : 'Recommended Products'}
+                    </p>
+                    {msg.products.slice(0, 3).map((product, pIdx) => (
+                      <ChatProductCard key={product.id || pIdx} product={product} />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.role === 'user' && (

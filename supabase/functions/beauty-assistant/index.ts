@@ -54,6 +54,7 @@ serve(async (req) => {
     
     // Search for relevant products based on user query
     let productContext = "";
+    let matchedProducts: any[] = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -71,6 +72,7 @@ serve(async (req) => {
 
       if (!searchError && relevantProducts && relevantProducts.length > 0) {
         console.log(`Found ${relevantProducts.length} relevant products`);
+        matchedProducts = relevantProducts;
         
         productContext = `\n\n**Relevant Products from Our Store:**\n${relevantProducts.map(p => 
           `- **${p.title}** (${p.brand || 'Asper'}) - ${p.price} JOD${p.is_on_sale ? ` (${p.discount_percent}% OFF!)` : ''} - ${p.category}${p.skin_concerns?.length ? ` | Good for: ${p.skin_concerns.join(', ')}` : ''}`
@@ -90,6 +92,9 @@ serve(async (req) => {
           }).slice(0, 5);
 
           if (relevantDocs.length > 0) {
+            // Convert document metadata to product format for cards
+            matchedProducts = relevantDocs.map(doc => doc.metadata);
+            
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
               const m = doc.metadata as any;
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
@@ -164,7 +169,32 @@ ${productContext}`;
       });
     }
 
-    return new Response(response.body, {
+    // Create a transformed stream that prepends product data
+    const encoder = new TextEncoder();
+    const productDataEvent = matchedProducts && matchedProducts.length > 0
+      ? `data: ${JSON.stringify({ type: "products", products: matchedProducts })}\n\n`
+      : "";
+
+    // Create a new ReadableStream that combines product data with AI stream
+    const combinedStream = new ReadableStream({
+      async start(controller) {
+        // Send product data first if available
+        if (productDataEvent) {
+          controller.enqueue(encoder.encode(productDataEvent));
+        }
+        
+        // Then pipe through the AI response
+        const reader = response.body!.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+        }
+        controller.close();
+      }
+    });
+
+    return new Response(combinedStream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
