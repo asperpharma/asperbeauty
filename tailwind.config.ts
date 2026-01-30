@@ -17,6 +17,12 @@ export default {
         display: ['Playfair Display', 'serif'],
         body: ['Inter', 'Lato', 'sans-serif'],
         script: ['Great Vibes', 'cursive'],
+        serif: ['Playfair Display', 'serif'],
+        sans: ['Montserrat', 'sans-serif'],
+      },
+      backgroundImage: {
+        'celestial-gradient': 'linear-gradient(to bottom, #4A0404, #2b0202)',
+        'gold-shimmer': 'linear-gradient(45deg, #D4AF37, #F3E5AB, #D4AF37)',
       },
       colors: {
         border: "hsl(var(--border))",
@@ -85,6 +91,14 @@ export default {
         luxury: {
           black: "hsl(var(--luxury-black))",
           charcoal: "hsl(var(--luxury-charcoal))",
+        },
+        asper: {
+          merlot: '#4A0404',
+          merlotLight: '#800020',
+          gold: '#D4AF37',
+          goldLight: '#F3E5AB',
+          charcoal: '#1A1A1A',
+          ivory: '#F9F7F2',
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
