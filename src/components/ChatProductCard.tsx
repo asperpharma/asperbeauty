@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShoppingBag, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ShoppingBag, Sparkles, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ChatProduct {
@@ -24,7 +25,10 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({ product, onAdd
   const { language } = useLanguage();
 
   return (
-    <div className="flex gap-3 p-3 bg-white/80 rounded-xl border border-gold/20 shadow-sm hover:shadow-md transition-all duration-300 group">
+    <Link 
+      to={`/product/${product.id}`}
+      className="flex gap-3 p-3 bg-white/80 rounded-xl border border-gold/20 shadow-sm hover:shadow-md hover:border-gold/40 transition-all duration-300 group cursor-pointer"
+    >
       {/* Product Image */}
       <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-cream/50">
         {product.image_url ? (
@@ -59,7 +63,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({ product, onAdd
               <span className="text-[10px] text-muted-foreground line-through">
                 {product.original_price.toFixed(2)}
               </span>
-              <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+              <span className="text-[9px] bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full font-medium">
                 -{product.discount_percent}%
               </span>
             </>
@@ -84,14 +88,18 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({ product, onAdd
       {/* Add Button */}
       {onAddToCart && (
         <button
-          onClick={() => onAddToCart(product)}
-          className="self-center p-2 rounded-full bg-burgundy hover:bg-burgundy-light text-gold transition-colors duration-300"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToCart(product);
+          }}
+          className="self-center p-2 rounded-full bg-primary hover:bg-primary/80 text-primary-foreground transition-colors duration-300"
           aria-label={language === 'ar' ? 'أضف للسلة' : 'Add to cart'}
         >
           <ShoppingBag className="w-3.5 h-3.5" />
         </button>
       )}
-    </div>
+    </Link>
   );
 };
 
