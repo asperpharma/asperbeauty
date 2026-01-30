@@ -17,7 +17,7 @@ const generateParticles = (count: number) => {
   }));
 };
 const GoldParticles = () => {
-  const [particles] = useState(() => generateParticles(25));
+  const [particles] = useState(() => generateParticles(40));
   return <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map(particle => <div key={particle.id} className="absolute rounded-full bg-gradient-to-br from-[#FFC300] to-[#D4AF37]" style={{
       left: `${particle.left}%`,
@@ -80,25 +80,42 @@ const HeroSection = () => {
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
         
         {/* Rotating Trust Badge */}
-        
+        <div className="mb-8">
+          <AnimatedTrustBadge />
+        </div>
 
         {/* Gold divider above headline */}
-        <div className="mb-6 h-px w-24 bg-gradient-to-r from-transparent via-[#FFC300] to-transparent" />
+        <div className="mb-6 h-px w-32 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
 
         {/* Headline */}
-        
+        <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-asper-charcoal mb-4 drop-shadow-sm">
+          Discover Your Ritual
+        </h1>
 
         {/* Gold divider below headline */}
-        <div className="mb-8 h-px w-24 bg-gradient-to-r from-transparent via-[#FFC300] to-transparent" />
+        <div className="mb-6 h-px w-32 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
 
         {/* Sub-Headline */}
-        
+        <p className="max-w-xl text-lg md:text-xl text-asper-charcoal/80 font-sans mb-10">
+          Curated luxury skincare & beauty from the world's most prestigious brands
+        </p>
 
         {/* Call to Action Buttons */}
         <div className="flex flex-col gap-4 sm:flex-row">
-          
-          
-          
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-asper-charcoal font-semibold px-8 py-6 text-base hover:shadow-[0_4px_20px_rgba(212,175,55,0.5)] transition-all duration-300 hover:scale-105"
+          >
+            Shop Collection
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-2 border-asper-charcoal/30 text-asper-charcoal px-8 py-6 text-base hover:bg-asper-charcoal/5 hover:border-asper-charcoal/50 transition-all duration-300"
+          >
+            Explore Brands
+          </Button>
         </div>
 
         {/* Tagline */}
