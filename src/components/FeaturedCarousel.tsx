@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,8 +34,7 @@ export const FeaturedCarousel = () => {
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = 320;
-      const newScrollLeft =
-        scrollContainerRef.current.scrollLeft +
+      const newScrollLeft = scrollContainerRef.current.scrollLeft +
         (direction === "left" ? -scrollAmount : scrollAmount);
       scrollContainerRef.current.scrollTo({
         left: newScrollLeft,
@@ -60,9 +59,12 @@ export const FeaturedCarousel = () => {
       selectedOptions: variant.selectedOptions || [],
     });
 
-    toast.success(language === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart", {
-      position: "top-center",
-    });
+    toast.success(
+      language === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart",
+      {
+        position: "top-center",
+      },
+    );
   };
 
   if (isLoading) {
@@ -77,7 +79,10 @@ export const FeaturedCarousel = () => {
           </div>
           <div className="flex gap-6 overflow-x-hidden px-14">
             {Array.from({ length: 4 }).map((_, i) => (
-              <ProductCardSkeleton key={i} className="flex-shrink-0 w-64 md:w-72" />
+              <ProductCardSkeleton
+                key={i}
+                className="flex-shrink-0 w-64 md:w-72"
+              />
             ))}
           </div>
         </div>
@@ -116,7 +121,9 @@ export const FeaturedCarousel = () => {
           >
             {products.map((product) => {
               const imageUrl = product.node.images.edges[0]?.node.url;
-              const price = parseFloat(product.node.priceRange.minVariantPrice.amount);
+              const price = parseFloat(
+                product.node.priceRange.minVariantPrice.amount,
+              );
               const displayTitle = translateTitle(product.node.title, language);
 
               return (
@@ -127,21 +134,23 @@ export const FeaturedCarousel = () => {
                 >
                   {/* Product Image */}
                   <div className="relative aspect-square bg-white rounded-lg overflow-hidden mb-4 shadow-sm">
-                    {imageUrl ? (
-                      <OptimizedImage
-                        src={imageUrl}
-                        alt={displayTitle}
-                        className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        width={400}
-                        height={400}
-                        sizes="(max-width: 768px) 256px, 288px"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <ShoppingBag className="w-12 h-12 text-gray-300" />
-                      </div>
-                    )}
+                    {imageUrl
+                      ? (
+                        <OptimizedImage
+                          src={imageUrl}
+                          alt={displayTitle}
+                          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                          width={400}
+                          height={400}
+                          sizes="(max-width: 768px) 256px, 288px"
+                        />
+                      )
+                      : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <ShoppingBag className="w-12 h-12 text-gray-300" />
+                        </div>
+                      )}
 
                     {/* Quick Add Button - Shows on Hover */}
                     <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">

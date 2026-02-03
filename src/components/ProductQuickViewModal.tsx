@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
-import { ShoppingBag, Minus, Plus, Eye, Heart, X } from "lucide-react";
+import { Eye, Heart, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { useWishlistStore } from "@/stores/wishlistStore";
@@ -28,17 +33,24 @@ interface ProductQuickViewModalProps {
   onClose: () => void;
 }
 
-export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuickViewModalProps) => {
+export const ProductQuickViewModal = (
+  { product, isOpen, onClose }: ProductQuickViewModalProps,
+) => {
   const { language } = useLanguage();
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
-  
+
   const [quantity, setQuantity] = useState(1);
-  
-  const isOnSale = product.is_on_sale && product.original_price && product.original_price > product.price;
-  const discountPercent = product.discount_percent || (isOnSale 
-    ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100)
-    : 0);
+
+  const isOnSale = product.is_on_sale && product.original_price &&
+    product.original_price > product.price;
+  const discountPercent = product.discount_percent ||
+    (isOnSale
+      ? Math.round(
+        ((product.original_price! - product.price) / product.original_price!) *
+          100,
+      )
+      : 0);
 
   const handleAddToCart = () => {
     // Create a mock Shopify-like product for the cart
@@ -51,14 +63,25 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
         vendor: product.brand || "",
         productType: product.category || "",
         images: {
-          edges: product.image_url ? [{ node: { url: product.image_url, altText: product.title } }] : []
+          edges: product.image_url
+            ? [{ node: { url: product.image_url, altText: product.title } }]
+            : [],
         },
         priceRange: {
-          minVariantPrice: { amount: product.price.toString(), currencyCode: "JOD" },
-          maxVariantPrice: { amount: product.price.toString(), currencyCode: "JOD" }
+          minVariantPrice: {
+            amount: product.price.toString(),
+            currencyCode: "JOD",
+          },
+          maxVariantPrice: {
+            amount: product.price.toString(),
+            currencyCode: "JOD",
+          },
         },
         compareAtPriceRange: {
-          minVariantPrice: { amount: (product.original_price || product.price).toString(), currencyCode: "JOD" }
+          minVariantPrice: {
+            amount: (product.original_price || product.price).toString(),
+            currencyCode: "JOD",
+          },
         },
         variants: {
           edges: [{
@@ -66,15 +89,20 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
               id: `${product.id}-default`,
               title: "Default",
               price: { amount: product.price.toString(), currencyCode: "JOD" },
-              compareAtPrice: product.original_price ? { amount: product.original_price.toString(), currencyCode: "JOD" } : null,
+              compareAtPrice: product.original_price
+                ? {
+                  amount: product.original_price.toString(),
+                  currencyCode: "JOD",
+                }
+                : null,
               availableForSale: true,
-              selectedOptions: []
-            }
-          }]
+              selectedOptions: [],
+            },
+          }],
         },
         options: [],
-        tags: []
-      }
+        tags: [],
+      },
     };
 
     addItem({
@@ -86,10 +114,13 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
       selectedOptions: [],
     });
 
-    toast.success(language === 'ar' ? 'تمت الإضافة إلى الحقيبة' : 'Added to bag', {
-      description: `${product.title} × ${quantity}`,
-      position: "top-center",
-    });
+    toast.success(
+      language === "ar" ? "تمت الإضافة إلى الحقيبة" : "Added to bag",
+      {
+        description: `${product.title} × ${quantity}`,
+        position: "top-center",
+      },
+    );
 
     setCartOpen(true);
     onClose();
@@ -99,7 +130,7 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden bg-cream border-gold/20 z-50">
         {/* Close button */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-cream/90 backdrop-blur-sm border border-gold/30 flex items-center justify-center hover:bg-burgundy hover:text-cream transition-colors"
         >
@@ -109,30 +140,32 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
         <div className="grid md:grid-cols-2 gap-0">
           {/* Image Gallery */}
           <div className="relative bg-gradient-to-br from-cream to-background aspect-square md:aspect-auto md:min-h-[500px] flex items-center justify-center p-8">
-            {product.image_url ? (
-              <>
-                <img
-                  src={product.image_url}
-                  alt={product.title}
-                  className="max-w-full max-h-full object-contain"
-                />
-                
-                {/* Sale Badge */}
-                {isOnSale && discountPercent > 0 && (
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-red-500 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg rounded">
-                    -{discountPercent}% OFF
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-muted-foreground">
-                  {language === 'ar' ? 'لا توجد صورة' : 'No image'}
-                </span>
-              </div>
-            )}
+            {product.image_url
+              ? (
+                <>
+                  <img
+                    src={product.image_url}
+                    alt={product.title}
+                    className="max-w-full max-h-full object-contain"
+                  />
+
+                  {/* Sale Badge */}
+                  {isOnSale && discountPercent > 0 && (
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-red-500 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg rounded">
+                      -{discountPercent}% OFF
+                    </div>
+                  )}
+                </>
+              )
+              : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-muted-foreground">
+                    {language === "ar" ? "لا توجد صورة" : "No image"}
+                  </span>
+                </div>
+              )}
           </div>
-          
+
           {/* Product Details */}
           <div className="p-6 md:p-8 flex flex-col bg-cream">
             <DialogHeader className="text-start mb-4">
@@ -146,14 +179,14 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
                 {product.title}
               </DialogTitle>
             </DialogHeader>
-            
+
             {/* Volume */}
             {product.volume_ml && (
               <p className="text-sm text-muted-foreground mb-3">
                 {product.volume_ml}
               </p>
             )}
-            
+
             {/* Price */}
             <div className="flex items-center gap-3 mb-4">
               {isOnSale && product.original_price && (
@@ -161,22 +194,26 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
                   {product.original_price.toFixed(3)} JOD
                 </span>
               )}
-              <span className={`font-display text-2xl ${isOnSale ? 'text-red-600' : 'text-gold'}`}>
+              <span
+                className={`font-display text-2xl ${
+                  isOnSale ? "text-red-600" : "text-gold"
+                }`}
+              >
                 {product.price.toFixed(3)} <span className="text-sm">JOD</span>
               </span>
             </div>
-            
+
             {/* Description */}
             {product.description && (
               <p className="font-body text-sm text-muted-foreground mb-6 leading-relaxed line-clamp-4">
                 {product.description}
               </p>
             )}
-            
+
             {/* Quantity */}
             <div className="mb-6">
               <label className="font-display text-sm text-foreground mb-2 block">
-                {language === 'ar' ? 'الكمية' : 'Quantity'}
+                {language === "ar" ? "الكمية" : "Quantity"}
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -185,7 +222,9 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="w-12 text-center font-display text-lg">{quantity}</span>
+                <span className="w-12 text-center font-display text-lg">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 border border-gold/30 rounded flex items-center justify-center hover:bg-gold hover:text-cream transition-colors"
@@ -194,14 +233,14 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
                 </button>
               </div>
             </div>
-            
+
             {/* Luxury Divider */}
             <div className="flex items-center justify-center gap-3 my-4">
               <div className="w-12 h-px bg-gradient-to-r from-transparent via-gold/60 to-gold/40" />
               <span className="text-gold text-xs">✦</span>
               <div className="w-12 h-px bg-gradient-to-l from-transparent via-gold/60 to-gold/40" />
             </div>
-            
+
             {/* Actions */}
             <div className="space-y-3 mt-auto">
               <Button
@@ -209,16 +248,18 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
                 onClick={handleAddToCart}
               >
                 <ShoppingBag className="w-4 h-4 me-2" />
-                {language === 'ar' ? 'أضف إلى الحقيبة' : 'Add to Bag'}
+                {language === "ar" ? "أضف إلى الحقيبة" : "Add to Bag"}
               </Button>
-              
+
               <Link to={`/product/${product.id}`} onClick={onClose}>
                 <Button
                   variant="outline"
                   className="w-full border-gold/30 hover:border-gold hover:bg-gold/5 font-display uppercase tracking-widest text-xs py-6"
                 >
                   <Eye className="w-4 h-4 me-2" />
-                  {language === 'ar' ? 'عرض التفاصيل الكاملة' : 'View Full Details'}
+                  {language === "ar"
+                    ? "عرض التفاصيل الكاملة"
+                    : "View Full Details"}
                 </Button>
               </Link>
             </div>
@@ -227,10 +268,12 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
             <div className="mt-6 pt-4 border-t border-gold/20">
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <span className="text-gold">✓</span> {language === 'ar' ? 'أصلي 100%' : '100% Authentic'}
+                  <span className="text-gold">✓</span>{" "}
+                  {language === "ar" ? "أصلي 100%" : "100% Authentic"}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="text-gold">✓</span> {language === 'ar' ? 'شحن سريع' : 'Fast Shipping'}
+                  <span className="text-gold">✓</span>{" "}
+                  {language === "ar" ? "شحن سريع" : "Fast Shipping"}
                 </span>
               </div>
             </div>
@@ -242,7 +285,9 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }: ProductQuick
 };
 
 // Quick View Trigger Button Component
-export const ProductQuickViewButton = ({ onClick }: { onClick: () => void }) => {
+export const ProductQuickViewButton = (
+  { onClick }: { onClick: () => void },
+) => {
   return (
     <button
       onClick={(e) => {

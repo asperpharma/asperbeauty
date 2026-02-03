@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Sparkles, ExternalLink } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import { ExternalLink, ShoppingBag, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatProduct {
   id: string;
@@ -21,38 +21,42 @@ interface ChatProductCardProps {
   onAddToCart?: (product: ChatProduct) => void;
 }
 
-export const ChatProductCard: React.FC<ChatProductCardProps> = ({ product, onAddToCart }) => {
+export const ChatProductCard: React.FC<ChatProductCardProps> = (
+  { product, onAddToCart },
+) => {
   const { language } = useLanguage();
 
   return (
-    <Link 
+    <Link
       to={`/product/${product.id}`}
       className="flex gap-3 p-3 bg-white/80 rounded-xl border border-gold/20 shadow-sm hover:shadow-md hover:border-gold/40 transition-all duration-300 group cursor-pointer"
     >
       {/* Product Image */}
       <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-cream/50">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-gold/50" />
-          </div>
-        )}
+        {product.image_url
+          ? (
+            <img
+              src={product.image_url}
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          )
+          : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-gold/50" />
+            </div>
+          )}
       </div>
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
         <p className="text-[10px] text-gold font-medium uppercase tracking-wider">
-          {product.brand || 'Asper'}
+          {product.brand || "Asper"}
         </p>
         <h4 className="text-xs font-semibold text-burgundy line-clamp-2 leading-tight mt-0.5">
           {product.title}
         </h4>
-        
+
         {/* Price */}
         <div className="flex items-center gap-2 mt-1">
           <span className="text-sm font-bold text-burgundy">
@@ -94,7 +98,7 @@ export const ChatProductCard: React.FC<ChatProductCardProps> = ({ product, onAdd
             onAddToCart(product);
           }}
           className="self-center p-2 rounded-full bg-primary hover:bg-primary/80 text-primary-foreground transition-colors duration-300"
-          aria-label={language === 'ar' ? 'أضف للسلة' : 'Add to cart'}
+          aria-label={language === "ar" ? "أضف للسلة" : "Add to cart"}
         >
           <ShoppingBag className="w-3.5 h-3.5" />
         </button>

@@ -4,7 +4,7 @@ import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { toast } from "sonner";
-import { ShoppingBag, Heart, Star, Sparkles } from "lucide-react";
+import { Heart, ShoppingBag, Sparkles, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
 import { translateTitle } from "@/lib/productUtils";
@@ -14,43 +14,47 @@ interface GlassGoldProductCardProps {
   product: ShopifyProduct;
 }
 
-export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => {
+export const GlassGoldProductCard = (
+  { product }: GlassGoldProductCardProps,
+) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const { node } = product;
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
   const { toggleItem, isInWishlist } = useWishlistStore();
   const { t, language } = useLanguage();
-  
+
   const isWishlisted = isInWishlist(node.id);
 
   const firstVariant = node.variants.edges[0]?.node;
   const firstImage = node.images.edges[0]?.node;
   const price = node.priceRange.minVariantPrice;
-  
+
   // Check for badges based on tags
   const tags = (node as any).tags || [];
-  const isBestseller = Array.isArray(tags) 
-    ? tags.some((tag: string) => tag.toLowerCase().includes('bestseller'))
-    : typeof tags === 'string' && tags.toLowerCase().includes('bestseller');
-  
+  const isBestseller = Array.isArray(tags)
+    ? tags.some((tag: string) => tag.toLowerCase().includes("bestseller"))
+    : typeof tags === "string" && tags.toLowerCase().includes("bestseller");
+
   // Check if product is new (created within last 30 days)
   const createdAt = (node as any).createdAt;
-  const isNewArrival = createdAt 
+  const isNewArrival = createdAt
     ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
     : false;
-    
+
   // Check for sale/discount
   const compareAtPrice = firstVariant?.compareAtPrice;
   const currentPrice = parseFloat(firstVariant?.price?.amount || price.amount);
-  const originalPrice = compareAtPrice ? parseFloat(compareAtPrice.amount) : null;
+  const originalPrice = compareAtPrice
+    ? parseFloat(compareAtPrice.amount)
+    : null;
   const isOnSale = originalPrice && originalPrice > currentPrice;
-  const discountPercent = isOnSale 
+  const discountPercent = isOnSale
     ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
     : 0;
 
   // Extract brand from vendor or title
-  const brand = (node as any).vendor || node.title.split(' ')[0];
+  const brand = (node as any).vendor || node.title.split(" ")[0];
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,7 +83,7 @@ export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => 
     e.preventDefault();
     e.stopPropagation();
     toggleItem(product);
-    
+
     if (!isWishlisted) {
       toast.success("Added to wishlist", {
         description: node.title,
@@ -92,35 +96,44 @@ export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => 
     <Link to={`/product/${node.handle}`} className="group block">
       {/* Glass & Gold Card Container */}
       <div className="relative w-full bg-asper-merlot/40 backdrop-blur-md border border-asper-gold/30 rounded-sm overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.15)] hover:-translate-y-2">
-        
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden">
-          {firstImage ? (
-            <OptimizedImage
-              src={firstImage.url}
-              alt={firstImage.altText || node.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              loading="lazy"
-              width={400}
-              height={500}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-asper-merlot/20">
-              <span className="text-asper-ivory/50 font-sans text-sm">{t.noImage}</span>
-            </div>
-          )}
+          {firstImage
+            ? (
+              <OptimizedImage
+                src={firstImage.url}
+                alt={firstImage.altText || node.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="lazy"
+                width={400}
+                height={500}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              />
+            )
+            : (
+              <div className="w-full h-full flex items-center justify-center bg-asper-merlot/20">
+                <span className="text-asper-ivory/50 font-sans text-sm">
+                  {t.noImage}
+                </span>
+              </div>
+            )}
 
           {/* Badges */}
           {(isBestseller || isNewArrival || isOnSale) && (
             <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">
               {isBestseller && (
-                <div className="w-8 h-8 rounded-full bg-asper-gold flex items-center justify-center shadow-lg" title="Bestseller">
+                <div
+                  className="w-8 h-8 rounded-full bg-asper-gold flex items-center justify-center shadow-lg"
+                  title="Bestseller"
+                >
                   <Star className="w-4 h-4 text-asper-merlot fill-asper-merlot" />
                 </div>
               )}
               {isNewArrival && !isBestseller && (
-                <div className="w-8 h-8 rounded-full bg-asper-gold flex items-center justify-center shadow-lg" title="New Arrival">
+                <div
+                  className="w-8 h-8 rounded-full bg-asper-gold flex items-center justify-center shadow-lg"
+                  title="New Arrival"
+                >
                   <Sparkles className="w-4 h-4 text-asper-merlot" />
                 </div>
               )}
@@ -136,22 +149,24 @@ export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => 
           <button
             onClick={handleWishlistToggle}
             className={`absolute top-3 right-3 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isWishlisted 
-                ? 'bg-asper-gold text-asper-merlot' 
-                : 'bg-asper-ivory/20 backdrop-blur-sm text-asper-ivory md:opacity-0 md:group-hover:opacity-100 hover:bg-asper-gold hover:text-asper-merlot'
+              isWishlisted
+                ? "bg-asper-gold text-asper-merlot"
+                : "bg-asper-ivory/20 backdrop-blur-sm text-asper-ivory md:opacity-0 md:group-hover:opacity-100 hover:bg-asper-gold hover:text-asper-merlot"
             }`}
           >
-            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+            <Heart
+              className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`}
+            />
           </button>
 
           {/* Quick Add Button - Slides up on hover */}
           <div className="absolute bottom-0 left-0 w-full translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <button 
+            <button
               onClick={handleAddToCart}
               className="w-full bg-asper-gold text-asper-merlot py-4 uppercase tracking-widest text-xs font-bold flex items-center justify-center gap-2 hover:bg-asper-ivory transition-colors"
             >
-              <ShoppingBag size={16} /> 
-              {language === 'ar' ? 'أضف للسلة' : 'Add to Cart'}
+              <ShoppingBag size={16} />
+              {language === "ar" ? "أضف للسلة" : "Add to Cart"}
             </button>
           </div>
         </div>
@@ -176,11 +191,11 @@ export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => 
           </div>
         </div>
       </div>
-      
-      <QuickViewModal 
-        product={product} 
-        isOpen={isQuickViewOpen} 
-        onClose={() => setIsQuickViewOpen(false)} 
+
+      <QuickViewModal
+        product={product}
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
       />
     </Link>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingBag, Star, Eye } from "lucide-react";
+import { Eye, ShoppingBag, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductQuickViewModal } from "./ProductQuickViewModal";
 import { useCartStore } from "@/stores/cartStore";
@@ -31,9 +31,11 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-    
+
+    const price = typeof product.price === "string"
+      ? parseFloat(product.price)
+      : product.price;
+
     // Create a mock Shopify-like product for the cart
     const cartProduct = {
       node: {
@@ -44,14 +46,19 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
         vendor: product.brand || "",
         productType: product.category || "",
         images: {
-          edges: product.image_url ? [{ node: { url: product.image_url, altText: product.title } }] : []
+          edges: product.image_url
+            ? [{ node: { url: product.image_url, altText: product.title } }]
+            : [],
         },
         priceRange: {
           minVariantPrice: { amount: price.toString(), currencyCode: "JOD" },
-          maxVariantPrice: { amount: price.toString(), currencyCode: "JOD" }
+          maxVariantPrice: { amount: price.toString(), currencyCode: "JOD" },
         },
         compareAtPriceRange: {
-          minVariantPrice: { amount: (product.original_price || price).toString(), currencyCode: "JOD" }
+          minVariantPrice: {
+            amount: (product.original_price || price).toString(),
+            currencyCode: "JOD",
+          },
         },
         variants: {
           edges: [{
@@ -59,15 +66,20 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
               id: `${product.id}-default`,
               title: "Default",
               price: { amount: price.toString(), currencyCode: "JOD" },
-              compareAtPrice: product.original_price ? { amount: product.original_price.toString(), currencyCode: "JOD" } : null,
+              compareAtPrice: product.original_price
+                ? {
+                  amount: product.original_price.toString(),
+                  currencyCode: "JOD",
+                }
+                : null,
               availableForSale: true,
-              selectedOptions: []
-            }
-          }]
+              selectedOptions: [],
+            },
+          }],
         },
         options: [],
-        tags: []
-      }
+        tags: [],
+      },
     };
 
     addItem({
@@ -79,10 +91,13 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
       selectedOptions: [],
     });
 
-    toast.success(language === 'ar' ? 'تمت الإضافة إلى الحقيبة' : 'Added to bag', {
-      description: product.title,
-      position: "top-center",
-    });
+    toast.success(
+      language === "ar" ? "تمت الإضافة إلى الحقيبة" : "Added to bag",
+      {
+        description: product.title,
+        position: "top-center",
+      },
+    );
 
     setCartOpen(true);
   };
@@ -93,7 +108,9 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
     setShowQuickView(true);
   };
 
-  const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+  const price = typeof product.price === "string"
+    ? parseFloat(product.price)
+    : product.price;
 
   return (
     <>
@@ -108,14 +125,14 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
               New
             </span>
           )}
-          
+
           {/* Sale badge */}
           {product.is_on_sale && product.discount_percent && (
             <span className="absolute top-2 right-2 z-10 bg-red-600 text-cream text-[8px] md:text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest rounded">
               -{product.discount_percent}%
             </span>
           )}
-          
+
           {/* Progressive blur-up image loading */}
           <BlurUpImage
             src={product.image_url}
@@ -125,32 +142,32 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
             blurAmount={15}
             transitionDuration={400}
           />
-          
+
           {/* Hover Actions - Quick View & Add to Cart */}
           <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               {/* Quick View Button */}
-              <button 
+              <button
                 onClick={handleQuickView}
                 className="w-10 h-10 rounded-full bg-cream/95 backdrop-blur-sm border border-gold/50 flex items-center justify-center hover:bg-gold hover:text-cream transition-all duration-300 shadow-lg hover:scale-110"
-                title={language === 'ar' ? 'عرض سريع' : 'Quick View'}
+                title={language === "ar" ? "عرض سريع" : "Quick View"}
               >
                 <Eye className="w-4 h-4" />
               </button>
-              
+
               {/* Add to Cart Button - Desktop */}
-              <button 
+              <button
                 onClick={handleAddToCart}
                 className="hidden md:flex w-10 h-10 rounded-full bg-burgundy/95 backdrop-blur-sm border border-burgundy flex items-center justify-center hover:bg-burgundy-light text-cream transition-all duration-300 shadow-lg hover:scale-110"
-                title={language === 'ar' ? 'أضف إلى الحقيبة' : 'Add to Bag'}
+                title={language === "ar" ? "أضف إلى الحقيبة" : "Add to Bag"}
               >
                 <ShoppingBag className="w-4 h-4" />
               </button>
             </div>
           </div>
-          
+
           {/* Mobile Quick-Add: Only shows on mobile */}
-          <button 
+          <button
             className="absolute bottom-2 right-2 md:hidden bg-foreground text-background p-2 rounded-full shadow-lg"
             onClick={handleAddToCart}
           >
@@ -163,7 +180,7 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
           <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gold mb-1">
             {product.brand || product.category}
           </p>
-          
+
           <h3 className="font-serif text-sm md:text-lg text-foreground line-clamp-2 leading-tight mb-2 flex-1">
             {product.title}
           </h3>
@@ -175,25 +192,32 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
                   {product.original_price.toFixed(3)}
                 </span>
               )}
-              <span className={`font-sans font-bold text-xs md:text-base ${product.is_on_sale ? 'text-red-600' : 'text-foreground'}`}>
-                {price.toFixed(3)} <span className="text-[10px] md:text-xs">JOD</span>
+              <span
+                className={`font-sans font-bold text-xs md:text-base ${
+                  product.is_on_sale ? "text-red-600" : "text-foreground"
+                }`}
+              >
+                {price.toFixed(3)}{" "}
+                <span className="text-[10px] md:text-xs">JOD</span>
               </span>
             </div>
-            
+
             {/* Rating - Hidden on very small screens to save space */}
             <div className="hidden sm:flex items-center gap-1 text-gold">
               <Star className="h-2 w-2 md:h-3 md:w-3 fill-current" />
-              <span className="text-[9px] md:text-xs text-muted-foreground">4.9</span>
+              <span className="text-[9px] md:text-xs text-muted-foreground">
+                4.9
+              </span>
             </div>
           </div>
         </div>
 
         {/* Desktop Only: Add to Cart on Hover */}
-        <div 
+        <div
           className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-burgundy text-cream p-4 text-center cursor-pointer uppercase text-[10px] font-bold tracking-widest hover:bg-burgundy-light"
           onClick={handleAddToCart}
         >
-          {language === 'ar' ? 'أضف إلى الحقيبة' : 'Add to Bag'}
+          {language === "ar" ? "أضف إلى الحقيبة" : "Add to Bag"}
         </div>
       </Link>
 

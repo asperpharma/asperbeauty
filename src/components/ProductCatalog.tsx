@@ -1,12 +1,21 @@
-import { useEffect, useState, useMemo } from "react";
-import { ShoppingBag, Star, Sparkles, Loader2, TrendingUp, Award, Eye, Percent } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Award,
+  Eye,
+  Loader2,
+  Percent,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  TrendingUp,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getProductImage, formatJOD } from "@/lib/productImageUtils";
+import { formatJOD, getProductImage } from "@/lib/productImageUtils";
 import { ProductQuickView } from "./ProductQuickView";
 import { useCartStore } from "@/stores/cartStore";
 
@@ -28,75 +37,88 @@ interface Product {
 }
 
 // Professional ProductCard Component - BeautyBox/iHerb Style
-const ProductCard = ({ 
-  product, 
+const ProductCard = ({
+  product,
   onQuickView,
-  index 
-}: { 
-  product: Product; 
+  index,
+}: {
+  product: Product;
   onQuickView: (product: Product) => void;
   index: number;
 }) => {
   const { language } = useLanguage();
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
-  const imageUrl = getProductImage(product.image_url, product.category, product.title);
-  
-  const isOnSale = product.is_on_sale && product.original_price && product.original_price > product.price;
-  const discountPercent = product.discount_percent || 
-    (isOnSale ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100) : 0);
+  const imageUrl = getProductImage(
+    product.image_url,
+    product.category,
+    product.title,
+  );
+
+  const isOnSale = product.is_on_sale && product.original_price &&
+    product.original_price > product.price;
+  const discountPercent = product.discount_percent ||
+    (isOnSale
+      ? Math.round(
+        ((product.original_price! - product.price) / product.original_price!) *
+          100,
+      )
+      : 0);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // Create a mock product for cart compatibility
     const cartProduct = {
       node: {
         id: product.id,
         title: product.title,
         handle: product.id,
-        description: product.description || '',
+        description: product.description || "",
         priceRange: {
           minVariantPrice: {
             amount: product.price.toString(),
-            currencyCode: 'JOD'
-          }
+            currencyCode: "JOD",
+          },
         },
         images: {
           edges: [{
             node: {
               url: imageUrl,
-              altText: product.title
-            }
-          }]
+              altText: product.title,
+            },
+          }],
         },
         variants: {
           edges: [{
             node: {
               id: product.id,
-              title: 'Default',
-              price: { amount: product.price.toString(), currencyCode: 'JOD' },
-              selectedOptions: []
-            }
-          }]
-        }
-      }
+              title: "Default",
+              price: { amount: product.price.toString(), currencyCode: "JOD" },
+              selectedOptions: [],
+            },
+          }],
+        },
+      },
     };
 
     addItem({
       product: cartProduct as any,
       variantId: product.id,
-      variantTitle: 'Default',
-      price: { amount: product.price.toString(), currencyCode: 'JOD' },
+      variantTitle: "Default",
+      price: { amount: product.price.toString(), currencyCode: "JOD" },
       quantity: 1,
       selectedOptions: [],
     });
-    
-    toast.success(language === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', {
-      description: product.title,
-      position: "top-center",
-    });
-    
+
+    toast.success(
+      language === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart",
+      {
+        description: product.title,
+        position: "top-center",
+      },
+    );
+
     setCartOpen(true);
   };
 
@@ -105,7 +127,7 @@ const ProductCard = ({
   };
 
   return (
-    <article 
+    <article
       className="group relative bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer animate-fade-in flex flex-col"
       onClick={handleQuickView}
       style={{ animationDelay: `${index * 50}ms` }}
@@ -118,7 +140,7 @@ const ProductCard = ({
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        
+
         {/* Sale Badge - iHerb Style (top-left, red/orange) */}
         {isOnSale && discountPercent > 0 && (
           <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-[#E53E3E] text-white px-2 py-1 rounded-sm text-xs font-semibold shadow-md">
@@ -128,16 +150,23 @@ const ProductCard = ({
         )}
 
         {/* Category Badge (below sale badge if exists) */}
-        {(product.category === 'Best Seller' || product.category === 'New Arrival') && (
-          <Badge 
-            className={`absolute ${isOnSale ? 'top-10' : 'top-2'} left-2 z-10 font-medium text-[10px] uppercase tracking-wide px-2 py-1 flex items-center gap-1 shadow-sm border-0 ${
-              product.category === 'Best Seller' 
-                ? 'bg-amber-500 text-white' 
-                : 'bg-emerald-500 text-white'
+        {(product.category === "Best Seller" ||
+          product.category === "New Arrival") && (
+          <Badge
+            className={`absolute ${
+              isOnSale ? "top-10" : "top-2"
+            } left-2 z-10 font-medium text-[10px] uppercase tracking-wide px-2 py-1 flex items-center gap-1 shadow-sm border-0 ${
+              product.category === "Best Seller"
+                ? "bg-amber-500 text-white"
+                : "bg-emerald-500 text-white"
             }`}
           >
-            {product.category === 'Best Seller' && <Star className="w-3 h-3 fill-current" />}
-            {product.category === 'New Arrival' && <Sparkles className="w-3 h-3" />}
+            {product.category === "Best Seller" && (
+              <Star className="w-3 h-3 fill-current" />
+            )}
+            {product.category === "New Arrival" && (
+              <Sparkles className="w-3 h-3" />
+            )}
             {product.category}
           </Badge>
         )}
@@ -185,7 +214,11 @@ const ProductCard = ({
                 {formatJOD(product.original_price)}
               </span>
             )}
-            <span className={`text-base font-bold ${isOnSale ? 'text-[#E53E3E]' : 'text-gray-900'}`}>
+            <span
+              className={`text-base font-bold ${
+                isOnSale ? "text-[#E53E3E]" : "text-gray-900"
+              }`}
+            >
               {formatJOD(product.price)}
             </span>
           </div>
@@ -197,7 +230,7 @@ const ProductCard = ({
             className="w-full bg-burgundy hover:bg-burgundy-light text-white text-xs uppercase tracking-wide py-2.5 shadow-sm hover:shadow-md transition-all duration-200"
           >
             <ShoppingBag className="w-4 h-4 me-2" />
-            {language === 'ar' ? 'أضف للسلة' : 'Add to Cart'}
+            {language === "ar" ? "أضف للسلة" : "Add to Cart"}
           </Button>
         </div>
       </div>
@@ -207,9 +240,24 @@ const ProductCard = ({
 
 // Category filter options with icons
 const CATEGORY_FILTERS = [
-  { value: "all", labelEn: "All Products", labelAr: "جميع المنتجات", icon: null },
-  { value: "Best Seller", labelEn: "Best Sellers", labelAr: "الأكثر مبيعاً", icon: Star },
-  { value: "New Arrival", labelEn: "New Arrivals", labelAr: "وصل حديثاً", icon: Sparkles },
+  {
+    value: "all",
+    labelEn: "All Products",
+    labelAr: "جميع المنتجات",
+    icon: null,
+  },
+  {
+    value: "Best Seller",
+    labelEn: "Best Sellers",
+    labelAr: "الأكثر مبيعاً",
+    icon: Star,
+  },
+  {
+    value: "New Arrival",
+    labelEn: "New Arrivals",
+    labelAr: "وصل حديثاً",
+    icon: Sparkles,
+  },
   { value: "Trending", labelEn: "Trending", labelAr: "رائج", icon: TrendingUp },
   { value: "Featured", labelEn: "Featured", labelAr: "مميز", icon: Award },
 ];
@@ -239,15 +287,15 @@ export const ProductCatalog = () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false })
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false })
           .limit(12);
 
         if (error) throw error;
         setProducts(data || []);
       } catch (err: any) {
-        console.error('Error fetching products:', err);
+        console.error("Error fetching products:", err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -269,17 +317,23 @@ export const ProductCatalog = () => {
         {/* Section Header - Clean, minimal like BeautyBox */}
         <div className="text-center mb-10">
           <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2 font-medium">
-            {language === 'ar' ? 'مجموعتنا' : 'Our Collection'}
+            {language === "ar" ? "مجموعتنا" : "Our Collection"}
           </p>
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">
-            {language === 'ar' ? 'منتجات الجمال الفاخرة' : 'Premium Beauty Products'}
+            {language === "ar"
+              ? "منتجات الجمال الفاخرة"
+              : "Premium Beauty Products"}
           </h2>
           <div className="w-12 h-0.5 bg-burgundy mx-auto" />
         </div>
 
         {/* Category Filter Tabs - Clean pill style */}
         <div className="flex justify-center mb-8 overflow-x-auto pb-2">
-          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-full max-w-4xl">
+          <Tabs
+            value={activeFilter}
+            onValueChange={setActiveFilter}
+            className="w-full max-w-4xl"
+          >
             <TabsList className="w-full flex flex-wrap justify-center gap-2 bg-transparent h-auto p-0">
               {CATEGORY_FILTERS.map((filter) => {
                 const IconComponent = filter.icon;
@@ -292,7 +346,7 @@ export const ProductCatalog = () => {
                     {IconComponent && (
                       <IconComponent className="w-3.5 h-3.5 me-1.5" />
                     )}
-                    {language === 'ar' ? filter.labelAr : filter.labelEn}
+                    {language === "ar" ? filter.labelAr : filter.labelEn}
                   </TabsTrigger>
                 );
               })}
@@ -311,7 +365,9 @@ export const ProductCatalog = () => {
         {error && !isLoading && (
           <div className="text-center py-20">
             <p className="text-gray-500">
-              {language === 'ar' ? 'حدث خطأ في تحميل المنتجات' : 'Failed to load products'}
+              {language === "ar"
+                ? "حدث خطأ في تحميل المنتجات"
+                : "Failed to load products"}
             </p>
           </div>
         )}
@@ -320,23 +376,27 @@ export const ProductCatalog = () => {
         {!isLoading && !error && filteredProducts.length === 0 && (
           <div className="text-center py-20">
             <p className="text-gray-500">
-              {language === 'ar' 
-                ? activeFilter === "all" ? 'لا توجد منتجات متاحة' : 'لا توجد منتجات في هذه الفئة'
-                : activeFilter === "all" ? 'No products available' : 'No products in this category'}
+              {language === "ar"
+                ? activeFilter === "all"
+                  ? "لا توجد منتجات متاحة"
+                  : "لا توجد منتجات في هذه الفئة"
+                : activeFilter === "all"
+                ? "No products available"
+                : "No products in this category"}
             </p>
           </div>
         )}
 
         {/* Product Grid - 4 columns on desktop, responsive */}
         {!isLoading && !error && filteredProducts.length > 0 && (
-          <div 
-            key={activeFilter} 
+          <div
+            key={activeFilter}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
           >
             {filteredProducts.map((product, index) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
+              <ProductCard
+                key={product.id}
+                product={product}
                 onQuickView={handleQuickView}
                 index={index}
               />
@@ -350,7 +410,7 @@ export const ProductCatalog = () => {
             variant="outline"
             className="px-8 py-3 text-sm font-medium border-2 border-burgundy text-burgundy hover:bg-burgundy hover:text-white transition-colors duration-200"
           >
-            {language === 'ar' ? 'عرض جميع المنتجات' : 'View All Products'}
+            {language === "ar" ? "عرض جميع المنتجات" : "View All Products"}
           </Button>
         </div>
       </div>

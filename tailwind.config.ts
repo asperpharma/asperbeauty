@@ -24,15 +24,15 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        
+
         // --- YOUR CUSTOM ASPER BRAND COLORS ---
         asper: {
-          merlot: '#4A0404',       // Deepest Burgundy (Main Backgrounds)
-          merlotLight: '#800020',  // Lighter Maroon (Secondary/Gradients)
-          gold: '#D4AF37',         // Metallic Gold (Primary Accents/Text)
-          goldLight: '#F3E5AB',    // Champagne (Highlights/Hover states)
-          charcoal: '#1A1A1A',     // Dark Text for light areas
-          ivory: '#F9F7F2',        // Off-white for text on dark backgrounds
+          merlot: "#4A0404", // Deepest Burgundy (Main Backgrounds)
+          merlotLight: "#800020", // Lighter Maroon (Secondary/Gradients)
+          gold: "#D4AF37", // Metallic Gold (Primary Accents/Text)
+          goldLight: "#F3E5AB", // Champagne (Highlights/Hover states)
+          charcoal: "#1A1A1A", // Dark Text for light areas
+          ivory: "#F9F7F2", // Off-white for text on dark backgrounds
         },
         // --------------------------------------
         primary: {
@@ -91,15 +91,15 @@ export default {
       },
       fontFamily: {
         // Defines your luxury font stack
-        serif: ['Playfair Display', 'serif'],
-        sans: ['Montserrat', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
-        body: ['Inter', 'Lato', 'sans-serif'],
-        script: ['Great Vibes', 'cursive'],
+        serif: ["Playfair Display", "serif"],
+        sans: ["Montserrat", "sans-serif"],
+        display: ["Playfair Display", "serif"],
+        body: ["Inter", "Lato", "sans-serif"],
+        script: ["Great Vibes", "cursive"],
       },
       backgroundImage: {
-        'celestial-gradient': 'linear-gradient(to bottom, #4A0404, #2b0202)',
-        'gold-shimmer': 'linear-gradient(45deg, #D4AF37, #F3E5AB, #D4AF37)',
+        "celestial-gradient": "linear-gradient(to bottom, #4A0404, #2b0202)",
+        "gold-shimmer": "linear-gradient(45deg, #D4AF37, #F3E5AB, #D4AF37)",
       },
       borderRadius: {
         lg: "var(--radius)",
