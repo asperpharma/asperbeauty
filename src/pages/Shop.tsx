@@ -67,7 +67,7 @@ const ShopProductCard = ({
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
