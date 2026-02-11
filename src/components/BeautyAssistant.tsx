@@ -7,7 +7,20 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import ChatProductCard from './ChatProductCard';
 
-type Message = { role: 'user' | 'assistant'; content: string; products?: any[] };
+interface ChatProduct {
+  id: string;
+  title: string;
+  brand: string | null;
+  price: number;
+  original_price: number | null;
+  is_on_sale: boolean | null;
+  discount_percent: number | null;
+  image_url: string | null;
+  category: string;
+  skin_concerns: string[] | null;
+}
+
+type Message = { role: 'user' | 'assistant'; content: string; products?: ChatProduct[] };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/beauty-assistant`;
 
@@ -90,7 +103,7 @@ export const BeautyAssistant = () => {
     const decoder = new TextDecoder();
     let textBuffer = '';
     let assistantContent = '';
-    let products: any[] = [];
+    let products: ChatProduct[] = [];
 
     while (true) {
       const { done, value } = await reader.read();

@@ -246,9 +246,10 @@ export const ProductCatalog = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
-        setError(err.message);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        console.error('Error fetching products:', errorMessage);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
