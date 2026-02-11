@@ -105,30 +105,26 @@ export const ProductGrid = ({
     };
   }, [loadMoreProducts, pageInfo?.hasNextPage, loadingMore]);
 
-  // Filter by category slug if provided
-  const categoryFilteredProducts = useMemo(() => {
-    if (!categorySlug) return products;
-    
-    return products.filter((product) => {
-      const { node } = product;
-      const productCategory = categorizeProduct(node.title, node.productType, node.vendor);
-      return productCategory === categorySlug;
-    });
-  }, [products, categorySlug]);
+  // Optimized: Combine category filtering, metadata extraction, and user filters in one pass
+  const { filteredProducts, availableCategories, availableBrands, maxPrice } = useMemo(() => {
+    // Step 1: Apply category slug filter if provided
+    const categoryFiltered = !categorySlug 
+      ? products 
+      : products.filter((product) => {
+          const { node } = product;
+          const productCategory = categorizeProduct(node.title, node.productType, node.vendor);
+          return productCategory === categorySlug;
+        });
 
-  // Extract unique categories and brands
-  const { availableCategories, availableBrands, maxPrice } = useMemo(() => {
-    const categories = [...new Set(categoryFilteredProducts.map((p) => p.node.productType).filter(Boolean))];
-    const brands = [...new Set(categoryFilteredProducts.map((p) => p.node.vendor).filter(Boolean))];
-    const max = categoryFilteredProducts.length > 0
-      ? Math.ceil(Math.max(...categoryFilteredProducts.map((p) => parseFloat(p.node.priceRange.minVariantPrice.amount))))
+    // Step 2: Extract metadata while we have the filtered list
+    const categories = [...new Set(categoryFiltered.map((p) => p.node.productType).filter(Boolean))];
+    const brands = [...new Set(categoryFiltered.map((p) => p.node.vendor).filter(Boolean))];
+    const max = categoryFiltered.length > 0
+      ? Math.ceil(Math.max(...categoryFiltered.map((p) => parseFloat(p.node.priceRange.minVariantPrice.amount))))
       : 5000;
-    return { availableCategories: categories, availableBrands: brands, maxPrice: max };
-  }, [categoryFilteredProducts]);
 
-  // Apply user filters
-  const filteredProducts = useMemo(() => {
-    return categoryFilteredProducts.filter((product) => {
+    // Step 3: Apply user filters
+    const filtered = categoryFiltered.filter((product) => {
       const { node } = product;
       const price = parseFloat(node.priceRange.minVariantPrice.amount);
 
@@ -146,7 +142,14 @@ export const ProductGrid = ({
 
       return true;
     });
-  }, [categoryFilteredProducts, filters]);
+
+    return { 
+      filteredProducts: filtered,
+      availableCategories: categories, 
+      availableBrands: brands, 
+      maxPrice: max 
+    };
+  }, [products, categorySlug, filters]);
 
   return (
     <section id="products" className="py-24 bg-soft-ivory">

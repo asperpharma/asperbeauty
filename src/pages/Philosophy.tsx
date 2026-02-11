@@ -28,9 +28,23 @@ const useParallax = (speed: number = 0.1) => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Throttle scroll events for better performance
+    let throttleTimer: NodeJS.Timeout | null = null;
+    const throttledHandleScroll = () => {
+      if (throttleTimer) return;
+      
+      throttleTimer = setTimeout(() => {
+        handleScroll();
+        throttleTimer = null;
+      }, 16); // ~60fps
+    };
+
+    window.addEventListener("scroll", throttledHandleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", throttledHandleScroll);
+      if (throttleTimer) clearTimeout(throttleTimer);
+    };
   }, [speed]);
 
   return { ref, offset };
@@ -270,8 +284,22 @@ const Philosophy = () => {
       setScrollProgress(progress);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Throttle scroll events for better performance
+    let throttleTimer: NodeJS.Timeout | null = null;
+    const throttledHandleScroll = () => {
+      if (throttleTimer) return;
+      
+      throttleTimer = setTimeout(() => {
+        handleScroll();
+        throttleTimer = null;
+      }, 16); // ~60fps
+    };
+
+    window.addEventListener("scroll", throttledHandleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", throttledHandleScroll);
+      if (throttleTimer) clearTimeout(throttleTimer);
+    };
   }, []);
 
   const content = {
