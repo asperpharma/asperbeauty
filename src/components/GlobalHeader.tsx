@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import { Search, ShoppingBag, Heart, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,17 +17,35 @@ export const GlobalHeader = () => {
     language
   } = useLanguage();
   const isAr = language === "ar";
-  const cartItems = useCartStore(state => state.items);
-  const setCartOpen = useCartStore(state => state.setOpen);
-  const wishlistItems = useWishlistStore(state => state.items);
+  
+  // Memoize store selectors to prevent unnecessary re-subscriptions
+  const cartItems = useCartStore(useCallback((state) => state.items, []));
+  const setCartOpen = useCartStore(useCallback((state) => state.setOpen, []));
+  const wishlistItems = useWishlistStore(useCallback((state) => state.items, []));
+  
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlistItems.length;
 
-  // Effect to handle scroll-driven glass transparency
+  // Effect to handle scroll-driven glass transparency with throttling
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    let throttleTimer: NodeJS.Timeout | null = null;
+    const handleScroll = () => {
+      if (throttleTimer) return;
+      
+      throttleTimer = setTimeout(() => {
+        setIsScrolled(window.scrollY > 50);
+        throttleTimer = null;
+      }, 100);
+    };
+    
+    // Initial check
+    setIsScrolled(window.scrollY > 50);
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (throttleTimer) clearTimeout(throttleTimer);
+    };
   }, []);
 
   // Keyboard shortcut for search (Cmd+K / Ctrl+K)

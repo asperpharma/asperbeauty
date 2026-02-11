@@ -67,7 +67,8 @@ export const OptimizedImage = ({
   const isShopifyUrl = src?.includes('cdn.shopify.com');
   
   if (isShopify && isShopifyUrl) {
-    const srcSet = getShopifyImageSrcSet(src, [200, 400, 600, 800, 1200]);
+    // Optimized: Use fewer srcset variants (2-3 instead of 5) for better performance
+    const srcSet = getShopifyImageSrcSet(src, [400, 800, 1200]);
     const optimizedSrc = width 
       ? getOptimizedShopifyImageUrl(src, width, height)
       : src;
