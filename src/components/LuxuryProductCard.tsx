@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { ShoppingBag, Star, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductQuickViewModal } from "./ProductQuickViewModal";
@@ -22,13 +22,13 @@ interface ProductProps {
   volume_ml?: string;
 }
 
-export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
+const LuxuryProductCardComponent = ({ product }: { product: ProductProps }) => {
   const [showQuickView, setShowQuickView] = useState(false);
   const { language } = useLanguage();
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -85,13 +85,13 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
     });
 
     setCartOpen(true);
-  };
+  }, [product, addItem, language, setCartOpen]);
 
-  const handleQuickView = (e: React.MouseEvent) => {
+  const handleQuickView = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowQuickView(true);
-  };
+  }, []);
 
   const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
 
@@ -218,5 +218,7 @@ export const LuxuryProductCard = ({ product }: { product: ProductProps }) => {
     </>
   );
 };
+
+export const LuxuryProductCard = memo(LuxuryProductCardComponent);
 
 export default LuxuryProductCard;

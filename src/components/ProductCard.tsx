@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct } from "@/lib/shopify";
@@ -15,7 +15,7 @@ interface ProductCardProps {
   product: ShopifyProduct;
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCardComponent = ({ product }: ProductCardProps) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const { node } = product;
   const addItem = useCartStore((state) => state.addItem);
@@ -53,7 +53,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   // Extract brand from vendor or title
   const brand = (node as any).vendor || node.title.split(' ')[0];
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -74,9 +74,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     });
 
     setCartOpen(true);
-  };
+  }, [firstVariant, product, addItem, t.addedToBag, node.title, setCartOpen]);
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     toggleItem(product);
@@ -87,7 +87,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         position: "top-center",
       });
     }
-  };
+  }, [toggleItem, product, isWishlisted, node.title]);
 
   return (
     <Link to={`/product/${node.handle}`} className="group block hover-lift">
@@ -216,3 +216,5 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     </Link>
   );
 };
+
+export const ProductCard = memo(ProductCardComponent);
