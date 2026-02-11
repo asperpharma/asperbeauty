@@ -126,16 +126,18 @@ print_info "Creating $TYPE from template..."
 cp "$TEMPLATE" "$OUTPUT"
 
 # Replace placeholders in the file
+# Using a temporary file for cross-platform compatibility (macOS/BSD vs Linux)
+TEMP_FILE="${OUTPUT}.tmp"
 if [ "$TYPE" = "hook" ]; then
     # Special handling for hooks - preserve 'use' prefix in hook name
     NAME_WITHOUT_USE=${NAME#use}
-    sed -i "s/\[HookName\]/${NAME_WITHOUT_USE}/g" "$OUTPUT"
-    sed -i "s/useHookName/${NAME}/g" "$OUTPUT"
+    sed "s/\[HookName\]/${NAME_WITHOUT_USE}/g" "$OUTPUT" | \
+    sed "s/useHookName/${NAME}/g" > "$TEMP_FILE"
 else
-    sed -i "s/\[${PLACEHOLDER}\]/${NAME}/g" "$OUTPUT"
-    # Also replace any instances without brackets
-    sed -i "s/${PLACEHOLDER}/${NAME}/g" "$OUTPUT"
+    sed "s/\[${PLACEHOLDER}\]/${NAME}/g" "$OUTPUT" | \
+    sed "s/${PLACEHOLDER}/${NAME}/g" > "$TEMP_FILE"
 fi
+mv "$TEMP_FILE" "$OUTPUT"
 
 print_success "Created: $OUTPUT"
 

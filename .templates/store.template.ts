@@ -138,7 +138,7 @@ export const useStoreNameStore = create<StoreNameState>()(
 // removeItem('1');
 // 
 // // Get total count
-// const count = useStoreNameStore(state => state.getTotalCount());
+// const itemCount = useStoreNameStore(state => state.getTotalCount());
 // 
 // // Open/close
 // setOpen(true);
