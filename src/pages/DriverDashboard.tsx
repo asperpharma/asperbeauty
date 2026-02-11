@@ -78,35 +78,6 @@ export default function DriverDashboard() {
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const hasLoggedListView = useRef(false);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    fetchOrders();
-    
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('driver-orders')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cod_orders',
-          filter: `driver_id=eq.${user.id}`,
-        },
-        () => {
-          fetchOrders();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, navigate, fetchOrders]);
-
   const fetchOrders = useCallback(async () => {
     if (!user) return;
     
@@ -140,6 +111,35 @@ export default function DriverDashboard() {
       setLoading(false);
     }
   }, [user, logOrdersListView]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchOrders();
+    
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('driver-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cod_orders',
+          filter: `driver_id=eq.${user.id}`,
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, navigate, fetchOrders]);
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(true);

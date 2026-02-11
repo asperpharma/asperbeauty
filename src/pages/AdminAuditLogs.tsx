@@ -64,6 +64,70 @@ export default function AdminAuditLogs() {
   const [driverFilter, setDriverFilter] = useState<string>('all');
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
+    const driverIds = [...new Set(logs.map(l => l.driver_id))];
+    const orderIds = [...new Set(logs.filter(l => l.order_id).map(l => l.order_id!))];
+
+    const [profilesResult, ordersResult] = await Promise.all([
+      driverIds.length > 0
+        ? supabase.from('profiles').select('id, email').in('id', driverIds)
+        : Promise.resolve({ data: [] }),
+      orderIds.length > 0
+        ? supabase.from('cod_orders').select('id, order_number').in('id', orderIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const profileMap = new Map((profilesResult.data || []).map(p => [p.id, p.email]));
+    const orderMap = new Map((ordersResult.data || []).map(o => [o.id, o.order_number]));
+
+    return logs.map(log => ({
+      ...log,
+      driver_email: profileMap.get(log.driver_id) || 'Unknown',
+      order_number: log.order_id ? (orderMap.get(log.order_id) || 'N/A') : 'N/A',
+    }));
+  };
+
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Direct query with type assertion to avoid deep instantiation
+      const result = await supabase
+        .from('driver_access_logs' as never)
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      
+      if (result.error) throw result.error;
+      
+      let logsData = (result.data || []) as unknown as AuditLog[];
+      
+      // Apply client-side filtering
+      if (startDate) {
+        const startTime = new Date(startDate).getTime();
+        logsData = logsData.filter(l => new Date(l.created_at).getTime() >= startTime);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        logsData = logsData.filter(l => new Date(l.created_at).getTime() <= end.getTime());
+      }
+      if (actionTypeFilter && actionTypeFilter !== 'all') {
+        logsData = logsData.filter(l => l.action_type === actionTypeFilter);
+      }
+      if (driverFilter && driverFilter !== 'all') {
+        logsData = logsData.filter(l => l.driver_id === driverFilter);
+      }
+
+      const enrichedLogs = await enrichLogs(logsData);
+      setLogs(enrichedLogs);
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      toast.error('Failed to fetch audit logs');
+    } finally {
+      setLoading(false);
+    }
+  }, [startDate, endDate, actionTypeFilter, driverFilter]);
+
   // Check admin status
   useEffect(() => {
     const checkAdmin = async () => {
@@ -118,74 +182,6 @@ export default function AdminAuditLogs() {
     } catch (error) {
       console.error('Error fetching drivers:', error);
     }
-  };
-
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Direct query with type assertion to avoid deep instantiation
-      const result = await supabase
-        .from('driver_access_logs' as never)
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      
-      if (result.error) throw result.error;
-      
-      let logsData = (result.data || []) as unknown as AuditLog[];
-      
-      // Apply client-side filtering
-      if (startDate) {
-        const startTime = new Date(startDate).getTime();
-        logsData = logsData.filter(l => new Date(l.created_at).getTime() >= startTime);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        logsData = logsData.filter(l => new Date(l.created_at).getTime() <= end.getTime());
-      }
-      if (actionTypeFilter && actionTypeFilter !== 'all') {
-        logsData = logsData.filter(l => l.action_type === actionTypeFilter);
-      }
-      if (driverFilter && driverFilter !== 'all') {
-        logsData = logsData.filter(l => l.driver_id === driverFilter);
-      }
-
-      const enrichedLogs = await enrichLogs(logsData);
-      setLogs(enrichedLogs);
-    } catch (error) {
-      console.error('Error fetching audit logs:', error);
-      toast.error('Failed to fetch audit logs');
-    } finally {
-      setLoading(false);
-    }
-  }, [startDate, endDate, actionTypeFilter, driverFilter]);
-
-  const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
-    const driverIds = [...new Set(logs.map(l => l.driver_id))];
-    const orderIds = [...new Set(logs.filter(l => l.order_id).map(l => l.order_id!))];
-
-    const [profilesResult, ordersResult] = await Promise.all([
-      driverIds.length > 0
-        ? supabase.from('profiles').select('id, email').in('id', driverIds)
-        : Promise.resolve({ data: [] }),
-      orderIds.length > 0
-        ? supabase.from('cod_orders').select('id, order_number').in('id', orderIds)
-        : Promise.resolve({ data: [] }),
-    ]);
-
-    const profileMap = new Map(
-      (profilesResult.data || []).map(p => [p.id, p.email])
-    );
-    const orderMap = new Map(
-      (ordersResult.data || []).map(o => [o.id, o.order_number])
-    );
-
-    return logs.map(log => ({
-      ...log,
-      driver_email: profileMap.get(log.driver_id) || 'Unknown',
-      order_number: log.order_id ? orderMap.get(log.order_id) || 'N/A' : 'N/A',
-    }));
   };
 
   const handleSearch = () => {
