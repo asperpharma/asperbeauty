@@ -9,6 +9,7 @@ import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { ProductQuickView } from "@/components/ProductQuickView";
 import { ProductSearchFilters, FilterState } from "@/components/ProductSearchFilters";
 import { useCartStore } from "@/stores/cartStore";
+import { ShopifyProduct } from "@/lib/shopify";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -54,7 +55,7 @@ const ShopProductCard = ({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const cartProduct = {
+    const cartProduct: ShopifyProduct = {
       node: {
         id: product.id,
         title: product.title,
@@ -62,12 +63,13 @@ const ShopProductCard = ({
         description: product.description || '',
         priceRange: { minVariantPrice: { amount: product.price.toString(), currencyCode: 'JOD' } },
         images: { edges: [{ node: { url: imageUrl, altText: product.title } }] },
-        variants: { edges: [{ node: { id: product.id, title: 'Default', price: { amount: product.price.toString(), currencyCode: 'JOD' }, selectedOptions: [] } }] }
+        variants: { edges: [{ node: { id: product.id, title: 'Default', price: { amount: product.price.toString(), currencyCode: 'JOD' }, availableForSale: true, selectedOptions: [] } }] },
+        options: []
       }
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },

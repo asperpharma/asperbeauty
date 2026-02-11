@@ -1,6 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface ProductMetadata {
+  id?: string;
+  title: string;
+  brand?: string;
+  price: number;
+  is_on_sale?: boolean;
+  discount_percent?: number;
+  category: string;
+  skin_concerns?: string[];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -50,11 +66,11 @@ serve(async (req) => {
     }
 
     // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
+    const lastUserMessage = messages.filter((m: Message) => m.role === "user").pop()?.content || "";
     
     // Search for relevant products based on user query
     let productContext = "";
-    let matchedProducts: any[] = [];
+    let matchedProducts: ProductMetadata[] = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -96,7 +112,7 @@ serve(async (req) => {
             matchedProducts = relevantDocs.map(doc => doc.metadata);
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
+              const m = doc.metadata as ProductMetadata;
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }

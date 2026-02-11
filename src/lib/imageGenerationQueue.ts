@@ -42,7 +42,16 @@ const DEFAULT_CONFIG: QueueConfig = {
 };
 
 type QueueEventType = "itemUpdate" | "statsUpdate" | "batchComplete" | "queueComplete" | "error" | "paused" | "resumed";
-type QueueEventCallback = (data: any) => void;
+
+type QueueEventData = 
+  | QueueItem  // for itemUpdate
+  | QueueStats // for statsUpdate
+  | { batch: QueueItem[]; stats: QueueStats } // for batchComplete
+  | { stats: QueueStats } // for queueComplete
+  | { error: string; item?: QueueItem } // for error
+  | undefined; // for paused/resumed
+
+type QueueEventCallback = (data: QueueEventData) => void;
 
 class ImageGenerationQueue {
   private queue: Map<string, QueueItem> = new Map();
@@ -74,7 +83,7 @@ class ImageGenerationQueue {
     }
   }
 
-  private emit(event: QueueEventType, data: any) {
+  private emit(event: QueueEventType, data: QueueEventData) {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
       listeners.forEach(callback => callback(data));
@@ -286,16 +295,17 @@ class ImageGenerationQueue {
       }
 
       return { success: false, error: "No image URL returned" };
-    } catch (err: any) {
-      console.error(`Exception processing ${item.name}:`, err);
-      const isRateLimited = err.message?.includes("429") || err.message?.includes("rate");
-      return { success: false, error: err.message, rateLimited: isRateLimited };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error(`Exception processing ${item.name}:`, errorMessage);
+      const isRateLimited = errorMessage.includes("429") || errorMessage.includes("rate");
+      return { success: false, error: errorMessage, rateLimited: isRateLimited };
     }
   }
 
   private async handleRateLimit(item: QueueItem) {
     console.log("Rate limited, pausing queue...");
-    this.emit("error", { type: "rateLimit", item });
+    this.emit("error", { error: "Rate limit exceeded", item });
     
     // Mark item for retry
     this.updateItem(item.id, {
