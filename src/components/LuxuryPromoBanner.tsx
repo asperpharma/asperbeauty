@@ -12,12 +12,12 @@ interface LuxuryPromoBannerProps {
   variant?: "primary" | "secondary";
 }
 
-export const LuxuryPromoBanner = ({ 
-  title, 
-  subtitle, 
+export const LuxuryPromoBanner = ({
+  title,
+  subtitle,
   image,
   position = "left",
-  variant = "primary"
+  variant = "primary",
 }: LuxuryPromoBannerProps) => {
   const { language } = useLanguage();
   const isAr = language === "ar";
@@ -26,13 +26,19 @@ export const LuxuryPromoBanner = ({
   const defaultContent = {
     primary: {
       title: isAr ? "مجموعة الشتاء الفاخرة" : "Winter Luxury Collection",
-      subtitle: isAr ? "خصم 25% على جميع منتجات العناية بالبشرة المتميزة" : "25% Off All Premium Skincare Essentials",
-      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
+      subtitle: isAr
+        ? "خصم 25% على جميع منتجات العناية بالبشرة المتميزة"
+        : "25% Off All Premium Skincare Essentials",
+      image:
+        "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
     },
     secondary: {
       title: isAr ? "وصل حديثاً - مجموعة الربيع" : "New Arrivals — Spring Edit",
-      subtitle: isAr ? "اكتشف أحدث المنتجات من أفضل العلامات التجارية" : "Discover the freshest picks from world-class brands",
-      image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+      subtitle: isAr
+        ? "اكتشف أحدث المنتجات من أفضل العلامات التجارية"
+        : "Discover the freshest picks from world-class brands",
+      image:
+        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
     },
   };
 
@@ -46,7 +52,7 @@ export const LuxuryPromoBanner = ({
   return (
     <section className="relative grid min-h-[500px] overflow-hidden bg-muted md:grid-cols-2 md:min-h-[600px]">
       {/* Content Side */}
-      <div 
+      <div
         className={`flex flex-col items-center justify-center px-8 py-16 text-center md:items-start md:px-16 md:py-24 md:text-left ${
           isImageLeft ? "md:order-2" : "md:order-1"
         }`}
@@ -80,7 +86,7 @@ export const LuxuryPromoBanner = ({
       </div>
 
       {/* Image Side */}
-      <div 
+      <div
         className={`relative min-h-[300px] overflow-hidden md:min-h-full ${
           isImageLeft ? "md:order-1" : "md:order-2"
         }`}

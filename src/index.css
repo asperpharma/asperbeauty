@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,25 +7,25 @@
 @layer base {
   :root {
     /* Asper Beauty Quiet Luxury Palette */
-    
+
     /* Cream #F3E5DC = HSL 25 47% 91% - Global Background */
     --cream: 25 47% 91%;
     --cream-dark: 25 35% 85%;
-    
+
     /* Gold Foil #D4AF37 = HSL 46 66% 52% - Accents & Borders */
     --gold: 46 66% 52%;
     --gold-light: 46 66% 62%;
     --gold-glow: 46 66% 70%;
-    
+
     /* Deep Burgundy #4A0E19 = HSL 348 68% 17% - Header/Footer */
     --burgundy: 348 68% 17%;
     --burgundy-light: 348 58% 25%;
     --burgundy-dark: 348 68% 12%;
-    
+
     /* Dark Warm Brown #2C1A1D = HSL 350 25% 14% - Text */
     --warm-brown: 350 25% 14%;
     --warm-brown-light: 350 20% 35%;
-    
+
     /* Primary backgrounds - Cream base */
     --background: 25 47% 91%;
     --foreground: 350 25% 14%;
@@ -69,14 +69,14 @@
     --shiny-gold: 46 66% 52%;
     --soft-ivory: 25 47% 91%;
     --dark-charcoal: 350 25% 14%;
-    
+
     /* Luxury Black/Charcoal #1A1A1A, #2D2D2D */
     --luxury-black: 0 0% 10%;
     --luxury-charcoal: 0 0% 18%;
 
-    --font-display: 'Playfair Display', serif;
-    --font-body: 'Inter', 'Lato', sans-serif;
-    --font-script: 'Great Vibes', cursive;
+    --font-display: "Playfair Display", serif;
+    --font-body: "Inter", "Lato", sans-serif;
+    --font-script: "Great Vibes", cursive;
 
     --sidebar-background: 348 68% 17%;
     --sidebar-foreground: 0 0% 100%;
@@ -150,7 +150,7 @@
 
   /* RTL Support */
   [dir="rtl"] {
-    font-family: 'Inter', 'Tajawal', sans-serif;
+    font-family: "Inter", "Tajawal", sans-serif;
   }
 
   [dir="rtl"] h1,
@@ -159,7 +159,7 @@
   [dir="rtl"] h4,
   [dir="rtl"] h5,
   [dir="rtl"] h6 {
-    font-family: 'Playfair Display', 'Tajawal', serif;
+    font-family: "Playfair Display", "Tajawal", serif;
   }
 }
 
@@ -182,7 +182,8 @@
 
   /* Gold Accent Dividers */
   .luxury-divider {
-    @apply w-16 h-px bg-gradient-to-r from-transparent via-accent to-transparent mx-auto;
+    @apply w-16 h-px bg-gradient-to-r from-transparent via-accent to-transparent
+      mx-auto;
   }
 
   .gold-accent-line {
@@ -203,23 +204,28 @@
   }
 
   .section-gold-top::before {
-    content: '';
+    content: "";
     @apply absolute top-0 left-1/2 -translate-x-1/2 w-48 h-px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold)), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--gold)),
+      transparent
+    );
   }
 
   /* Product Cards - Premium Luxury */
   .luxury-card {
     @apply bg-card border border-gold/20 rounded-lg overflow-hidden;
     transition: all 600ms cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
+    box-shadow:
       0 4px 20px -4px hsl(var(--warm-brown) / 0.08),
       0 0 0 1px hsl(var(--gold) / 0.05);
   }
 
   .luxury-card:hover {
     transform: translateY(-4px);
-    box-shadow: 
+    box-shadow:
       0 20px 40px -12px hsl(var(--warm-brown) / 0.15),
       0 0 0 1px hsl(var(--gold) / 0.15),
       0 0 40px -20px hsl(var(--gold) / 0.2);
@@ -239,21 +245,34 @@
 
   /* Gradient Backgrounds */
   .gradient-cream {
-    background: linear-gradient(135deg, hsl(var(--cream)) 0%, hsl(var(--cream-dark)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--cream)) 0%,
+      hsl(var(--cream-dark)) 100%
+    );
   }
 
   .gradient-burgundy {
-    background: linear-gradient(135deg, hsl(var(--burgundy)) 0%, hsl(var(--burgundy-dark)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--burgundy)) 0%,
+      hsl(var(--burgundy-dark)) 100%
+    );
   }
 
   .gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gold)) 0%,
+      hsl(var(--gold-light)) 100%
+    );
   }
 
   .gradient-gold-shimmer {
-    background: linear-gradient(90deg, 
-      hsl(var(--gold-light)) 0%, 
-      hsl(var(--gold)) 50%, 
+    background: linear-gradient(
+      90deg,
+      hsl(var(--gold-light)) 0%,
+      hsl(var(--gold)) 50%,
       hsl(var(--gold-light)) 100%
     );
     background-size: 200% 100%;
@@ -262,19 +281,28 @@
 
   /* Premium Button Gradients */
   .luxury-button {
-    @apply font-body tracking-widest uppercase text-xs py-4 px-8 relative overflow-hidden;
+    @apply font-body tracking-widest uppercase text-xs py-4 px-8 relative
+      overflow-hidden;
     transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .luxury-button-primary {
-    background: linear-gradient(135deg, hsl(var(--burgundy)) 0%, hsl(var(--burgundy-dark)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--burgundy)) 0%,
+      hsl(var(--burgundy-dark)) 100%
+    );
     @apply text-primary-foreground;
     box-shadow: 0 4px 20px -4px hsl(var(--burgundy) / 0.4);
   }
 
   .luxury-button-primary:hover {
-    background: linear-gradient(135deg, hsl(var(--burgundy-light)) 0%, hsl(var(--burgundy)) 100%);
-    box-shadow: 
+    background: linear-gradient(
+      135deg,
+      hsl(var(--burgundy-light)) 0%,
+      hsl(var(--burgundy)) 100%
+    );
+    box-shadow:
       0 8px 30px -4px hsl(var(--burgundy) / 0.5),
       0 0 20px -4px hsl(var(--gold) / 0.3);
     transform: translateY(-2px);
@@ -286,19 +314,27 @@
   }
 
   .luxury-button-secondary:hover {
-    background: linear-gradient(135deg, hsl(var(--gold) / 0.1) 0%, hsl(var(--gold) / 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gold) / 0.1) 0%,
+      hsl(var(--gold) / 0.05) 100%
+    );
     box-shadow: 0 4px 20px -4px hsl(var(--gold) / 0.3);
     transform: translateY(-2px);
   }
 
   .luxury-button-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gold)) 0%,
+      hsl(var(--gold-light)) 100%
+    );
     @apply text-warm-brown;
     box-shadow: 0 4px 20px -4px hsl(var(--gold) / 0.5);
   }
 
   .luxury-button-gold:hover {
-    box-shadow: 
+    box-shadow:
       0 8px 30px -4px hsl(var(--gold) / 0.6),
       0 0 30px -8px hsl(var(--gold) / 0.4);
     transform: translateY(-2px);
@@ -310,7 +346,7 @@
   }
 
   .icon-badge-gold::after {
-    content: '';
+    content: "";
     @apply absolute -inset-1 rounded-full opacity-0;
     background: radial-gradient(circle, hsl(var(--gold) / 0.3), transparent);
     transition: opacity 500ms ease;
@@ -322,27 +358,27 @@
 
   /* Gold Shadow Layering */
   .shadow-gold-sm {
-    box-shadow: 
+    box-shadow:
       0 2px 8px -2px hsl(var(--warm-brown) / 0.1),
       0 0 0 1px hsl(var(--gold) / 0.08);
   }
 
   .shadow-gold-md {
-    box-shadow: 
+    box-shadow:
       0 4px 20px -4px hsl(var(--warm-brown) / 0.12),
       0 0 0 1px hsl(var(--gold) / 0.1),
       0 0 30px -15px hsl(var(--gold) / 0.15);
   }
 
   .shadow-gold-lg {
-    box-shadow: 
+    box-shadow:
       0 8px 40px -8px hsl(var(--warm-brown) / 0.15),
       0 0 0 1px hsl(var(--gold) / 0.12),
       0 0 50px -20px hsl(var(--gold) / 0.25);
   }
 
   .shadow-gold-glow {
-    box-shadow: 
+    box-shadow:
       0 0 40px -10px hsl(var(--gold) / 0.4),
       0 0 80px -20px hsl(var(--gold) / 0.2);
   }
@@ -352,9 +388,14 @@
     border: 1px solid transparent;
     background-origin: border-box;
     background-clip: padding-box, border-box;
-    background-image: 
+    background-image:
       linear-gradient(hsl(var(--card)), hsl(var(--card))),
-      linear-gradient(135deg, hsl(var(--gold) / 0.3), hsl(var(--gold) / 0.1), hsl(var(--gold) / 0.3));
+      linear-gradient(
+      135deg,
+      hsl(var(--gold) / 0.3),
+      hsl(var(--gold) / 0.1),
+      hsl(var(--gold) / 0.3)
+    );
   }
 
   /* Section Headers with Gold */
@@ -363,9 +404,14 @@
   }
 
   .section-header::after {
-    content: '';
+    content: "";
     @apply block w-24 h-px mx-auto mt-4;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold)), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--gold)),
+      transparent
+    );
   }
 
   .luxury-link {
@@ -374,9 +420,14 @@
   }
 
   .luxury-link::after {
-    content: '';
+    content: "";
     @apply absolute w-full scale-x-0 h-px bottom-0 left-0 origin-bottom-right;
-    background: linear-gradient(90deg, hsl(var(--gold) / 0.5), hsl(var(--gold)), hsl(var(--gold) / 0.5));
+    background: linear-gradient(
+      90deg,
+      hsl(var(--gold) / 0.5),
+      hsl(var(--gold)),
+      hsl(var(--gold) / 0.5)
+    );
     transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -465,19 +516,36 @@
   }
 
   /* Staggered Animation Delays */
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
-  .delay-600 { animation-delay: 600ms; }
-  .delay-700 { animation-delay: 700ms; }
-  .delay-800 { animation-delay: 800ms; }
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+  .delay-600 {
+    animation-delay: 600ms;
+  }
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+  .delay-800 {
+    animation-delay: 800ms;
+  }
 
   /* Hover Transforms */
   .hover-lift {
-    transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1), 
-                box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 500ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
@@ -506,8 +574,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
@@ -587,13 +659,13 @@
 
 /* Luxury Beauty Background - Full Page Subtle Overlay with Parallax */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('/luxury-beauty-background.jpg');
+  background-image: url("/luxury-beauty-background.jpg");
   background-size: 120% auto;
   background-position: center;
   background-repeat: no-repeat;
@@ -611,7 +683,7 @@ body::before {
 .hero-portrait-background {
   position: absolute;
   inset: -20%;
-  background-image: url('/luxury-beauty-background.jpg');
+  background-image: url("/luxury-beauty-background.jpg");
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;

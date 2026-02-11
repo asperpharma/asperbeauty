@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req: Request) => {
@@ -19,7 +20,10 @@ serve(async (req: Request) => {
       console.error("Missing or invalid authorization header");
       return new Response(
         JSON.stringify({ error: "Unauthorized - missing token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -34,13 +38,18 @@ serve(async (req: Request) => {
 
     // Verify the user's JWT and get user data
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await userClient.auth.getUser(token);
-    
+    const { data: userData, error: userError } = await userClient.auth.getUser(
+      token,
+    );
+
     if (userError || !userData?.user) {
       console.error("Invalid token:", userError?.message);
       return new Response(
         JSON.stringify({ error: "Unauthorized - invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -48,18 +57,27 @@ serve(async (req: Request) => {
     const userId = user.id;
     const userEmail = user.email;
 
-    console.log(`GDPR Deletion Request: User ${userId} (${userEmail}) requested account deletion at ${new Date().toISOString()}`);
+    console.log(
+      `GDPR Deletion Request: User ${userId} (${userEmail}) requested account deletion at ${
+        new Date().toISOString()
+      }`,
+    );
 
     // Parse request body for confirmation
     const body = await req.json().catch(() => ({}));
     const { confirmEmail } = body;
 
     // Require email confirmation as additional verification
-    if (!confirmEmail || confirmEmail.toLowerCase() !== userEmail?.toLowerCase()) {
+    if (
+      !confirmEmail || confirmEmail.toLowerCase() !== userEmail?.toLowerCase()
+    ) {
       console.warn(`Deletion rejected: Email mismatch for user ${userId}`);
       return new Response(
         JSON.stringify({ error: "Email confirmation does not match" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -67,21 +85,36 @@ serve(async (req: Request) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Log deletion for GDPR compliance audit trail
-    console.log(`GDPR Audit: Initiating deletion for user ${userId} (${userEmail})`);
-    console.log(`GDPR Audit: Data to be deleted - profiles, user_roles, auth.users record`);
+    console.log(
+      `GDPR Audit: Initiating deletion for user ${userId} (${userEmail})`,
+    );
+    console.log(
+      `GDPR Audit: Data to be deleted - profiles, user_roles, auth.users record`,
+    );
 
     // Delete the user from auth.users (cascades to profiles and user_roles)
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(
+      userId,
+    );
 
     if (deleteError) {
       console.error(`GDPR Deletion Failed: ${deleteError.message}`);
       return new Response(
-        JSON.stringify({ error: "Failed to delete account. Please contact support." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: "Failed to delete account. Please contact support.",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    console.log(`GDPR Deletion Complete: User ${userId} (${userEmail}) successfully deleted at ${new Date().toISOString()}`);
+    console.log(
+      `GDPR Deletion Complete: User ${userId} (${userEmail}) successfully deleted at ${
+        new Date().toISOString()
+      }`,
+    );
 
     // Send confirmation email using Resend
     if (userEmail) {
@@ -122,7 +155,9 @@ serve(async (req: Request) => {
                 </div>
                 <div class="footer">
                   <p>This is an automated message confirming your account deletion request.</p>
-                  <p>© ${new Date().getFullYear()} Asper Beauty Shop. All rights reserved.</p>
+                  <p>© ${
+            new Date().getFullYear()
+          } Asper Beauty Shop. All rights reserved.</p>
                 </div>
               </div>
             </body>
@@ -144,33 +179,43 @@ serve(async (req: Request) => {
           });
 
           if (emailResponse.ok) {
-            console.log(`GDPR Audit: Deletion confirmation email sent to ${userEmail}`);
+            console.log(
+              `GDPR Audit: Deletion confirmation email sent to ${userEmail}`,
+            );
           } else {
-            console.error("Failed to send deletion confirmation email:", await emailResponse.text());
+            console.error(
+              "Failed to send deletion confirmation email:",
+              await emailResponse.text(),
+            );
           }
         }
       } catch (emailError) {
         // Log but don't fail the request - deletion was successful
-        console.error("Failed to send deletion confirmation email:", emailError);
+        console.error(
+          "Failed to send deletion confirmation email:",
+          emailError,
+        );
       }
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Your account has been permanently deleted." 
+      JSON.stringify({
+        success: true,
+        message: "Your account has been permanently deleted.",
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
-
   } catch (error) {
     console.error("Unexpected error in delete-account:", error);
     return new Response(
       JSON.stringify({ error: "An unexpected error occurred" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

@@ -115,12 +115,12 @@ body:
         - [ ] Requirements gathering
         - [ ] Technical design
         - [ ] UI/UX mockups
-        
+
         ## Phase 2: Development
         - [ ] Backend implementation
         - [ ] Frontend implementation
         - [ ] Integration
-        
+
         ## Phase 3: Testing & Launch
         - [ ] QA testing
         - [ ] Bug fixes

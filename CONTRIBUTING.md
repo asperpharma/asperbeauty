@@ -1,6 +1,7 @@
 # Contributing to Asper Beauty Shop
 
-Thank you for your interest in contributing to Asper Beauty Shop! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Asper Beauty Shop! This document
+provides guidelines and instructions for contributing.
 
 ## 🚀 Getting Started
 
@@ -32,6 +33,7 @@ Thank you for your interest in contributing to Asper Beauty Shop! This document 
 ### Branch Naming
 
 Use descriptive branch names:
+
 - `feature/add-product-filters` - New features
 - `fix/cart-quantity-bug` - Bug fixes
 - `docs/update-readme` - Documentation updates
@@ -40,6 +42,7 @@ Use descriptive branch names:
 ### Commit Messages
 
 Follow conventional commit format:
+
 ```
 type(scope): description
 
@@ -47,6 +50,7 @@ type(scope): description
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -56,6 +60,7 @@ Types:
 - `chore`: Maintenance
 
 Examples:
+
 ```
 feat(cart): add quantity selector to cart items
 fix(search): resolve dropdown not closing on blur
@@ -116,9 +121,11 @@ src/
 
 ## 🐛 Reporting Bugs
 
-We use structured issue templates to help organize bug reports and feature requests. When creating an issue:
+We use structured issue templates to help organize bug reports and feature
+requests. When creating an issue:
 
-1. Go to the [Issues](https://github.com/Asper-Beauty-Shop/asperbeauty/issues) page
+1. Go to the [Issues](https://github.com/Asper-Beauty-Shop/asperbeauty/issues)
+   page
 2. Click "New Issue"
 3. Select the appropriate template:
    - **Bug Report** - For reporting bugs or issues
@@ -126,9 +133,11 @@ We use structured issue templates to help organize bug reports and feature reque
    - **Enhancement** - For improving existing functionality
    - **Epic** - For large features with multiple sub-issues
 
-All templates include sub-task checklists to help break down work into manageable pieces.
+All templates include sub-task checklists to help break down work into
+manageable pieces.
 
-For detailed guidance on using issue templates, see [Issue Template Guide](.github/ISSUE_TEMPLATE_GUIDE.md).
+For detailed guidance on using issue templates, see
+[Issue Template Guide](.github/ISSUE_TEMPLATE_GUIDE.md).
 
 ### Bug Report Template
 
@@ -163,6 +172,7 @@ For feature requests, our template will help you provide:
 ## 📧 Contact
 
 For questions or support:
+
 - Create an issue in this repository
 - Join our community on [Discord](https://discord.gg/lovable-dev)
 

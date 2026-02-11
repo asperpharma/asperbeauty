@@ -1,13 +1,25 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
-import { ShoppingBag, Minus, Plus, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Minus,
+  Plus,
+  ShoppingBag,
+} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
-import { translateTitle, getLocalizedDescription } from "@/lib/productUtils";
+import { getLocalizedDescription, translateTitle } from "@/lib/productUtils";
 
 interface QuickViewModalProps {
   product: ShopifyProduct;
@@ -15,25 +27,31 @@ interface QuickViewModalProps {
   onClose: () => void;
 }
 
-export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps) => {
+export const QuickViewModal = (
+  { product, isOpen, onClose }: QuickViewModalProps,
+) => {
   const { node } = product;
   const { t, language } = useLanguage();
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
-  
+
   const images = node.images.edges;
   const variants = node.variants.edges;
   const selectedVariant = variants[selectedVariantIndex]?.node;
   const price = selectedVariant?.price || node.priceRange.minVariantPrice;
   const compareAtPrice = selectedVariant?.compareAtPrice;
-  
-  const isOnSale = compareAtPrice && parseFloat(compareAtPrice.amount) > parseFloat(price.amount);
-  const discountPercent = isOnSale 
-    ? Math.round(((parseFloat(compareAtPrice.amount) - parseFloat(price.amount)) / parseFloat(compareAtPrice.amount)) * 100)
+
+  const isOnSale = compareAtPrice &&
+    parseFloat(compareAtPrice.amount) > parseFloat(price.amount);
+  const discountPercent = isOnSale
+    ? Math.round(
+      ((parseFloat(compareAtPrice.amount) - parseFloat(price.amount)) /
+        parseFloat(compareAtPrice.amount)) * 100,
+    )
     : 0;
 
   const handleAddToCart = () => {
@@ -71,61 +89,63 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
         <div className="grid md:grid-cols-2 gap-0">
           {/* Image Gallery */}
           <div className="relative bg-gradient-to-br from-cream to-cream/80 aspect-square md:aspect-auto md:h-full">
-            {images.length > 0 ? (
-              <>
-                <img
-                  src={images[currentImageIndex]?.node.url}
-                  alt={images[currentImageIndex]?.node.altText || node.title}
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Image Navigation */}
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream/90 backdrop-blur-sm border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-cream transition-colors shadow-lg"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream/90 backdrop-blur-sm border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-cream transition-colors shadow-lg"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    
-                    {/* Dots */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                      {images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentImageIndex 
-                              ? 'bg-gold w-6' 
-                              : 'bg-foreground/30 hover:bg-foreground/50'
-                          }`}
-                        />
-                      ))}
+            {images.length > 0
+              ? (
+                <>
+                  <img
+                    src={images[currentImageIndex]?.node.url}
+                    alt={images[currentImageIndex]?.node.altText || node.title}
+                    className="w-full h-full object-cover"
+                  />
+
+                  {/* Image Navigation */}
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream/90 backdrop-blur-sm border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-cream transition-colors shadow-lg"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream/90 backdrop-blur-sm border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-cream transition-colors shadow-lg"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+
+                      {/* Dots */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {images.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                              index === currentImageIndex
+                                ? "bg-gold w-6"
+                                : "bg-foreground/30 hover:bg-foreground/50"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Sale Badge */}
+                  {isOnSale && (
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-red-500 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
+                      -{discountPercent}% OFF
                     </div>
-                  </>
-                )}
-                
-                {/* Sale Badge */}
-                {isOnSale && (
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-red-500 text-cream px-3 py-1.5 font-display text-xs tracking-widest uppercase shadow-lg">
-                    -{discountPercent}% OFF
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-muted-foreground">{t.noImage}</span>
-              </div>
-            )}
+                  )}
+                </>
+              )
+              : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-muted-foreground">{t.noImage}</span>
+                </div>
+              )}
           </div>
-          
+
           {/* Product Details */}
           <div className="p-8 flex flex-col">
             <DialogHeader className="text-start mb-6">
@@ -133,29 +153,35 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                 {translateTitle(node.title, language)}
               </DialogTitle>
             </DialogHeader>
-            
+
             {/* Price */}
             <div className="flex items-center gap-3 mb-6">
               {isOnSale && (
                 <span className="text-lg text-muted-foreground line-through">
-                  {price.currencyCode} {parseFloat(compareAtPrice.amount).toFixed(2)}
+                  {price.currencyCode}{" "}
+                  {parseFloat(compareAtPrice.amount).toFixed(2)}
                 </span>
               )}
-              <span className={`font-display text-2xl ${isOnSale ? 'text-red-600' : 'text-gold'}`}>
+              <span
+                className={`font-display text-2xl ${
+                  isOnSale ? "text-red-600" : "text-gold"
+                }`}
+              >
                 {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
               </span>
             </div>
-            
+
             {/* Description */}
             <p className="font-body text-muted-foreground mb-6 leading-relaxed flex-grow">
-              {getLocalizedDescription(node.description, language, 150) || t.premiumProduct}
+              {getLocalizedDescription(node.description, language, 150) ||
+                t.premiumProduct}
             </p>
-            
+
             {/* Variant Selection */}
             {variants.length > 1 && (
               <div className="mb-6">
                 <label className="font-display text-sm text-foreground mb-2 block">
-                  {node.options?.[0]?.name || 'Option'}
+                  {node.options?.[0]?.name || "Option"}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {variants.map((variant, index) => (
@@ -164,8 +190,8 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                       onClick={() => setSelectedVariantIndex(index)}
                       className={`px-4 py-2 border text-sm font-body transition-all ${
                         index === selectedVariantIndex
-                          ? 'border-gold bg-gold text-cream'
-                          : 'border-gold/30 hover:border-gold text-foreground'
+                          ? "border-gold bg-gold text-cream"
+                          : "border-gold/30 hover:border-gold text-foreground"
                       }`}
                     >
                       {variant.node.title}
@@ -174,11 +200,11 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                 </div>
               </div>
             )}
-            
+
             {/* Quantity */}
             <div className="mb-6">
               <label className="font-display text-sm text-foreground mb-2 block">
-                {language === 'ar' ? 'الكمية' : 'Quantity'}
+                {language === "ar" ? "الكمية" : "Quantity"}
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -187,7 +213,9 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="w-12 text-center font-display text-lg">{quantity}</span>
+                <span className="w-12 text-center font-display text-lg">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 border border-gold/30 flex items-center justify-center hover:bg-gold hover:text-cream transition-colors"
@@ -196,16 +224,20 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                 </button>
               </div>
             </div>
-            
+
             {/* Divider */}
             <div className="flex items-center justify-center gap-3 my-4">
               <div className="w-12 h-px bg-gradient-to-r from-transparent via-gold/60 to-gold/40" />
-              <svg className="w-4 h-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C12 2 9 6 9 9C9 11 10.5 12.5 12 12.5C13.5 12.5 15 11 15 9C15 6 12 2 12 2ZM6 8C6 8 3 11 3 13.5C3 15.5 4.5 17 6.5 17C7.5 17 8.5 16.5 9 15.5C7.5 14.5 6.5 12.5 6.5 10.5C6.5 9.5 6.5 8.5 6 8ZM18 8C17.5 8.5 17.5 9.5 17.5 10.5C17.5 12.5 16.5 14.5 15 15.5C15.5 16.5 16.5 17 17.5 17C19.5 17 21 15.5 21 13.5C21 11 18 8 18 8ZM12 14C10 14 8 15.5 7 17.5C8 19.5 10 21 12 21C14 21 16 19.5 17 17.5C16 15.5 14 14 12 14Z"/>
+              <svg
+                className="w-4 h-4 text-gold"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 2C12 2 9 6 9 9C9 11 10.5 12.5 12 12.5C13.5 12.5 15 11 15 9C15 6 12 2 12 2ZM6 8C6 8 3 11 3 13.5C3 15.5 4.5 17 6.5 17C7.5 17 8.5 16.5 9 15.5C7.5 14.5 6.5 12.5 6.5 10.5C6.5 9.5 6.5 8.5 6 8ZM18 8C17.5 8.5 17.5 9.5 17.5 10.5C17.5 12.5 16.5 14.5 15 15.5C15.5 16.5 16.5 17 17.5 17C19.5 17 21 15.5 21 13.5C21 11 18 8 18 8ZM12 14C10 14 8 15.5 7 17.5C8 19.5 10 21 12 21C14 21 16 19.5 17 17.5C16 15.5 14 14 12 14Z" />
               </svg>
               <div className="w-12 h-px bg-gradient-to-l from-transparent via-gold/60 to-gold/40" />
             </div>
-            
+
             {/* Actions */}
             <div className="space-y-3 mt-auto">
               <Button
@@ -217,7 +249,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                 <ShoppingBag className="w-4 h-4 me-2" />
                 {t.addToBag}
               </Button>
-              
+
               <Link to={`/product/${node.handle}`} onClick={onClose}>
                 <Button
                   variant="outline"
@@ -225,7 +257,9 @@ export const QuickViewModal = ({ product, isOpen, onClose }: QuickViewModalProps
                   className="w-full border-gold/30 hover:border-gold hover:bg-gold/5"
                 >
                   <Eye className="w-4 h-4 me-2" />
-                  {language === 'ar' ? 'عرض التفاصيل الكاملة' : 'View Full Details'}
+                  {language === "ar"
+                    ? "عرض التفاصيل الكاملة"
+                    : "View Full Details"}
                 </Button>
               </Link>
             </div>

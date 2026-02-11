@@ -1,6 +1,7 @@
 # Issue Templates
 
-This directory contains GitHub issue templates for the Asper Beauty Shop project.
+This directory contains GitHub issue templates for the Asper Beauty Shop
+project.
 
 ## Available Templates
 
@@ -22,8 +23,6 @@ For detailed guidance, see [Issue Template Guide](../ISSUE_TEMPLATE_GUIDE.md).
 
 ## Template Features
 
-✅ Structured forms for consistent issue reporting
-✅ Built-in sub-task checklists
-✅ Priority and severity categorization
-✅ Area-specific tagging
-✅ Support for hierarchical issues
+✅ Structured forms for consistent issue reporting ✅ Built-in sub-task
+checklists ✅ Priority and severity categorization ✅ Area-specific tagging ✅
+Support for hierarchical issues
