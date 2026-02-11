@@ -125,6 +125,30 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 🔄 CI/CD
+
+The project uses GitHub Actions for continuous integration with Deno for Supabase Edge Functions:
+
+### Deno CI Workflow
+
+The workflow (`.github/workflows/deno.yml`) runs on every push and pull request to the `main` branch and performs:
+
+1. **Code Formatting** - Validates code style with `deno fmt --check`
+2. **Linting** - Checks code quality with `deno lint`
+3. **Type Checking** - Type-checks all Supabase edge functions
+4. **Testing** - Runs tests with `deno test --allow-read --allow-net --allow-env`
+
+### Supabase Edge Functions
+
+Edge functions are located in `supabase/functions/` and include:
+- `beauty-assistant` - AI-powered beauty product recommendations
+- `verify-captcha` - hCaptcha verification
+- `delete-account` - User account deletion
+- `create-cod-order` - Cash on delivery order creation
+- And more...
+
+All edge functions are automatically validated by the CI pipeline.
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
