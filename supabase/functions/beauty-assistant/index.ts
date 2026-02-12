@@ -321,7 +321,8 @@ async function resolveProduct(productName: string) {
       // Check inventory
       const variant = product.variants?.edges?.[0]?.node;
       if (variant?.availableForSale) {
-        return formatProductForResponse(product);
+        const formatted = formatProductForResponse(product);
+        if (formatted) return formatted;
       } else {
         console.log(`Product ${handle} is out of stock`);
       }
@@ -336,7 +337,8 @@ async function resolveProduct(productName: string) {
     if (product) {
       const variant = product.variants?.edges?.[0]?.node;
       if (variant?.availableForSale) {
-        return formatProductForResponse(product);
+        const formatted = formatProductForResponse(product);
+        if (formatted) return formatted;
       } else {
         console.log(`Product ${handle} is out of stock`);
       }
@@ -349,7 +351,8 @@ async function resolveProduct(productName: string) {
   if (product) {
     const variant = product.variants?.edges?.[0]?.node;
     if (variant?.availableForSale) {
-      return formatProductForResponse(product);
+      const formatted = formatProductForResponse(product);
+      if (formatted) return formatted;
     } else {
       console.log(`Found product but it's out of stock`);
     }
@@ -390,62 +393,20 @@ function formatProductForResponse(product: ShopifyProductData) {
   const variant = product.variants?.edges?.[0]?.node;
   const image = product.images?.edges?.[0]?.node;
   
+  // Skip products without valid price
+  if (!variant?.price?.amount || isNaN(parseFloat(variant.price.amount))) {
+    return null;
+  }
+  
   return {
     id: product.id,
     handle: product.handle,
     title: product.title,
     vendor: product.vendor || '',
-    price: parseFloat(variant?.price?.amount || '0'),
+    price: parseFloat(variant.price.amount),
     currency: variant?.price?.currencyCode || 'JOD',
     image: image?.url || '',
     variantId: variant?.id || '',
     availableForSale: variant?.availableForSale || false,
   };
-}
-
-// Extract meaningful keywords from user query
-function extractKeywords(text: string): string[] {
-  const stopWords = new Set([
-    'i', 'me', 'my', 'myself', 'we', 'our', 'you', 'your', 'he', 'she', 'it',
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-    'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'can', 'what', 'which', 'who', 'how', 'when',
-    'where', 'why', 'this', 'that', 'these', 'those', 'am', 'if', 'then',
-    'so', 'than', 'too', 'very', 'just', 'about', 'any', 'some', 'all',
-    'need', 'want', 'looking', 'help', 'please', 'thanks', 'thank', 'good',
-    'best', 'recommend', 'suggest', 'product', 'products', 'something'
-  ]);
-
-  // Skincare-specific keywords to boost
-  const skinKeywords = [
-    'acne', 'aging', 'wrinkles', 'dark spots', 'pigmentation', 'dryness', 'dry',
-    'oily', 'sensitive', 'redness', 'hydration', 'moisturizer', 'serum', 'cleanser',
-    'toner', 'sunscreen', 'spf', 'retinol', 'vitamin c', 'hyaluronic', 'niacinamide',
-    'salicylic', 'benzoyl', 'brightening', 'anti-aging', 'eye cream', 'mask',
-    'exfoliate', 'pores', 'blackheads', 'whiteheads', 'eczema', 'psoriasis',
-    'rosacea', 'combination', 'normal', 'mature', 'teen', 'pregnancy', 'safe'
-  ];
-
-  // Brand keywords
-  const brandKeywords = [
-    'vichy', 'eucerin', 'cetaphil', 'svr', 'la roche', 'ordinary', 'olaplex',
-    'dior', 'ysl', 'bourjois', 'isadora', 'essence', 'bioten', 'mavala',
-    'kerastase', 'bioderma', 'avene', 'cerave', 'paula', 'filorga'
-  ];
-
-  const lowerText = text.toLowerCase();
-  const words = lowerText.split(/\s+/).filter(word => 
-    word.length > 2 && !stopWords.has(word)
-  );
-
-  // Add any matched skin/brand keywords
-  const matched = [...skinKeywords, ...brandKeywords].filter(kw => 
-    lowerText.includes(kw)
-  );
-
-  // Combine and deduplicate
-  const allKeywords = [...new Set([...words, ...matched])];
-  
-  return allKeywords.slice(0, 10);
 }

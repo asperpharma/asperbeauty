@@ -64,7 +64,7 @@ npx supabase secrets set \
 ```bash
 npx supabase secrets set \
   GEMINI_API_KEY="AIzaSyAbc123..." \
-  SHOPIFY_STOREFRONT_API_TOKEN="79d7870bb2e8b940752bdee2af19edbb" \
+  SHOPIFY_STOREFRONT_API_TOKEN="shpat_1234567890abcdef..." \
   SHOPIFY_STORE_DOMAIN="lovable-project-milns.myshopify.com" \
   --project-ref qqceibvalkoytafynwoc
 ```
