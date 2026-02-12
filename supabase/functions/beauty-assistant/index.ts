@@ -60,6 +60,8 @@ interface ProductMetadata {
   brand?: string;
   price?: string;
   description?: string;
+  is_on_sale?: boolean;
+  discount_percent?: string;
   [key: string]: unknown;
 }
 
@@ -111,7 +113,7 @@ interface ProductMetadata {
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
               const m = doc.metadata as ProductMetadata;
-              return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${(m as { is_on_sale?: boolean }).is_on_sale ? ` (${(m as { discount_percent?: string }).discount_percent}% OFF!)` : ''} - ${m.category}`;
+              return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }
         }

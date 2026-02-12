@@ -48,6 +48,11 @@ interface Product {
   updated_at: string;
 }
 
+interface EnrichResult {
+  status: string;
+  [key: string]: unknown;
+}
+
 const categories = ["Best Seller", "New Arrival", "Trending", "Featured"];
 
 const ManageProducts = () => {
@@ -324,11 +329,6 @@ const ManageProducts = () => {
       if (error) throw error;
       
       setEnrichResults(data.results || []);
-      
-      interface EnrichResult {
-        status: string;
-        [key: string]: unknown;
-      }
       
       const successCount = data.results?.filter((r: EnrichResult) => r.status === 'success').length || 0;
       

@@ -93,6 +93,23 @@ export default function BulkUpload() {
     updateConfig
   } = useImageQueue();
 
+  // Helper function to map queue status to product status
+  const mapQueueStatusToProductStatus = (queueStatus: QueueItem['status']): ProcessedProduct['status'] => {
+    switch (queueStatus) {
+      case "queued":
+        return "pending";
+      case "processing":
+      case "retrying":
+        return "processing";
+      case "completed":
+        return "completed";
+      case "failed":
+        return "failed";
+      default:
+        return "pending";
+    }
+  };
+
   // Sync queue items back to products state
   useEffect(() => {
     if (queueItems.length > 0) {
@@ -100,27 +117,9 @@ export default function BulkUpload() {
         prev.map(p => {
           const queueItem = queueItems.find(q => q.sku === p.sku);
           if (queueItem) {
-            let status: ProcessedProduct['status'];
-            switch (queueItem.status) {
-              case "queued":
-                status = "pending";
-                break;
-              case "processing":
-              case "retrying":
-                status = "processing";
-                break;
-              case "completed":
-                status = "completed";
-                break;
-              case "failed":
-                status = "failed";
-                break;
-              default:
-                status = "pending";
-            }
             return {
               ...p,
-              status,
+              status: mapQueueStatusToProductStatus(queueItem.status),
               imageUrl: queueItem.imageUrl,
               error: queueItem.error,
             };
