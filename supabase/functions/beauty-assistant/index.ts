@@ -395,6 +395,7 @@ function formatProductForResponse(product: ShopifyProductData) {
   
   // Skip products without valid price
   if (!variant?.price?.amount || isNaN(parseFloat(variant.price.amount))) {
+    console.log(`Skipping product ${product.handle} - invalid or missing price`);
     return null;
   }
   
