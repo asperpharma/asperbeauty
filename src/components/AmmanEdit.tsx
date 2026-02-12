@@ -11,40 +11,40 @@ import diorSauvage from "@/assets/products/dior-sauvage-elixir.webp";
 
 const products = [
   {
-    id: 'anthelios',
-    name: 'La Roche-Posay Anthelios UVMune 400',
-    nameAr: 'لاروش بوزيه أنثيليوس',
-    label: 'The Invisible Shield',
-    labelAr: 'الدرع غير المرئي',
+    id: "anthelios",
+    name: "La Roche-Posay Anthelios UVMune 400",
+    nameAr: "لاروش بوزيه أنثيليوس",
+    label: "The Invisible Shield",
+    labelAr: "الدرع غير المرئي",
     image: anthelios,
-    href: '/collections/skin-care',
+    href: "/collections/skin-care",
   },
   {
-    id: 'olaplex',
-    name: 'Olaplex No. 3 Hair Perfector',
-    nameAr: 'أولابليكس رقم ٣',
-    label: 'The Bond Builder',
-    labelAr: 'باني الروابط',
+    id: "olaplex",
+    name: "Olaplex No. 3 Hair Perfector",
+    nameAr: "أولابليكس رقم ٣",
+    label: "The Bond Builder",
+    labelAr: "باني الروابط",
     image: olaplex,
-    href: '/collections/hair-care',
+    href: "/collections/hair-care",
   },
   {
-    id: 'eucerin',
-    name: 'Eucerin Anti-Pigment Dual Serum',
-    nameAr: 'يوسيرين سيروم مزدوج',
-    label: 'Radiance Restored',
-    labelAr: 'إشراقة متجددة',
+    id: "eucerin",
+    name: "Eucerin Anti-Pigment Dual Serum",
+    nameAr: "يوسيرين سيروم مزدوج",
+    label: "Radiance Restored",
+    labelAr: "إشراقة متجددة",
     image: eucerin,
-    href: '/collections/skin-care',
+    href: "/collections/skin-care",
   },
   {
-    id: 'dior',
-    name: 'Dior Sauvage Elixir',
-    nameAr: 'ديور سوفاج إليكسير',
-    label: 'The Modern Signature',
-    labelAr: 'التوقيع العصري',
+    id: "dior",
+    name: "Dior Sauvage Elixir",
+    nameAr: "ديور سوفاج إليكسير",
+    label: "The Modern Signature",
+    labelAr: "التوقيع العصري",
     image: diorSauvage,
-    href: '/collections/fragrances',
+    href: "/collections/fragrances",
   },
 ];
 
@@ -58,7 +58,7 @@ export const AmmanEdit = () => {
         {/* Section Header */}
         <AnimatedSection className="text-center mb-12">
           <h2 className="font-display text-3xl lg:text-4xl text-foreground mb-2">
-            {isArabic ? 'اختيارات عمّان' : 'The Amman Edit'}
+            {isArabic ? "اختيارات عمّان" : "The Amman Edit"}
           </h2>
           <div className="w-16 h-px bg-gold mx-auto mt-4" />
         </AnimatedSection>
@@ -66,7 +66,11 @@ export const AmmanEdit = () => {
         {/* Product Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
           {products.map((product, index) => (
-            <AnimatedSection key={product.id} animation="fade-up" delay={index * 100}>
+            <AnimatedSection
+              key={product.id}
+              animation="fade-up"
+              delay={index * 100}
+            >
               <Link
                 to={product.href}
                 className="group block"
@@ -85,7 +89,7 @@ export const AmmanEdit = () => {
                       skeletonClassName="rounded-lg"
                     />
                   </div>
-                  
+
                   {/* Label Badge */}
                   <div className="absolute top-4 left-4 bg-burgundy/90 text-cream px-3 py-1 rounded-full">
                     <span className="font-body text-xs uppercase tracking-wider">
@@ -96,13 +100,15 @@ export const AmmanEdit = () => {
                   {/* Shop Link - appears on hover */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <span className="font-display text-sm uppercase tracking-widest text-burgundy bg-cream/90 px-6 py-3 rounded-full shadow-lg">
-                      {isArabic ? 'تسوق' : 'Shop'}
+                      {isArabic ? "تسوق" : "Shop"}
                     </span>
                   </div>
                 </div>
 
                 {/* Product Info */}
-                <div className={`mt-4 ${isArabic ? 'text-right' : 'text-left'}`}>
+                <div
+                  className={`mt-4 ${isArabic ? "text-right" : "text-left"}`}
+                >
                   <h3 className="font-display text-sm lg:text-base text-foreground leading-tight mb-1 line-clamp-2">
                     {isArabic ? product.nameAr : product.name}
                   </h3>

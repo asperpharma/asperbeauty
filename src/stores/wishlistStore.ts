@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { ShopifyProduct } from '@/lib/shopify';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { ShopifyProduct } from "@/lib/shopify";
 
 interface WishlistStore {
   items: ShopifyProduct[];
   isOpen: boolean;
-  
+
   // Actions
   addItem: (product: ShopifyProduct) => void;
   removeItem: (productId: string) => void;
@@ -23,8 +23,8 @@ export const useWishlistStore = create<WishlistStore>()(
 
       addItem: (product) => {
         const { items } = get();
-        const exists = items.some(item => item.node.id === product.node.id);
-        
+        const exists = items.some((item) => item.node.id === product.node.id);
+
         if (!exists) {
           set({ items: [...items, product] });
         }
@@ -32,14 +32,14 @@ export const useWishlistStore = create<WishlistStore>()(
 
       removeItem: (productId) => {
         set({
-          items: get().items.filter(item => item.node.id !== productId)
+          items: get().items.filter((item) => item.node.id !== productId),
         });
       },
 
       toggleItem: (product) => {
         const { items, addItem, removeItem } = get();
-        const exists = items.some(item => item.node.id === product.node.id);
-        
+        const exists = items.some((item) => item.node.id === product.node.id);
+
         if (exists) {
           removeItem(product.node.id);
         } else {
@@ -48,7 +48,7 @@ export const useWishlistStore = create<WishlistStore>()(
       },
 
       isInWishlist: (productId) => {
-        return get().items.some(item => item.node.id === productId);
+        return get().items.some((item) => item.node.id === productId);
       },
 
       clearWishlist: () => {
@@ -58,8 +58,8 @@ export const useWishlistStore = create<WishlistStore>()(
       setOpen: (isOpen) => set({ isOpen }),
     }),
     {
-      name: 'asper-wishlist',
+      name: "asper-wishlist",
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

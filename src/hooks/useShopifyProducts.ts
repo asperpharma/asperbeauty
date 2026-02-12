@@ -8,7 +8,7 @@ import { fetchProducts } from "@/lib/shopify";
  */
 export function useShopifyProducts(first: number = 24, query?: string) {
   return useQuery({
-    queryKey: ['shopify-products', first, query],
+    queryKey: ["shopify-products", first, query],
     queryFn: () => fetchProducts(first, query),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { 
-  Star, 
-  Minus, 
-  Plus, 
-  ShoppingBag, 
-  ShieldCheck, 
-  Droplets, 
-  Sparkles 
+import {
+  Droplets,
+  Minus,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,8 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
 
   // Mock additional images for gallery effect
   const images = [
-    product.image_url || "https://images.unsplash.com/photo-1571781535014-53bd44f29186?q=80&w=1200",
+    product.image_url ||
+    "https://images.unsplash.com/photo-1571781535014-53bd44f29186?q=80&w=1200",
     "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=1200",
     "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=1200",
   ];
@@ -54,12 +55,19 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
           handle: product.id,
           description: product.description || "",
           priceRange: {
-            minVariantPrice: { amount: product.price.toString(), currencyCode: "JOD" },
+            minVariantPrice: {
+              amount: product.price.toString(),
+              currencyCode: "JOD",
+            },
           },
-          images: { edges: [{ node: { url: product.image_url || "", altText: product.title } }] },
+          images: {
+            edges: [{
+              node: { url: product.image_url || "", altText: product.title },
+            }],
+          },
           variants: { edges: [] },
           options: [],
-        }
+        },
       },
       variantId: product.id,
       variantTitle: "Default",
@@ -75,24 +83,27 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
     <div className="min-h-screen bg-background">
       {/* Split Screen Layout */}
       <div className="grid lg:grid-cols-2 min-h-screen">
-        
         {/* LEFT: The Gallery (Cinematic Scroll) */}
         <div className="bg-muted/30 lg:overflow-y-auto">
           <div className="space-y-1">
             {images.map((img, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="relative aspect-[4/5] overflow-hidden cursor-pointer"
                 onClick={() => setActiveImage(idx)}
               >
-                <img 
-                  src={img} 
+                <img
+                  src={img}
                   alt={`${product.title} - View ${idx + 1}`}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
                 {/* Subtle Image Caption */}
                 <div className="absolute bottom-6 left-6 text-xs font-light tracking-widest text-white/70 uppercase">
-                  Figure 0{idx + 1} — {idx === 0 ? "The Vessel" : idx === 1 ? "The Texture" : "The Ritual"}
+                  Figure 0{idx + 1} — {idx === 0
+                    ? "The Vessel"
+                    : idx === 1
+                    ? "The Texture"
+                    : "The Ritual"}
                 </div>
               </div>
             ))}
@@ -102,7 +113,6 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
         {/* RIGHT: The Editorial Details (Sticky) */}
         <div className="lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto bg-background">
           <div className="p-8 lg:p-16 flex flex-col justify-center min-h-full">
-            
             {/* A. Header */}
             <div className="mb-8">
               <span className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground mb-3 block">
@@ -111,7 +121,7 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
               <h1 className="font-serif text-3xl lg:text-4xl text-foreground leading-tight mb-6">
                 {product.title}
               </h1>
-              
+
               {/* Price & Rating */}
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-light text-foreground">
@@ -120,9 +130,9 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className="w-4 h-4 fill-primary text-primary" 
+                      <Star
+                        key={i}
+                        className="w-4 h-4 fill-primary text-primary"
                       />
                     ))}
                   </div>
@@ -135,7 +145,8 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
 
             {/* B. The "Story" (Description) */}
             <p className="text-muted-foreground leading-relaxed mb-8 font-light">
-              {product.description || "Experience the next generation of our revolutionary formula. This deep- and fast-penetrating serum reduces the look of multiple signs of aging caused by the environmental assaults of modern life."}
+              {product.description ||
+                "Experience the next generation of our revolutionary formula. This deep- and fast-penetrating serum reduces the look of multiple signs of aging caused by the environmental assaults of modern life."}
             </p>
 
             {/* C. Sensory Details (Texture/Scent) */}
@@ -145,14 +156,18 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
                   <Droplets className="w-4 h-4 text-primary" />
                   {isAr ? "القوام" : "Texture"}
                 </div>
-                <p className="text-sm text-muted-foreground">Silky, oil-free serum</p>
+                <p className="text-sm text-muted-foreground">
+                  Silky, oil-free serum
+                </p>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <Sparkles className="w-4 h-4 text-primary" />
                   {isAr ? "العطر" : "Scent"}
                 </div>
-                <p className="text-sm text-muted-foreground">Fragrance-free, natural notes</p>
+                <p className="text-sm text-muted-foreground">
+                  Fragrance-free, natural notes
+                </p>
               </div>
             </div>
 
@@ -160,14 +175,16 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
             <div className="space-y-6 mb-10">
               {/* Quantity Selector */}
               <div className="flex items-center justify-center gap-8 py-4 border border-border rounded-none">
-                <button 
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-3 hover:text-primary transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="text-lg font-medium w-8 text-center">{quantity}</span>
-                <button 
+                <span className="text-lg font-medium w-8 text-center">
+                  {quantity}
+                </span>
+                <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="p-3 hover:text-primary transition-colors"
                 >
@@ -176,17 +193,20 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
               </div>
 
               {/* Add to Bag Button */}
-              <Button 
+              <Button
                 onClick={handleAddToBag}
                 className="w-full py-6 text-base font-medium tracking-wide bg-primary hover:bg-primary/90 text-primary-foreground rounded-none"
               >
                 <ShoppingBag className="w-5 h-5 mr-3" />
-                {isAr ? "أضف إلى الحقيبة" : "Add to Ritual"} — {(product.price * quantity).toFixed(3)} JOD
+                {isAr ? "أضف إلى الحقيبة" : "Add to Ritual"} —{" "}
+                {(product.price * quantity).toFixed(3)} JOD
               </Button>
-              
+
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                {isAr ? "موزع معتمد • منتج أصلي 100%" : "Authorized Retailer • 100% Authentic"}
+                {isAr
+                  ? "موزع معتمد • منتج أصلي 100%"
+                  : "Authorized Retailer • 100% Authentic"}
               </div>
             </div>
 
@@ -200,10 +220,9 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
                   <div className="flex items-start gap-3 py-2">
                     <Sparkles className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {isAr 
+                      {isAr
                         ? "ضعيه صباحاً ومساءً على بشرة نظيفة قبل المرطب. استخدمي قطرة واحدة ووزعيها بلطف على الوجه والرقبة."
-                        : "Apply AM and PM on clean skin before your moisturizer. Use one dropper. Gently smooth over face and throat."
-                      }
+                        : "Apply AM and PM on clean skin before your moisturizer. Use one dropper. Gently smooth over face and throat."}
                     </p>
                   </div>
                 </AccordionContent>
@@ -215,7 +234,8 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Bifida Ferment Lysate, Peg-8, Propanediol, Bis-Peg-18 Methyl Ether Dimethyl Silane, Methyl Gluceth-20, Glycereth-26.
+                    Bifida Ferment Lysate, Peg-8, Propanediol, Bis-Peg-18 Methyl
+                    Ether Dimethyl Silane, Methyl Gluceth-20, Glycereth-26.
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -226,15 +246,13 @@ export const ProductLuxuryView = ({ product }: ProductLuxuryViewProps) => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {isAr 
+                    {isAr
                       ? "شحن مجاني للطلبات فوق 50 دينار. التوصيل خلال 24-48 ساعة في عمان."
-                      : "Free shipping on all orders over 50 JOD. Delivered within 24-48 hours in Amman."
-                    }
+                      : "Free shipping on all orders over 50 JOD. Delivered within 24-48 hours in Amman."}
                   </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-
           </div>
         </div>
       </div>

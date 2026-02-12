@@ -1,11 +1,27 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ShoppingBag, Minus, Plus, Star, Sparkles, X, Percent, Truck, Shield, Package } from "lucide-react";
+import {
+  Minus,
+  Package,
+  Percent,
+  Plus,
+  Shield,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Truck,
+  X,
+} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getProductImage, formatJOD } from "@/lib/productImageUtils";
+import { formatJOD, getProductImage } from "@/lib/productImageUtils";
 import { useCartStore } from "@/stores/cartStore";
 
 interface Product {
@@ -30,7 +46,9 @@ interface ProductQuickViewProps {
   onClose: () => void;
 }
 
-export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewProps) => {
+export const ProductQuickView = (
+  { product, isOpen, onClose }: ProductQuickViewProps,
+) => {
   const { language } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
@@ -38,10 +56,20 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
 
   if (!product) return null;
 
-  const imageUrl = getProductImage(product.image_url, product.category, product.title);
-  const isOnSale = product.is_on_sale && product.original_price && product.original_price > product.price;
-  const discountPercent = product.discount_percent || 
-    (isOnSale ? Math.round(((product.original_price! - product.price) / product.original_price!) * 100) : 0);
+  const imageUrl = getProductImage(
+    product.image_url,
+    product.category,
+    product.title,
+  );
+  const isOnSale = product.is_on_sale && product.original_price &&
+    product.original_price > product.price;
+  const discountPercent = product.discount_percent ||
+    (isOnSale
+      ? Math.round(
+        ((product.original_price! - product.price) / product.original_price!) *
+          100,
+      )
+      : 0);
 
   const handleAddToCart = () => {
     // Create a mock product for cart compatibility
@@ -50,49 +78,52 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
         id: product.id,
         title: product.title,
         handle: product.id,
-        description: product.description || '',
+        description: product.description || "",
         priceRange: {
           minVariantPrice: {
             amount: product.price.toString(),
-            currencyCode: 'JOD'
-          }
+            currencyCode: "JOD",
+          },
         },
         images: {
           edges: [{
             node: {
               url: imageUrl,
-              altText: product.title
-            }
-          }]
+              altText: product.title,
+            },
+          }],
         },
         variants: {
           edges: [{
             node: {
               id: product.id,
-              title: 'Default',
-              price: { amount: product.price.toString(), currencyCode: 'JOD' },
-              selectedOptions: []
-            }
-          }]
-        }
-      }
+              title: "Default",
+              price: { amount: product.price.toString(), currencyCode: "JOD" },
+              selectedOptions: [],
+            },
+          }],
+        },
+      },
     };
 
     for (let i = 0; i < quantity; i++) {
       addItem({
         product: cartProduct as any,
         variantId: product.id,
-        variantTitle: 'Default',
-        price: { amount: product.price.toString(), currencyCode: 'JOD' },
+        variantTitle: "Default",
+        price: { amount: product.price.toString(), currencyCode: "JOD" },
         quantity: 1,
         selectedOptions: [],
       });
     }
-    
-    toast.success(language === 'ar' ? 'تمت الإضافة إلى السلة' : 'Added to cart', {
-      description: `${product.title} × ${quantity}`,
-      position: "top-center",
-    });
+
+    toast.success(
+      language === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart",
+      {
+        description: `${product.title} × ${quantity}`,
+        position: "top-center",
+      },
+    );
     setQuantity(1);
     setCartOpen(true);
     onClose();
@@ -117,7 +148,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               alt={product.title}
               className="w-full h-full object-cover"
             />
-            
+
             {/* Sale Badge */}
             {isOnSale && discountPercent > 0 && (
               <div className="absolute top-4 left-4 z-10 flex items-center gap-1 bg-[#E53E3E] text-white px-3 py-1.5 rounded text-sm font-bold shadow-lg">
@@ -127,21 +158,28 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
             )}
 
             {/* Category Badge */}
-            {(product.category === 'Best Seller' || product.category === 'New Arrival') && (
-              <Badge 
-                className={`absolute ${isOnSale ? 'top-14' : 'top-4'} left-4 z-10 font-medium text-xs uppercase tracking-wide px-3 py-1.5 flex items-center gap-1.5 shadow-lg border-0 ${
-                  product.category === 'Best Seller' 
-                    ? 'bg-amber-500 text-white' 
-                    : 'bg-emerald-500 text-white'
+            {(product.category === "Best Seller" ||
+              product.category === "New Arrival") && (
+              <Badge
+                className={`absolute ${
+                  isOnSale ? "top-14" : "top-4"
+                } left-4 z-10 font-medium text-xs uppercase tracking-wide px-3 py-1.5 flex items-center gap-1.5 shadow-lg border-0 ${
+                  product.category === "Best Seller"
+                    ? "bg-amber-500 text-white"
+                    : "bg-emerald-500 text-white"
                 }`}
               >
-                {product.category === 'Best Seller' && <Star className="w-3.5 h-3.5 fill-current" />}
-                {product.category === 'New Arrival' && <Sparkles className="w-3.5 h-3.5" />}
+                {product.category === "Best Seller" && (
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                )}
+                {product.category === "New Arrival" && (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
                 {product.category}
               </Badge>
             )}
           </div>
-          
+
           {/* Product Details Section */}
           <div className="p-6 md:p-8 flex flex-col">
             <DialogHeader className="text-start mb-2">
@@ -151,7 +189,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
                   {product.brand}
                 </p>
               )}
-              
+
               <DialogTitle className="text-xl md:text-2xl font-semibold text-gray-900 leading-tight">
                 {product.title}
               </DialogTitle>
@@ -163,7 +201,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
                 {product.volume_ml}
               </p>
             )}
-            
+
             {/* Price Section */}
             <div className="mb-4 pb-4 border-b border-gray-100">
               <div className="flex items-baseline gap-3">
@@ -172,30 +210,40 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
                     {formatJOD(product.original_price)}
                   </span>
                 )}
-                <span className={`text-2xl font-bold ${isOnSale ? 'text-[#E53E3E]' : 'text-gray-900'}`}>
+                <span
+                  className={`text-2xl font-bold ${
+                    isOnSale ? "text-[#E53E3E]" : "text-gray-900"
+                  }`}
+                >
                   {formatJOD(product.price)}
                 </span>
               </div>
               {isOnSale && (
                 <p className="text-sm text-[#E53E3E] mt-1 font-medium">
-                  {language === 'ar' ? `وفر ${formatJOD(product.original_price! - product.price)}` : `Save ${formatJOD(product.original_price! - product.price)}`}
+                  {language === "ar"
+                    ? `وفر ${
+                      formatJOD(product.original_price! - product.price)
+                    }`
+                    : `Save ${
+                      formatJOD(product.original_price! - product.price)
+                    }`}
                 </p>
               )}
             </div>
-            
+
             {/* Description - iHerb style benefit-focused */}
             <div className="mb-6 flex-grow">
               <p className="text-sm text-gray-600 leading-relaxed">
-                {product.description || (language === 'ar' 
-                  ? 'منتج فاخر عالي الجودة من مجموعتنا المميزة. يتميز بأفضل المكونات لبشرة مشرقة وصحية. مصرح من هيئة الغذاء والدواء الأردنية.'
-                  : 'Premium quality beauty product from our curated collection. Formulated with the finest ingredients for radiant, healthy skin. JFDA approved and authorized retailer.')}
+                {product.description || (language === "ar"
+                  ? "منتج فاخر عالي الجودة من مجموعتنا المميزة. يتميز بأفضل المكونات لبشرة مشرقة وصحية. مصرح من هيئة الغذاء والدواء الأردنية."
+                  : "Premium quality beauty product from our curated collection. Formulated with the finest ingredients for radiant, healthy skin. JFDA approved and authorized retailer.")}
               </p>
             </div>
-            
+
             {/* Quantity Selector */}
             <div className="mb-6">
               <label className="text-xs uppercase tracking-wide text-gray-700 mb-2 block font-medium">
-                {language === 'ar' ? 'الكمية' : 'Quantity'}
+                {language === "ar" ? "الكمية" : "Quantity"}
               </label>
               <div className="flex items-center gap-1">
                 <button
@@ -204,7 +252,9 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
                 >
                   <Minus className="w-4 h-4 text-gray-600" />
                 </button>
-                <span className="w-14 text-center text-lg font-medium">{quantity}</span>
+                <span className="w-14 text-center text-lg font-medium">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 border border-gray-200 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -213,14 +263,15 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
                 </button>
               </div>
             </div>
-            
+
             {/* Add to Cart Button */}
             <Button
               onClick={handleAddToCart}
               className="w-full bg-burgundy hover:bg-burgundy-light text-white text-sm uppercase tracking-wide py-6 shadow-md hover:shadow-lg transition-all duration-200"
             >
               <ShoppingBag className="w-5 h-5 me-2" />
-              {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'} - {formatJOD(product.price * quantity)}
+              {language === "ar" ? "أضف إلى السلة" : "Add to Cart"} -{" "}
+              {formatJOD(product.price * quantity)}
             </Button>
 
             {/* Trust Badges - iHerb/BeautyBox style */}
@@ -228,19 +279,19 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               <div className="flex flex-col items-center text-center">
                 <Shield className="w-5 h-5 text-emerald-600 mb-1" />
                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  {language === 'ar' ? 'أصلي 100%' : '100% Authentic'}
+                  {language === "ar" ? "أصلي 100%" : "100% Authentic"}
                 </span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <Truck className="w-5 h-5 text-blue-600 mb-1" />
                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  {language === 'ar' ? 'شحن سريع' : 'Fast Shipping'}
+                  {language === "ar" ? "شحن سريع" : "Fast Shipping"}
                 </span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <Package className="w-5 h-5 text-purple-600 mb-1" />
                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  {language === 'ar' ? 'مرخص JFDA' : 'JFDA Approved'}
+                  {language === "ar" ? "مرخص JFDA" : "JFDA Approved"}
                 </span>
               </div>
             </div>
