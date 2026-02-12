@@ -71,16 +71,18 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               id: product.id,
               title: 'Default',
               price: { amount: product.price.toString(), currencyCode: 'JOD' },
+              availableForSale: true,
               selectedOptions: []
             }
           }]
-        }
+        },
+        options: []
       }
     };
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        product: cartProduct as any,
+        product: cartProduct,
         variantId: product.id,
         variantTitle: 'Default',
         price: { amount: product.price.toString(), currencyCode: 'JOD' },

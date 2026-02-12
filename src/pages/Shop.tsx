@@ -62,12 +62,13 @@ const ShopProductCard = ({
         description: product.description || '',
         priceRange: { minVariantPrice: { amount: product.price.toString(), currencyCode: 'JOD' } },
         images: { edges: [{ node: { url: imageUrl, altText: product.title } }] },
-        variants: { edges: [{ node: { id: product.id, title: 'Default', price: { amount: product.price.toString(), currencyCode: 'JOD' }, selectedOptions: [] } }] }
+        variants: { edges: [{ node: { id: product.id, title: 'Default', price: { amount: product.price.toString(), currencyCode: 'JOD' }, availableForSale: true, selectedOptions: [] } }] },
+        options: []
       }
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
