@@ -1,6 +1,7 @@
 /**
  * Helper to generate Shopify CDN image URLs with size optimization
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const getOptimizedShopifyImageUrl = (
   url: string,
   width: number,
@@ -28,6 +29,7 @@ export const getOptimizedShopifyImageUrl = (
 /**
  * Generate srcset for responsive images
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const getShopifyImageSrcSet = (
   url: string,
   sizes: number[]

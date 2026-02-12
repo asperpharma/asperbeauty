@@ -85,6 +85,7 @@ export function PasswordStrengthIndicator({ password, className }: PasswordStren
 }
 
 // Export validation function for use in form schemas
+// eslint-disable-next-line react-refresh/only-export-components
 export function isStrongPassword(password: string): boolean {
   return (
     password.length >= 8 &&
