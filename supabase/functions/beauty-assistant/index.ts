@@ -360,7 +360,33 @@ async function resolveProduct(productName: string) {
 }
 
 // Format product for response
-function formatProductForResponse(product: any) {
+interface ShopifyProductData {
+  id: string;
+  handle: string;
+  title: string;
+  vendor?: string;
+  variants?: {
+    edges?: Array<{
+      node?: {
+        id?: string;
+        price?: {
+          amount?: string;
+          currencyCode?: string;
+        };
+        availableForSale?: boolean;
+      };
+    }>;
+  };
+  images?: {
+    edges?: Array<{
+      node?: {
+        url?: string;
+      };
+    }>;
+  };
+}
+
+function formatProductForResponse(product: ShopifyProductData) {
   const variant = product.variants?.edges?.[0]?.node;
   const image = product.images?.edges?.[0]?.node;
   
