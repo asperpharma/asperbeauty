@@ -50,11 +50,19 @@ serve(async (req) => {
     }
 
     // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
+    const lastUserMessage = messages.filter((m: { role: string; content: string }) => m.role === "user").pop()?.content || "";
     
     // Search for relevant products based on user query
     let productContext = "";
-    let matchedProducts: any[] = [];
+    let matchedProducts: Array<{
+      id: string;
+      title: string;
+      brand: string | null;
+      price: number;
+      is_on_sale: boolean | null;
+      discount_percent: number | null;
+      category: string;
+    }> = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -96,7 +104,14 @@ serve(async (req) => {
             matchedProducts = relevantDocs.map(doc => doc.metadata);
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
+              const m = doc.metadata as {
+                title: string;
+                brand?: string;
+                price: number;
+                is_on_sale?: boolean;
+                discount_percent?: number;
+                category: string;
+              };
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }

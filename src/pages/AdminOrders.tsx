@@ -218,6 +218,7 @@ export default function AdminOrders() {
         supabase.removeChannel(channel);
       };
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
   // Filter orders by status, search, and date

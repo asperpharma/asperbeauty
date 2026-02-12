@@ -80,7 +80,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        product: cartProduct as any,
+        product: cartProduct as { id: string; title: string; images: { edges: { node: { url: string; altText: string | null } }[] }; priceRange: { minVariantPrice: { amount: string; currencyCode: string } }; variants: { edges: { node: { id: string; title: string; priceV2: { amount: string; currencyCode: string } } }[] } },
         variantId: product.id,
         variantTitle: 'Default',
         price: { amount: product.price.toString(), currencyCode: 'JOD' },

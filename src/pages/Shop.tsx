@@ -67,7 +67,7 @@ const ShopProductCard = ({
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct as { id: string; title: string; images: { edges: { node: { url: string; altText: string | null } }[] }; priceRange: { minVariantPrice: { amount: string; currencyCode: string } }; variants: { edges: { node: { id: string; title: string; priceV2: { amount: string; currencyCode: string } } }[] } },
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
