@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
-import { ProductCardSkeleton, BrandCardSkeleton, TestimonialCardSkeleton } from "./ProductCardSkeleton";
+import {
+  BrandCardSkeleton,
+  ProductCardSkeleton,
+  TestimonialCardSkeleton,
+} from "./ProductCardSkeleton";
 
 export const PageLoadingSkeleton = () => {
   return (
@@ -11,12 +15,18 @@ export const PageLoadingSkeleton = () => {
             <div className="w-32 h-10 bg-cream/10 rounded animate-pulse" />
             <div className="hidden md:flex items-center gap-6">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="w-20 h-4 bg-cream/10 rounded animate-pulse" />
+                <div
+                  key={i}
+                  className="w-20 h-4 bg-cream/10 rounded animate-pulse"
+                />
               ))}
             </div>
             <div className="flex items-center gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="w-8 h-8 bg-cream/10 rounded-full animate-pulse" />
+                <div
+                  key={i}
+                  className="w-8 h-8 bg-cream/10 rounded-full animate-pulse"
+                />
               ))}
             </div>
           </div>
@@ -44,9 +54,7 @@ export const PageLoadingSkeleton = () => {
             <div className="w-64 h-8 bg-taupe/30 rounded mx-auto animate-pulse" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <ProductCardSkeleton key={i} />
-            ))}
+            {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
           </div>
         </div>
       </section>
@@ -59,9 +67,7 @@ export const PageLoadingSkeleton = () => {
             <div className="w-72 h-8 bg-cream/20 rounded mx-auto animate-pulse" />
           </div>
           <div className="flex justify-center gap-6 overflow-hidden">
-            {[...Array(6)].map((_, i) => (
-              <BrandCardSkeleton key={i} />
-            ))}
+            {[...Array(6)].map((_, i) => <BrandCardSkeleton key={i} />)}
           </div>
         </div>
       </section>
@@ -74,9 +80,7 @@ export const PageLoadingSkeleton = () => {
             <div className="w-56 h-8 bg-cream/20 rounded mx-auto animate-pulse" />
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <TestimonialCardSkeleton key={i} />
-            ))}
+            {[...Array(3)].map((_, i) => <TestimonialCardSkeleton key={i} />)}
           </div>
         </div>
       </section>
@@ -102,7 +106,10 @@ export const PageLoadingSkeleton = () => {
                 <div className="w-24 h-5 bg-cream/20 rounded animate-pulse" />
                 <div className="space-y-2">
                   {[...Array(4)].map((_, j) => (
-                    <div key={j} className="w-32 h-3 bg-cream/10 rounded animate-pulse" />
+                    <div
+                      key={j}
+                      className="w-32 h-3 bg-cream/10 rounded animate-pulse"
+                    />
                   ))}
                 </div>
               </div>

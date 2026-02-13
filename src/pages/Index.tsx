@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
@@ -9,13 +9,33 @@ import { PageLoadingSkeleton } from "@/components/PageLoadingSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load below-the-fold components for better initial load performance
-const FeaturedBrands = lazy(() => import("@/components/FeaturedBrands").then(m => ({ default: m.FeaturedBrands })));
-const Testimonials = lazy(() => import("@/components/Testimonials").then(m => ({ default: m.Testimonials })));
-const Newsletter = lazy(() => import("@/components/Newsletter").then(m => ({ default: m.Newsletter })));
-const TrustBanner = lazy(() => import("@/components/TrustBanner").then(m => ({ default: m.TrustBanner })));
-const BeautyAssistant = lazy(() => import("@/components/BeautyAssistant").then(m => ({ default: m.BeautyAssistant })));
-const ScrollToTop = lazy(() => import("@/components/ScrollToTop").then(m => ({ default: m.ScrollToTop })));
-const FloatingSocials = lazy(() => import("@/components/FloatingSocials").then(m => ({ default: m.FloatingSocials })));
+const FeaturedBrands = lazy(() =>
+  import("@/components/FeaturedBrands").then((m) => ({
+    default: m.FeaturedBrands,
+  }))
+);
+const Testimonials = lazy(() =>
+  import("@/components/Testimonials").then((m) => ({ default: m.Testimonials }))
+);
+const Newsletter = lazy(() =>
+  import("@/components/Newsletter").then((m) => ({ default: m.Newsletter }))
+);
+const TrustBanner = lazy(() =>
+  import("@/components/TrustBanner").then((m) => ({ default: m.TrustBanner }))
+);
+const BeautyAssistant = lazy(() =>
+  import("@/components/BeautyAssistant").then((m) => ({
+    default: m.BeautyAssistant,
+  }))
+);
+const ScrollToTop = lazy(() =>
+  import("@/components/ScrollToTop").then((m) => ({ default: m.ScrollToTop }))
+);
+const FloatingSocials = lazy(() =>
+  import("@/components/FloatingSocials").then((m) => ({
+    default: m.FloatingSocials,
+  }))
+);
 
 // Lightweight skeleton for lazy sections
 const SectionSkeleton = ({ height = "h-64" }: { height?: string }) => (
@@ -37,7 +57,7 @@ const Index = () => {
 
   useEffect(() => {
     const handleLoad = () => setIsLoading(false);
-    
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
@@ -59,32 +79,32 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        
+
         {/* Featured Collection with Glass & Gold Cards */}
         <CelestialFeaturedCollection />
-        
+
         {/* Brand Story Section */}
         <BrandStory />
-        
+
         {/* Lazy-loaded below-the-fold sections */}
         <Suspense fallback={<SectionSkeleton height="h-32" />}>
           <FeaturedBrands />
         </Suspense>
-        
+
         <Suspense fallback={<SectionSkeleton height="h-96" />}>
           <Testimonials />
         </Suspense>
-        
+
         <Suspense fallback={<SectionSkeleton height="h-48" />}>
           <Newsletter />
         </Suspense>
-        
+
         <Suspense fallback={<SectionSkeleton height="h-24" />}>
           <TrustBanner />
         </Suspense>
       </main>
       <Footer />
-      
+
       {/* Lazy-loaded floating components */}
       <Suspense fallback={null}>
         <BeautyAssistant />

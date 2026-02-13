@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp, X, Filter } from "lucide-react";
+import { ChevronDown, ChevronUp, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FilterState {
@@ -52,7 +52,10 @@ export const ProductFilters = ({
   };
 
   const handlePriceChange = (value: number[]) => {
-    onFiltersChange({ ...filters, priceRange: [value[0], value[1]] as [number, number] });
+    onFiltersChange({
+      ...filters,
+      priceRange: [value[0], value[1]] as [number, number],
+    });
   };
 
   const clearFilters = () => {
@@ -63,8 +66,7 @@ export const ProductFilters = ({
     });
   };
 
-  const hasActiveFilters =
-    filters.categories.length > 0 ||
+  const hasActiveFilters = filters.categories.length > 0 ||
     filters.brands.length > 0 ||
     filters.priceRange[0] > 0 ||
     filters.priceRange[1] < maxPrice;
@@ -94,11 +96,9 @@ export const ProductFilters = ({
             className="flex items-center justify-between w-full py-2 font-display text-sm text-foreground"
           >
             Category
-            {expandedSections.category ? (
-              <ChevronUp className="w-4 h-4 text-gold" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gold" />
-            )}
+            {expandedSections.category
+              ? <ChevronUp className="w-4 h-4 text-gold" />
+              : <ChevronDown className="w-4 h-4 text-gold" />}
           </button>
           {expandedSections.category && (
             <div className="mt-3 space-y-2">
@@ -130,11 +130,9 @@ export const ProductFilters = ({
             className="flex items-center justify-between w-full py-2 font-display text-sm text-foreground"
           >
             Brand
-            {expandedSections.brand ? (
-              <ChevronUp className="w-4 h-4 text-gold" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gold" />
-            )}
+            {expandedSections.brand
+              ? <ChevronUp className="w-4 h-4 text-gold" />
+              : <ChevronDown className="w-4 h-4 text-gold" />}
           </button>
           {expandedSections.brand && (
             <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
@@ -165,11 +163,9 @@ export const ProductFilters = ({
           className="flex items-center justify-between w-full py-2 font-display text-sm text-foreground"
         >
           Price Range
-          {expandedSections.price ? (
-            <ChevronUp className="w-4 h-4 text-gold" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-gold" />
-          )}
+          {expandedSections.price
+            ? <ChevronUp className="w-4 h-4 text-gold" />
+            : <ChevronDown className="w-4 h-4 text-gold" />}
         </button>
         {expandedSections.price && (
           <div className="mt-4 px-1">
@@ -204,7 +200,10 @@ export const ProductFilters = ({
           Filters
           {hasActiveFilters && (
             <span className="ms-2 bg-gold text-cream text-xs px-2 py-0.5 rounded-full">
-              {filters.categories.length + filters.brands.length + (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice ? 1 : 0)}
+              {filters.categories.length + filters.brands.length +
+                (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice
+                  ? 1
+                  : 0)}
             </span>
           )}
         </Button>
