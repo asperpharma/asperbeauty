@@ -93,6 +93,7 @@ export default function AdminAuditLogs() {
       fetchLogs();
       fetchDrivers();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin]);
 
   const fetchDrivers = async () => {
