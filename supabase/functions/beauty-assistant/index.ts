@@ -6,6 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Shopify configuration
+const SHOPIFY_API_VERSION = '2025-07';
+const SHOPIFY_STORE_DOMAIN = Deno.env.get("SHOPIFY_STORE_DOMAIN") || "lovable-project-milns.myshopify.com";
+const SHOPIFY_STOREFRONT_TOKEN = Deno.env.get("SHOPIFY_STOREFRONT_API_TOKEN") || Deno.env.get("SHOPIFY_STOREFRONT_TOKEN");
+const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,84 +34,17 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const { query } = await req.json();
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     
-    if (claimsError || !claimsData?.claims) {
-      console.error("JWT validation failed:", claimsError?.message || "No claims");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
 
-    const userId = claimsData.claims.sub;
-    console.log("Authenticated user:", userId);
-
-    const { messages } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    console.log("User query:", query);
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
-    // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
-    
-    // Search for relevant products based on user query
-    let productContext = "";
-    let matchedProducts: any[] = [];
-    
-    if (lastUserMessage) {
-      // Extract keywords from user message
-      const keywords = extractKeywords(lastUserMessage);
-      console.log("Extracted keywords:", keywords);
-      
-      // Search products by keywords using text matching
-      const { data: relevantProducts, error: searchError } = await supabaseClient
-        .from("products")
-        .select("*")
-        .or(
-          keywords.map(k => `title.ilike.%${k}%,brand.ilike.%${k}%,category.ilike.%${k}%,description.ilike.%${k}%`).join(",")
-        )
-        .limit(5);
-
-      if (!searchError && relevantProducts && relevantProducts.length > 0) {
-        console.log(`Found ${relevantProducts.length} relevant products`);
-        matchedProducts = relevantProducts;
-        
-        productContext = `\n\n**Relevant Products from Our Store:**\n${relevantProducts.map(p => 
-          `- **${p.title}** (${p.brand || 'Asper'}) - ${p.price} JOD${p.is_on_sale ? ` (${p.discount_percent}% OFF!)` : ''} - ${p.category}${p.skin_concerns?.length ? ` | Good for: ${p.skin_concerns.join(', ')}` : ''}`
-        ).join('\n')}`;
-      } else {
-        // Fallback: search in documents table
-        const { data: documents } = await supabaseClient
-          .from("documents")
-          .select("content, metadata")
-          .limit(5);
-        
-        if (documents && documents.length > 0) {
-          // Filter documents by keyword relevance
-          const relevantDocs = documents.filter(doc => {
-            const content = doc.content.toLowerCase();
-            return keywords.some(k => content.includes(k.toLowerCase()));
-          }).slice(0, 5);
-
-          if (relevantDocs.length > 0) {
-            // Convert document metadata to product format for cards
-            matchedProducts = relevantDocs.map(doc => doc.metadata);
-            
-            productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
-              return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
-            }).join('\n')}`;
-          }
-        }
-      }
-    }
-
-    // Enhanced system prompt with product context
-    const systemPrompt = `You are "Asper Digital Concierge" - a warm, knowledgeable beauty pharmacist for Asper Beauty Shop in Jordan. You combine clinical skincare expertise with luxury service.
+    // System prompt with product recommendation instructions
+    const systemPrompt = `You are "Ms. Zain" - a warm, knowledgeable beauty advisor for Asper Beauty Shop in Jordan. You combine clinical skincare expertise with luxury service.
 
 **Your Personality:**
 - Speak with authority of a senior pharmacist mixed with a luxury personal shopper
@@ -116,139 +55,359 @@ serve(async (req) => {
 - Deep understanding of skincare ingredients, formulations, and skin concerns
 - All products are 100% authentic, JFDA certified, sourced from official distributors
 - Available categories: Skincare, Body Care, Hair Care, Makeup, Fragrances, Tools & Devices
-- Popular brands: Vichy, Eucerin, La Roche-Posay, Cetaphil, SVR, The Ordinary, Olaplex, Dior, YSL
+- Popular brands: Vichy, Eucerin, La Roche-Posay, Cetaphil, SVR, The Ordinary, Olaplex, Dior, YSL, Maybelline
 
 **How to Recommend:**
 1. Ask about skin type (oily, dry, combination, sensitive) if not mentioned
-2. Understand concerns (acne, aging, dark spots, dryness, sensitivity, sun protection)
+2. Understand concerns (acne, aging, dark circles, dryness, sensitivity, sun protection)
 3. Suggest specific products with brief reasoning
-4. For topical products, suggest complementary wellness items ("Complete Your Routine")
+
+**Product Recommendations:**
+When you recommend products, end your response with:
+PRODUCTS: exact product name 1, exact product name 2
+
+Example:
+"The Maybelline Age Rewind Concealer is excellent for dark circles. Its creamy formula provides buildable coverage while hydrating the under-eye area.
+
+PRODUCTS: Maybelline Instant Age Rewind Eraser Concealer"
 
 **Shipping Info:**
 - Amman: 3 JOD
 - Governorates: 5 JOD
-- FREE shipping on orders over 50 JOD
+- FREE shipping on orders over 50 JOD`;
 
-**Important:** If you recommend specific products, try to match them with products from our actual inventory when available.
-${productContext}`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+    // Call Gemini AI
+    const aiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `${systemPrompt}\n\nUser: ${query}` }]
+          }]
+        }),
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to get response" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    );
+
+    if (!aiResponse.ok) {
+      console.error("Gemini API error:", aiResponse.status);
+      throw new Error("Failed to get AI response");
     }
 
-    // Create a transformed stream that prepends product data
-    const encoder = new TextEncoder();
-    const productDataEvent = matchedProducts && matchedProducts.length > 0
-      ? `data: ${JSON.stringify({ type: "products", products: matchedProducts })}\n\n`
-      : "";
+    const aiData = await aiResponse.json();
+    const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that request.";
+    
+    console.log("AI reply:", reply);
 
-    // Create a new ReadableStream that combines product data with AI stream
-    const combinedStream = new ReadableStream({
-      async start(controller) {
-        // Send product data first if available
-        if (productDataEvent) {
-          controller.enqueue(encoder.encode(productDataEvent));
-        }
-        
-        // Then pipe through the AI response
-        const reader = response.body!.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          controller.enqueue(value);
-        }
-        controller.close();
+    // Parse product names from AI response
+    const productNames = parseProductNames(reply);
+    console.log("Parsed product names:", productNames);
+
+    // Resolve products with inventory check
+    const recommendedProducts = [];
+    for (const name of productNames) {
+      const product = await resolveProduct(name);
+      if (product) {
+        recommendedProducts.push(product);
       }
-    });
+    }
 
-    return new Response(combinedStream, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    console.log(`Resolved ${recommendedProducts.length} products`);
+
+    // Remove PRODUCTS: line from reply
+    const cleanReply = reply.replace(/PRODUCTS:\s*[^\n]+/gi, '').trim();
+
+    // Return structured response
+    return new Response(JSON.stringify({
+      reply: cleanReply,
+      response: cleanReply, // alias for backwards compatibility
+      persona: "Ms. Zain",
+      recommended_products: recommendedProducts,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Beauty assistant error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : "Unknown error",
+      reply: "I apologize, but I'm having trouble processing your request right now. Please try again.",
+      persona: "Ms. Zain",
+      recommended_products: [],
+    }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
 
-// Extract meaningful keywords from user query
-function extractKeywords(text: string): string[] {
-  const stopWords = new Set([
-    'i', 'me', 'my', 'myself', 'we', 'our', 'you', 'your', 'he', 'she', 'it',
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-    'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'can', 'what', 'which', 'who', 'how', 'when',
-    'where', 'why', 'this', 'that', 'these', 'those', 'am', 'if', 'then',
-    'so', 'than', 'too', 'very', 'just', 'about', 'any', 'some', 'all',
-    'need', 'want', 'looking', 'help', 'please', 'thanks', 'thank', 'good',
-    'best', 'recommend', 'suggest', 'product', 'products', 'something'
-  ]);
+// Shopify GraphQL helper
+async function shopifyStorefrontRequest(query: string, variables: Record<string, unknown> = {}) {
+  if (!SHOPIFY_STOREFRONT_TOKEN) {
+    console.error("SHOPIFY_STOREFRONT_TOKEN not configured");
+    return null;
+  }
 
-  // Skincare-specific keywords to boost
-  const skinKeywords = [
-    'acne', 'aging', 'wrinkles', 'dark spots', 'pigmentation', 'dryness', 'dry',
-    'oily', 'sensitive', 'redness', 'hydration', 'moisturizer', 'serum', 'cleanser',
-    'toner', 'sunscreen', 'spf', 'retinol', 'vitamin c', 'hyaluronic', 'niacinamide',
-    'salicylic', 'benzoyl', 'brightening', 'anti-aging', 'eye cream', 'mask',
-    'exfoliate', 'pores', 'blackheads', 'whiteheads', 'eczema', 'psoriasis',
-    'rosacea', 'combination', 'normal', 'mature', 'teen', 'pregnancy', 'safe'
-  ];
+  const response = await fetch(SHOPIFY_STOREFRONT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN
+    },
+    body: JSON.stringify({ query, variables }),
+  });
 
-  // Brand keywords
-  const brandKeywords = [
-    'vichy', 'eucerin', 'cetaphil', 'svr', 'la roche', 'ordinary', 'olaplex',
-    'dior', 'ysl', 'bourjois', 'isadora', 'essence', 'bioten', 'mavala',
-    'kerastase', 'bioderma', 'avene', 'cerave', 'paula', 'filorga'
-  ];
+  if (!response.ok) {
+    console.error(`Shopify API error: ${response.status}`);
+    return null;
+  }
 
-  const lowerText = text.toLowerCase();
-  const words = lowerText.split(/\s+/).filter(word => 
-    word.length > 2 && !stopWords.has(word)
-  );
+  const data = await response.json();
+  if (data.errors) {
+    console.error('Shopify GraphQL errors:', data.errors);
+    return null;
+  }
 
-  // Add any matched skin/brand keywords
-  const matched = [...skinKeywords, ...brandKeywords].filter(kw => 
-    lowerText.includes(kw)
-  );
+  return data;
+}
 
-  // Combine and deduplicate
-  const allKeywords = [...new Set([...words, ...matched])];
+// Fetch product by handle
+async function fetchShopifyProductByHandle(handle: string) {
+  const query = `
+    query GetProductByHandle($handle: String!) {
+      productByHandle(handle: $handle) {
+        id
+        title
+        description
+        handle
+        vendor
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 1) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+        variants(first: 1) {
+          edges {
+            node {
+              id
+              title
+              price {
+                amount
+                currencyCode
+              }
+              availableForSale
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await shopifyStorefrontRequest(query, { handle });
+  return data?.data?.productByHandle || null;
+}
+
+// Search products by title
+async function searchShopifyProductByTitle(title: string) {
+  const query = `
+    query SearchProducts($query: String!, $first: Int!) {
+      products(first: $first, query: $query) {
+        edges {
+          node {
+            id
+            title
+            description
+            handle
+            vendor
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 1) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  title
+                  price {
+                    amount
+                    currencyCode
+                  }
+                  availableForSale
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const searchQuery = `title:*${title}*`;
+  const data = await shopifyStorefrontRequest(query, { query: searchQuery, first: 1 });
   
-  return allKeywords.slice(0, 10);
+  if (data?.data?.products?.edges?.length > 0) {
+    return data.data.products.edges[0].node;
+  }
+  
+  return null;
+}
+
+// Convert product title to handle (simplified)
+function titleToHandle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+// Keyword to handle mapping for common products
+const keywordToHandle: Record<string, string> = {
+  "maybelline age rewind": "maybelline-instant-age-rewind-eraser-concealer",
+  "age rewind": "maybelline-instant-age-rewind-eraser-concealer",
+  "vichy minéral 89": "vichy-mineral-89",
+  "vichy mineral 89": "vichy-mineral-89",
+  "la roche posay effaclar": "la-roche-posay-effaclar-duo-plus",
+  "effaclar duo": "la-roche-posay-effaclar-duo-plus",
+  "cetaphil gentle cleanser": "cetaphil-gentle-skin-cleanser",
+  "eucerin advanced repair": "eucerin-advanced-repair-lotion",
+  "the ordinary niacinamide": "the-ordinary-niacinamide-10-zinc-1",
+  "niacinamide zinc": "the-ordinary-niacinamide-10-zinc-1",
+};
+
+// Parse product names from AI response
+function parseProductNames(aiResponse: string): string[] {
+  const match = aiResponse.match(/PRODUCTS:\s*(.+?)(?:\n|$)/i);
+  if (!match) return [];
+  
+  return match[1]
+    .split(',')
+    .map(name => name.trim())
+    .filter(name => name.length > 0);
+}
+
+// Resolve product with two-step lookup and inventory check
+async function resolveProduct(productName: string) {
+  console.log(`Resolving product: ${productName}`);
+  
+  // Step 1: Try keyword-to-handle mapping
+  const lowerName = productName.toLowerCase();
+  let handle = keywordToHandle[lowerName];
+  
+  if (handle) {
+    console.log(`Found handle via keyword mapping: ${handle}`);
+    const product = await fetchShopifyProductByHandle(handle);
+    if (product) {
+      // Check inventory
+      const variant = product.variants?.edges?.[0]?.node;
+      if (variant?.availableForSale) {
+        const formatted = formatProductForResponse(product);
+        if (formatted) return formatted;
+      } else {
+        console.log(`Product ${handle} is out of stock`);
+      }
+    }
+  }
+  
+  // Step 2: Try converting name to handle
+  if (!handle) {
+    handle = titleToHandle(productName);
+    console.log(`Generated handle from title: ${handle}`);
+    const product = await fetchShopifyProductByHandle(handle);
+    if (product) {
+      const variant = product.variants?.edges?.[0]?.node;
+      if (variant?.availableForSale) {
+        const formatted = formatProductForResponse(product);
+        if (formatted) return formatted;
+      } else {
+        console.log(`Product ${handle} is out of stock`);
+      }
+    }
+  }
+  
+  // Step 3: Search by title
+  console.log(`Searching by title: ${productName}`);
+  const product = await searchShopifyProductByTitle(productName);
+  if (product) {
+    const variant = product.variants?.edges?.[0]?.node;
+    if (variant?.availableForSale) {
+      const formatted = formatProductForResponse(product);
+      if (formatted) return formatted;
+    } else {
+      console.log(`Found product but it's out of stock`);
+    }
+  }
+  
+  console.log(`Could not resolve product: ${productName}`);
+  return null;
+}
+
+// Format product for response
+interface ShopifyProductData {
+  id: string;
+  handle: string;
+  title: string;
+  vendor?: string;
+  variants?: {
+    edges?: Array<{
+      node?: {
+        id?: string;
+        price?: {
+          amount?: string;
+          currencyCode?: string;
+        };
+        availableForSale?: boolean;
+      };
+    }>;
+  };
+  images?: {
+    edges?: Array<{
+      node?: {
+        url?: string;
+      };
+    }>;
+  };
+}
+
+function formatProductForResponse(product: ShopifyProductData) {
+  const variant = product.variants?.edges?.[0]?.node;
+  const image = product.images?.edges?.[0]?.node;
+  
+  // Skip products without valid price
+  if (!variant?.price?.amount || isNaN(parseFloat(variant.price.amount))) {
+    console.log(`Skipping product ${product.handle} - invalid or missing price`);
+    return null;
+  }
+  
+  return {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    vendor: product.vendor || '',
+    price: parseFloat(variant.price.amount),
+    currency: variant?.price?.currencyCode || 'JOD',
+    image: image?.url || '',
+    variantId: variant?.id || '',
+    availableForSale: variant?.availableForSale || false,
+  };
 }
