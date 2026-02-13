@@ -93,7 +93,7 @@ export default function AdminAuditLogs() {
       fetchLogs();
       fetchDrivers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchLogs]);
 
   const fetchDrivers = async () => {
     try {

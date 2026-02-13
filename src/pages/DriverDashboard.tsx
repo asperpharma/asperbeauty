@@ -105,7 +105,7 @@ export default function DriverDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, navigate]);
+  }, [user, navigate, fetchOrders]);
 
   const fetchOrders = async () => {
     if (!user) return;
