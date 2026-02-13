@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface HeroProps {
@@ -381,7 +381,7 @@ const useShaderBackground = () => {
     }
   };
 
-  const loop = (now: number) => {
+  const loop = useCallback((now: number) => {
     if (!rendererRef.current || !pointersRef.current) return;
     
     rendererRef.current.updateMouse(pointersRef.current.first);
@@ -390,7 +390,7 @@ const useShaderBackground = () => {
     rendererRef.current.updateMove(pointersRef.current.move);
     rendererRef.current.render(now);
     animationFrameRef.current = requestAnimationFrame(loop);
-  };
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -423,7 +423,7 @@ const useShaderBackground = () => {
         rendererRef.current.reset();
       }
     };
-  }, []);
+  }, [loop]);
 
   return canvasRef;
 };
