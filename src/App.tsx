@@ -30,6 +30,7 @@ import AdminAuditLogs from "./pages/AdminAuditLogs";
 import Analyze from "./pages/Analyze";
 import Recommend from "./pages/Recommend";
 import Regimen from "./pages/Regimen";
+import { ChatWidget } from "./components/BeautyAssistant/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/regimen" element={<Regimen />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <ChatWidget />
           </BrowserRouter>
         </TooltipProvider>
       </CartSyncProvider>
