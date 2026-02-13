@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
-import { Truck, User } from 'lucide-react';
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Truck, User } from "lucide-react";
 
 interface Driver {
   id: string;
@@ -23,9 +23,13 @@ interface DriverAssignmentProps {
   onAssigned?: () => void;
 }
 
-export function DriverAssignment({ orderId, currentDriverId, onAssigned }: DriverAssignmentProps) {
+export function DriverAssignment(
+  { orderId, currentDriverId, onAssigned }: DriverAssignmentProps,
+) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [selectedDriver, setSelectedDriver] = useState<string>(currentDriverId || '');
+  const [selectedDriver, setSelectedDriver] = useState<string>(
+    currentDriverId || "",
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,16 +37,16 @@ export function DriverAssignment({ orderId, currentDriverId, onAssigned }: Drive
   }, []);
 
   useEffect(() => {
-    setSelectedDriver(currentDriverId || '');
+    setSelectedDriver(currentDriverId || "");
   }, [currentDriverId]);
 
   const fetchDrivers = async () => {
     try {
       // Get all users with driver role
       const { data: driverRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'driver');
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "driver");
 
       if (rolesError) throw rolesError;
 
@@ -52,43 +56,43 @@ export function DriverAssignment({ orderId, currentDriverId, onAssigned }: Drive
       }
 
       // Get profiles for these users
-      const driverIds = driverRoles.map(r => r.user_id);
+      const driverIds = driverRoles.map((r) => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .in('id', driverIds);
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", driverIds);
 
       if (profilesError) throw profilesError;
 
       setDrivers(profiles || []);
     } catch (error) {
-      console.error('Error fetching drivers:', error);
+      console.error("Error fetching drivers:", error);
     }
   };
 
   const assignDriver = async () => {
     if (!selectedDriver) {
-      toast.error('Please select a driver');
+      toast.error("Please select a driver");
       return;
     }
 
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('cod_orders')
+        .from("cod_orders")
         .update({
           driver_id: selectedDriver,
           assigned_at: new Date().toISOString(),
         })
-        .eq('id', orderId);
+        .eq("id", orderId);
 
       if (error) throw error;
 
-      toast.success('Driver assigned successfully');
+      toast.success("Driver assigned successfully");
       onAssigned?.();
     } catch (error) {
-      console.error('Error assigning driver:', error);
-      toast.error('Failed to assign driver');
+      console.error("Error assigning driver:", error);
+      toast.error("Failed to assign driver");
     } finally {
       setLoading(false);
     }
@@ -98,21 +102,21 @@ export function DriverAssignment({ orderId, currentDriverId, onAssigned }: Drive
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('cod_orders')
+        .from("cod_orders")
         .update({
           driver_id: null,
           assigned_at: null,
         })
-        .eq('id', orderId);
+        .eq("id", orderId);
 
       if (error) throw error;
 
-      setSelectedDriver('');
-      toast.success('Driver unassigned');
+      setSelectedDriver("");
+      toast.success("Driver unassigned");
       onAssigned?.();
     } catch (error) {
-      console.error('Error unassigning driver:', error);
-      toast.error('Failed to unassign driver');
+      console.error("Error unassigning driver:", error);
+      toast.error("Failed to unassign driver");
     } finally {
       setLoading(false);
     }
@@ -144,11 +148,16 @@ export function DriverAssignment({ orderId, currentDriverId, onAssigned }: Drive
       </Select>
       {selectedDriver !== currentDriverId && (
         <Button size="sm" onClick={assignDriver} disabled={loading}>
-          {loading ? 'Saving...' : 'Assign'}
+          {loading ? "Saving..." : "Assign"}
         </Button>
       )}
       {currentDriverId && (
-        <Button size="sm" variant="outline" onClick={unassignDriver} disabled={loading}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={unassignDriver}
+          disabled={loading}
+        >
           Unassign
         </Button>
       )}

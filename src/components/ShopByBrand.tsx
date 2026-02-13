@@ -24,8 +24,7 @@ export const ShopByBrand = () => {
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = 200;
-      const newScrollLeft =
-        scrollContainerRef.current.scrollLeft +
+      const newScrollLeft = scrollContainerRef.current.scrollLeft +
         (direction === "left" ? -scrollAmount : scrollAmount);
       scrollContainerRef.current.scrollTo({
         left: newScrollLeft,
@@ -95,7 +94,9 @@ export const ShopByBrand = () => {
             to="/brands"
             className="inline-flex items-center gap-2 font-display text-sm text-dark-charcoal hover:text-shiny-gold transition-colors tracking-wider"
           >
-            {language === "ar" ? "عرض جميع العلامات التجارية" : "View All Brands"}
+            {language === "ar"
+              ? "عرض جميع العلامات التجارية"
+              : "View All Brands"}
             <ChevronRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
           </Link>
         </div>

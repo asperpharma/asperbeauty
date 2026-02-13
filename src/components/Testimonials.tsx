@@ -1,4 +1,4 @@
-import { Star, Quote } from "lucide-react";
+import { Quote, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnimatedSection } from "./AnimatedSection";
 import { LazyImage } from "./LazyImage";
@@ -10,10 +10,13 @@ const testimonials = [
     nameAr: "رانيا المجالي",
     location: "Amman, Jordan",
     locationAr: "عمّان، الأردن",
-    avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
     rating: 5,
-    review: "Absolutely love the Vichy products I ordered. The packaging was luxurious and arrived quickly. Asper has become my go-to for all skincare needs!",
-    reviewAr: "منتجات رائعة وأصلية ١٠٠٪. طلبت من آسبر أكثر من مرة والتوصيل سريع جداً على عمّان. أنصح الكل فيهم!",
+    review:
+      "Absolutely love the Vichy products I ordered. The packaging was luxurious and arrived quickly. Asper has become my go-to for all skincare needs!",
+    reviewAr:
+      "منتجات رائعة وأصلية ١٠٠٪. طلبت من آسبر أكثر من مرة والتوصيل سريع جداً على عمّان. أنصح الكل فيهم!",
   },
   {
     id: 2,
@@ -21,10 +24,13 @@ const testimonials = [
     nameAr: "دانا الزعبي",
     location: "Irbid, Jordan",
     locationAr: "إربد، الأردن",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
     rating: 5,
-    review: "The customer service is exceptional. They helped me find the perfect anti-aging routine. My skin has never looked better!",
-    reviewAr: "خدمة العملاء ممتازة والردود سريعة. ساعدوني أختار المنتجات المناسبة لبشرتي. شكراً آسبر!",
+    review:
+      "The customer service is exceptional. They helped me find the perfect anti-aging routine. My skin has never looked better!",
+    reviewAr:
+      "خدمة العملاء ممتازة والردود سريعة. ساعدوني أختار المنتجات المناسبة لبشرتي. شكراً آسبر!",
   },
   {
     id: 3,
@@ -32,10 +38,13 @@ const testimonials = [
     nameAr: "لينا حداد",
     location: "Aqaba, Jordan",
     locationAr: "العقبة، الأردن",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
     rating: 5,
-    review: "Finally, a beauty store that understands luxury. The selection of fragrances is unmatched. Every purchase feels like a special occasion.",
-    reviewAr: "أخيراً لقيت متجر يوفر منتجات العناية الأصلية بالأردن. الأسعار منافسة والجودة عالية. ما رح أشتري من غيرهم!",
+    review:
+      "Finally, a beauty store that understands luxury. The selection of fragrances is unmatched. Every purchase feels like a special occasion.",
+    reviewAr:
+      "أخيراً لقيت متجر يوفر منتجات العناية الأصلية بالأردن. الأسعار منافسة والجودة عالية. ما رح أشتري من غيرهم!",
   },
 ];
 
@@ -44,7 +53,11 @@ const StarRating = ({ rating }: { rating: number }) => (
     {Array.from({ length: 5 }).map((_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 transition-all duration-300 ${i < rating ? 'fill-gold text-gold drop-shadow-[0_0_4px_rgba(212,175,55,0.5)]' : 'text-gold/30'}`}
+        className={`w-4 h-4 transition-all duration-300 ${
+          i < rating
+            ? "fill-gold text-gold drop-shadow-[0_0_4px_rgba(212,175,55,0.5)]"
+            : "text-gold/30"
+        }`}
       />
     ))}
   </div>
@@ -58,19 +71,23 @@ export const Testimonials = () => {
     <section className="py-20 lg:py-28 bg-burgundy overflow-hidden relative">
       {/* Decorative Gold Accent Line - Top */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent opacity-60" />
-      
+
       <div className="luxury-container">
         {/* Section Header */}
-        <AnimatedSection className="text-center mb-16" animation="slide-up" duration={800}>
+        <AnimatedSection
+          className="text-center mb-16"
+          animation="slide-up"
+          duration={800}
+        >
           {/* Icon Badge */}
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold/30 via-gold/20 to-transparent border-2 border-gold/40 mb-6 shadow-[0_4px_20px_rgba(212,175,55,0.25)]">
             <Quote className="w-6 h-6 text-gold" />
           </div>
           <span className="font-script text-2xl lg:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold block mb-2">
-            {isArabic ? 'ماذا يقول عملاؤنا' : 'What Our Clients Say'}
+            {isArabic ? "ماذا يقول عملاؤنا" : "What Our Clients Say"}
           </span>
           <h2 className="font-display text-3xl lg:text-4xl text-cream mb-4">
-            {isArabic ? 'شهادات العملاء' : 'Testimonials'}
+            {isArabic ? "شهادات العملاء" : "Testimonials"}
           </h2>
           {/* Luxury Divider */}
           <div className="flex items-center justify-center gap-3">
@@ -83,11 +100,16 @@ export const Testimonials = () => {
         {/* Testimonial Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <AnimatedSection key={testimonial.id} animation="zoom" delay={index * 200} duration={800}>
+            <AnimatedSection
+              key={testimonial.id}
+              animation="zoom"
+              delay={index * 200}
+              duration={800}
+            >
               <div className="relative bg-gradient-to-br from-cream/10 via-cream/5 to-transparent backdrop-blur-sm border-2 border-gold/30 rounded-xl p-8 transition-all duration-500 hover:border-gold/60 hover:shadow-[0_8px_40px_rgba(212,175,55,0.2)] group h-full overflow-hidden">
                 {/* Shine effect on hover */}
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-gold/10 to-transparent" />
-                
+
                 {/* Quote Icon with gold glow */}
                 <div className="relative mb-6">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-shadow duration-500">
@@ -139,17 +161,22 @@ export const Testimonials = () => {
         </div>
 
         {/* Bottom Accent */}
-        <AnimatedSection animation="blur" delay={700} duration={1000} className="flex flex-col items-center mt-16">
+        <AnimatedSection
+          animation="blur"
+          delay={700}
+          duration={1000}
+          className="flex flex-col items-center mt-16"
+        >
           <div className="flex items-center gap-3">
             <div className="w-16 h-px bg-gradient-to-r from-transparent to-gold/60" />
             <span className="font-script text-2xl text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold drop-shadow-[0_2px_10px_rgba(212,175,55,0.3)]">
-              {isArabic ? 'الأناقة في كل تفصيل' : 'Elegance in every detail'}
+              {isArabic ? "الأناقة في كل تفصيل" : "Elegance in every detail"}
             </span>
             <div className="w-16 h-px bg-gradient-to-l from-transparent to-gold/60" />
           </div>
         </AnimatedSection>
       </div>
-      
+
       {/* Decorative Gold Accent Line - Bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
     </section>

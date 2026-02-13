@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
   schedule:
     # Run tests every hour
-    - cron: '0 * * * *'
+    - cron: "0 * * * *"
 
 jobs:
   synthetics:
@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

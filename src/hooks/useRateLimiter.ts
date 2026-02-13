@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface RateLimitState {
   attempts: number;
@@ -26,10 +26,12 @@ const DEFAULT_CONFIG: RateLimiterConfig = {
   maxAttempts: 5,
   windowMs: 15 * 60 * 1000, // 15 minutes
   lockoutMs: 30 * 60 * 1000, // 30 minutes lockout after max attempts
-  storageKey: 'auth_rate_limit',
+  storageKey: "auth_rate_limit",
 };
 
-export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLimiterReturn {
+export function useRateLimiter(
+  config: Partial<RateLimiterConfig> = {},
+): RateLimiterReturn {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
   const [state, setState] = useState<RateLimitState>(() => {
     try {
@@ -64,7 +66,7 @@ export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLim
   useEffect(() => {
     const now = Date.now();
     const isLocked = state.lockedUntil && state.lockedUntil > now;
-    
+
     if (isLocked) {
       intervalRef.current = window.setInterval(() => {
         const currentNow = Date.now();
@@ -72,9 +74,9 @@ export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLim
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
           }
-          setState(prev => ({ ...prev, lockedUntil: null, attempts: 0 }));
+          setState((prev) => ({ ...prev, lockedUntil: null, attempts: 0 }));
         } else {
-          setForceUpdate(n => n + 1);
+          setForceUpdate((n) => n + 1);
         }
       }, 1000);
     }
@@ -90,37 +92,37 @@ export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLim
   useEffect(() => {
     const now = Date.now();
     if (state.lastAttempt && now - state.lastAttempt > finalConfig.windowMs) {
-      setState(prev => ({ ...prev, attempts: 0, lastAttempt: 0 }));
+      setState((prev) => ({ ...prev, attempts: 0, lastAttempt: 0 }));
     }
   }, [state.lastAttempt, finalConfig.windowMs]);
 
   const canAttempt = useCallback(() => {
     const now = Date.now();
-    
+
     // Check if locked out
     if (state.lockedUntil && state.lockedUntil > now) {
       return false;
     }
-    
+
     // Check if attempts are within window
     if (state.lastAttempt && now - state.lastAttempt > finalConfig.windowMs) {
       return true; // Window expired, can attempt
     }
-    
+
     return state.attempts < finalConfig.maxAttempts;
   }, [state, finalConfig.maxAttempts, finalConfig.windowMs]);
 
   const remainingAttempts = useCallback(() => {
     const now = Date.now();
-    
+
     if (state.lockedUntil && state.lockedUntil > now) {
       return 0;
     }
-    
+
     if (state.lastAttempt && now - state.lastAttempt > finalConfig.windowMs) {
       return finalConfig.maxAttempts;
     }
-    
+
     return Math.max(0, finalConfig.maxAttempts - state.attempts);
   }, [state, finalConfig.maxAttempts, finalConfig.windowMs]);
 
@@ -134,13 +136,14 @@ export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLim
 
   const recordAttempt = useCallback(() => {
     const now = Date.now();
-    
-    setState(prev => {
+
+    setState((prev) => {
       // Check if window expired
-      const windowExpired = prev.lastAttempt && now - prev.lastAttempt > finalConfig.windowMs;
+      const windowExpired = prev.lastAttempt &&
+        now - prev.lastAttempt > finalConfig.windowMs;
       const currentAttempts = windowExpired ? 0 : prev.attempts;
       const newAttempts = currentAttempts + 1;
-      
+
       // Lock out if max attempts exceeded
       if (newAttempts >= finalConfig.maxAttempts) {
         return {
@@ -149,7 +152,7 @@ export function useRateLimiter(config: Partial<RateLimiterConfig> = {}): RateLim
           lastAttempt: now,
         };
       }
-      
+
       return {
         attempts: newAttempts,
         lockedUntil: null,
@@ -192,7 +195,7 @@ export function useLoginRateLimiter() {
     maxAttempts: 5,
     windowMs: 15 * 60 * 1000, // 15 minutes
     lockoutMs: 30 * 60 * 1000, // 30 minutes
-    storageKey: 'login_rate_limit',
+    storageKey: "login_rate_limit",
   });
 }
 
@@ -201,7 +204,7 @@ export function useSignupRateLimiter() {
     maxAttempts: 3,
     windowMs: 60 * 60 * 1000, // 1 hour
     lockoutMs: 60 * 60 * 1000, // 1 hour
-    storageKey: 'signup_rate_limit',
+    storageKey: "signup_rate_limit",
   });
 }
 
@@ -210,7 +213,7 @@ export function usePasswordResetRateLimiter() {
     maxAttempts: 3,
     windowMs: 15 * 60 * 1000, // 15 minutes
     lockoutMs: 60 * 60 * 1000, // 1 hour
-    storageKey: 'password_reset_rate_limit',
+    storageKey: "password_reset_rate_limit",
   });
 }
 
@@ -219,6 +222,6 @@ export function useMFARateLimiter() {
     maxAttempts: 5,
     windowMs: 5 * 60 * 1000, // 5 minutes
     lockoutMs: 15 * 60 * 1000, // 15 minutes
-    storageKey: 'mfa_rate_limit',
+    storageKey: "mfa_rate_limit",
   });
 }
