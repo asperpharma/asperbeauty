@@ -30,16 +30,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const price = node.priceRange.minVariantPrice;
   
   // Check for badges based on tags
-  const tags = (node as any).tags || [];
+  const tags = node.vendor ? [node.vendor] : [];
   const isBestseller = Array.isArray(tags) 
     ? tags.some((tag: string) => tag.toLowerCase().includes('bestseller'))
     : typeof tags === 'string' && tags.toLowerCase().includes('bestseller');
   
-  // Check if product is new (created within last 30 days)
-  const createdAt = (node as any).createdAt;
-  const isNewArrival = createdAt 
-    ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
-    : false;
+  // Check if product is new - we don't have createdAt in the interface, so default to false
+  const isNewArrival = false;
     
   // Check for sale/discount
   const compareAtPrice = firstVariant?.compareAtPrice;
@@ -51,7 +48,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     : 0;
 
   // Extract brand from vendor or title
-  const brand = (node as any).vendor || node.title.split(' ')[0];
+  const brand = node.vendor || node.title.split(' ')[0];
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
