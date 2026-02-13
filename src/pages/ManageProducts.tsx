@@ -48,6 +48,11 @@ interface Product {
   updated_at: string;
 }
 
+interface EnrichResult {
+  status: string;
+  [key: string]: unknown;
+}
+
 const categories = ["Best Seller", "New Arrival", "Trending", "Featured"];
 
 const ManageProducts = () => {
@@ -287,11 +292,6 @@ const ManageProducts = () => {
       
       if (error) throw error;
       
-      interface EnrichResult {
-        status: string;
-        [key: string]: unknown;
-      }
-      
       setEnrichResults(data.results || []);
       
       const successCount = data.results?.filter((r: EnrichResult) => r.status === 'success').length || 0;
@@ -327,11 +327,6 @@ const ManageProducts = () => {
       });
       
       if (error) throw error;
-      
-      interface EnrichResult {
-        status: string;
-        [key: string]: unknown;
-      }
       
       setEnrichResults(data.results || []);
       

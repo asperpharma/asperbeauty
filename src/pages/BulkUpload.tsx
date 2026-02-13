@@ -31,6 +31,13 @@ interface ProcessedProduct {
   error?: string;
 }
 
+// Helper function to map queue status to product status
+function mapQueueStatusToProductStatus(queueStatus: QueueItem['status']): ProcessedProduct['status'] {
+  if (queueStatus === "queued") return "pending";
+  if (queueStatus === "retrying") return "processing";
+  return queueStatus; // "processing", "completed", "failed" map directly
+}
+
 interface UploadSummary {
   total: number;
   categories: Record<string, number>;
@@ -100,19 +107,9 @@ export default function BulkUpload() {
         prev.map(p => {
           const queueItem = queueItems.find(q => q.sku === p.sku);
           if (queueItem) {
-            // Map queue status to product status
-            let status: ProcessedProduct['status'];
-            if (queueItem.status === "queued") {
-              status = "pending";
-            } else if (queueItem.status === "retrying") {
-              status = "processing";
-            } else {
-              status = queueItem.status;
-            }
-            
             return {
               ...p,
-              status,
+              status: mapQueueStatusToProductStatus(queueItem.status),
               imageUrl: queueItem.imageUrl,
               error: queueItem.error,
             };
