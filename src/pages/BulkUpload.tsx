@@ -31,6 +31,13 @@ interface ProcessedProduct {
   error?: string;
 }
 
+// Helper function to map queue status to product status
+function mapQueueStatusToProductStatus(queueStatus: QueueItem['status']): ProcessedProduct['status'] {
+  if (queueStatus === "queued") return "pending";
+  if (queueStatus === "retrying") return "processing";
+  return queueStatus; // "processing", "completed", "failed" map directly
+}
+
 interface UploadSummary {
   total: number;
   categories: Record<string, number>;
@@ -102,9 +109,7 @@ export default function BulkUpload() {
           if (queueItem) {
             return {
               ...p,
-              status: queueItem.status === "queued" ? "pending" : 
-                     queueItem.status === "retrying" ? "processing" :
-                     queueItem.status as any,
+              status: mapQueueStatusToProductStatus(queueItem.status),
               imageUrl: queueItem.imageUrl,
               error: queueItem.error,
             };
@@ -208,10 +213,11 @@ export default function BulkUpload() {
       setPreviewData(parsedProducts.slice(0, 10));
       toast.success(`Successfully loaded ${parsedProducts.length} products from ${file.name}`);
       setStep("categorize");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Parse error:", error);
-      setParseError(error.message || "Failed to parse file");
-      toast.error(`Failed to parse file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : "Failed to parse file";
+      setParseError(errorMessage);
+      toast.error(`Failed to parse file: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -296,10 +302,11 @@ export default function BulkUpload() {
       setPreviewData(parsedProducts.slice(0, 10));
       toast.success(`Successfully loaded ${parsedProducts.length} products`);
       setStep("categorize");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Load error:", error);
-      setParseError(error.message || "Failed to load file");
-      toast.error(`Failed to load file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load file";
+      setParseError(errorMessage);
+      toast.error(`Failed to load file: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -334,11 +341,12 @@ export default function BulkUpload() {
       setSummary(data.summary);
       toast.success(`Categorized ${data.products.length} products into ${Object.keys(data.summary.categories).length} categories`);
       setStep("images");
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage?.includes("401") || errorMessage?.includes("Unauthorized")) {
         toast.error("Authentication required. Please log in.");
-      } else if (error.message?.includes("403") || error.message?.includes("Forbidden")) {
+      } else if (errorMessage?.includes("403") || errorMessage?.includes("Forbidden")) {
         toast.error("Admin access required for bulk operations.");
       } else {
         toast.error("Failed to categorize products");
@@ -467,11 +475,12 @@ export default function BulkUpload() {
           // Add small delay between requests to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 300));
           
-        } catch (error: any) {
+        } catch (error) {
           console.error(`Failed to create ${product.name}:`, error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
           
           // Check for auth errors and stop if unauthorized
-          if (error.message?.includes("401") || error.message?.includes("403") || error.message?.includes("Unauthorized") || error.message?.includes("Forbidden")) {
+          if (errorMessage?.includes("401") || errorMessage?.includes("403") || errorMessage?.includes("Unauthorized") || errorMessage?.includes("Forbidden")) {
             toast.error("Authorization failed. Please log in as an admin.");
             setIsShopifyUploading(false);
             return;

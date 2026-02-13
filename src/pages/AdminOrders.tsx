@@ -218,7 +218,7 @@ export default function AdminOrders() {
         supabase.removeChannel(channel);
       };
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchOrders]);
 
   // Filter orders by status, search, and date
   const filteredOrders = orders.filter(order => {
