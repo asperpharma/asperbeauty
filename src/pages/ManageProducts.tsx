@@ -50,6 +50,13 @@ interface Product {
 
 const categories = ["Best Seller", "New Arrival", "Trending", "Featured"];
 
+interface EnrichResult {
+  id: string;
+  title: string;
+  status: 'success' | 'fetch_failed' | 'failed';
+  image_url?: string;
+}
+
 const ManageProducts = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -64,7 +71,7 @@ const ManageProducts = () => {
   const [isEnriching, setIsEnriching] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [removingBgId, setRemovingBgId] = useState<string | null>(null);
-  const [enrichResults, setEnrichResults] = useState<{ id: string; title: string; status: string; image_url?: string }[] | null>(null);
+  const [enrichResults, setEnrichResults] = useState<EnrichResult[] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -125,8 +132,9 @@ const ManageProducts = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load products';
+        console.error('Error fetching products:', errorMessage);
         toast.error('Failed to load products');
       } finally {
         setIsLoading(false);
@@ -196,8 +204,9 @@ const ManageProducts = () => {
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       toast.success('Image uploaded successfully');
-    } catch (error: any) {
-      console.error('Upload error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
+      console.error('Upload error:', errorMessage);
       toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
@@ -250,9 +259,10 @@ const ManageProducts = () => {
 
       setIsDialogOpen(false);
       resetForm();
-    } catch (error: any) {
-      console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to save product');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save product';
+      console.error('Submit error:', errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -271,8 +281,9 @@ const ManageProducts = () => {
       
       setProducts(prev => prev.filter(p => p.id !== id));
       toast.success('Product deleted successfully');
-    } catch (error: any) {
-      console.error('Delete error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete product';
+      console.error('Delete error:', errorMessage);
       toast.error('Failed to delete product');
     }
   };
@@ -288,7 +299,7 @@ const ManageProducts = () => {
       
       setEnrichResults(data.results || []);
       
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      const successCount = data.results?.filter((r: EnrichResult) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Enriched ${successCount} products with images`);
@@ -301,8 +312,9 @@ const ManageProducts = () => {
       } else {
         toast.info('No new images found. Try adding source URLs to products.');
       }
-    } catch (error: any) {
-      console.error('Enrichment error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to enrich products';
+      console.error('Enrichment error:', errorMessage);
       toast.error('Failed to enrich products');
     } finally {
       setIsEnriching(false);
@@ -324,7 +336,7 @@ const ManageProducts = () => {
       
       setEnrichResults(data.results || []);
       
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      const successCount = data.results?.filter((r: EnrichResult) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Generated ${successCount} AI product images`);
@@ -339,8 +351,9 @@ const ManageProducts = () => {
       } else {
         toast.warning('AI image generation had issues. Check console for details.');
       }
-    } catch (error: any) {
-      console.error('AI Generation error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate AI images';
+      console.error('AI Generation error:', errorMessage);
       toast.error('Failed to generate AI images');
     } finally {
       setIsGeneratingAI(false);
@@ -377,11 +390,12 @@ const ManageProducts = () => {
       } else {
         throw new Error(data.error || 'Background removal failed');
       }
-    } catch (error: any) {
-      console.error('Background removal error:', error);
-      if (error.message?.includes('Rate limit')) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Background removal error:', errorMessage);
+      if (errorMessage.includes('Rate limit')) {
         toast.error('Rate limit exceeded. Please wait and try again.');
-      } else if (error.message?.includes('credits')) {
+      } else if (errorMessage.includes('credits')) {
         toast.error('AI credits exhausted. Please add credits.');
       } else {
         toast.error('Failed to remove background');

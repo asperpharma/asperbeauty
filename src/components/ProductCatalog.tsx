@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { ProductQuickView } from "./ProductQuickView";
 import { useCartStore } from "@/stores/cartStore";
+import { ShopifyProduct } from "@/lib/shopify";
 
 // Product type from Supabase with new columns
 interface Product {
@@ -50,7 +51,7 @@ const ProductCard = ({
     e.stopPropagation();
     
     // Create a mock product for cart compatibility
-    const cartProduct = {
+    const cartProduct: ShopifyProduct = {
       node: {
         id: product.id,
         title: product.title,
@@ -76,15 +77,17 @@ const ProductCard = ({
               id: product.id,
               title: 'Default',
               price: { amount: product.price.toString(), currencyCode: 'JOD' },
+              availableForSale: true,
               selectedOptions: []
             }
           }]
-        }
+        },
+        options: []
       }
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
@@ -246,9 +249,10 @@ export const ProductCatalog = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
-        setError(err.message);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        console.error('Error fetching products:', errorMessage);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }

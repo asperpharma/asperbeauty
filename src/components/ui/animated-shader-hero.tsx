@@ -3,6 +3,15 @@
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
+interface ShaderProgram extends WebGLProgram {
+  resolution: WebGLUniformLocation | null;
+  time: WebGLUniformLocation | null;
+  move: WebGLUniformLocation | null;
+  touch: WebGLUniformLocation | null;
+  pointerCount: WebGLUniformLocation | null;
+  pointers: WebGLUniformLocation | null;
+}
+
 interface HeroProps {
   trustBadge?: {
     text: string;
@@ -132,7 +141,7 @@ void main(void) {
 class WebGLRenderer {
   private canvas: HTMLCanvasElement;
   private gl: WebGL2RenderingContext;
-  private program: WebGLProgram | null = null;
+  private program: ShaderProgram | null = null;
   private vs: WebGLShader | null = null;
   private fs: WebGLShader | null = null;
   private buffer: WebGLBuffer | null = null;
@@ -232,14 +241,17 @@ void main(){gl_Position=position;}`;
     this.fs = gl.createShader(gl.FRAGMENT_SHADER)!;
     this.compile(this.vs, this.vertexSrc);
     this.compile(this.fs, this.shaderSource);
-    this.program = gl.createProgram()!;
-    gl.attachShader(this.program, this.vs);
-    gl.attachShader(this.program, this.fs);
-    gl.linkProgram(this.program);
+    const createdProgram = gl.createProgram()!;
+    gl.attachShader(createdProgram, this.vs);
+    gl.attachShader(createdProgram, this.fs);
+    gl.linkProgram(createdProgram);
 
-    if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-      console.error(gl.getProgramInfoLog(this.program));
+    if (!gl.getProgramParameter(createdProgram, gl.LINK_STATUS)) {
+      console.error(gl.getProgramInfoLog(createdProgram));
     }
+    
+    // Cast to ShaderProgram so we can add uniform locations as properties
+    this.program = createdProgram as ShaderProgram;
   }
 
   init() {
@@ -254,12 +266,12 @@ void main(){gl_Position=position;}`;
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-    (program as any).resolution = gl.getUniformLocation(program, 'resolution');
-    (program as any).time = gl.getUniformLocation(program, 'time');
-    (program as any).move = gl.getUniformLocation(program, 'move');
-    (program as any).touch = gl.getUniformLocation(program, 'touch');
-    (program as any).pointerCount = gl.getUniformLocation(program, 'pointerCount');
-    (program as any).pointers = gl.getUniformLocation(program, 'pointers');
+    program.resolution = gl.getUniformLocation(program, 'resolution');
+    program.time = gl.getUniformLocation(program, 'time');
+    program.move = gl.getUniformLocation(program, 'move');
+    program.touch = gl.getUniformLocation(program, 'touch');
+    program.pointerCount = gl.getUniformLocation(program, 'pointerCount');
+    program.pointers = gl.getUniformLocation(program, 'pointers');
   }
 
   render(now = 0) {
@@ -273,12 +285,12 @@ void main(){gl_Position=position;}`;
     gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     
-    gl.uniform2f((program as any).resolution, this.canvas.width, this.canvas.height);
-    gl.uniform1f((program as any).time, now * 1e-3);
-    gl.uniform2f((program as any).move, ...this.mouseMove as [number, number]);
-    gl.uniform2f((program as any).touch, ...this.mouseCoords as [number, number]);
-    gl.uniform1i((program as any).pointerCount, this.nbrOfPointers);
-    gl.uniform2fv((program as any).pointers, this.pointerCoords);
+    gl.uniform2f(program.resolution, this.canvas.width, this.canvas.height);
+    gl.uniform1f(program.time, now * 1e-3);
+    gl.uniform2f(program.move, ...this.mouseMove as [number, number]);
+    gl.uniform2f(program.touch, ...this.mouseCoords as [number, number]);
+    gl.uniform1i(program.pointerCount, this.nbrOfPointers);
+    gl.uniform2fv(program.pointers, this.pointerCoords);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
@@ -414,6 +426,7 @@ const useShaderBackground = () => {
         rendererRef.current.reset();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return canvasRef;
