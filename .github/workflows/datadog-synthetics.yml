@@ -13,6 +13,8 @@ jobs:
   synthetics:
     runs-on: ubuntu-latest
     name: Run Datadog Synthetic Tests
+    # Disabled until Datadog Synthetics is properly configured with API keys
+    if: false
     permissions:
       contents: read
       actions: read
