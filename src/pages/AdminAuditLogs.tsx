@@ -88,13 +88,6 @@ export default function AdminAuditLogs() {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchLogs();
-      fetchDrivers();
-    }
-  }, [isAdmin, fetchLogs, fetchDrivers]);
-
   const fetchDrivers = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -187,6 +180,13 @@ export default function AdminAuditLogs() {
       order_number: log.order_id ? orderMap.get(log.order_id) || 'N/A' : 'N/A',
     }));
   };
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchLogs();
+      fetchDrivers();
+    }
+  }, [isAdmin, fetchLogs, fetchDrivers]);
 
   const handleSearch = () => {
     fetchLogs();

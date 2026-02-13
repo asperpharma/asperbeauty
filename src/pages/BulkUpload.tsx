@@ -100,13 +100,9 @@ export default function BulkUpload() {
         prev.map(p => {
           const queueItem = queueItems.find(q => q.sku === p.sku);
           if (queueItem) {
-            const mappedStatus: ProcessedProduct['status'] = 
-              queueItem.status === "queued" ? "pending" : 
-              queueItem.status === "retrying" ? "processing" :
-              queueItem.status as ProcessedProduct['status'];
             return {
               ...p,
-              status: mappedStatus,
+              status: queueItem.status,
               imageUrl: queueItem.imageUrl,
               error: queueItem.error,
             };
