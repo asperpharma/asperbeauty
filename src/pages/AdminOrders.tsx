@@ -141,7 +141,7 @@ export default function AdminOrders() {
   }, [user, authLoading]);
 
   // Fetch orders
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!isAdmin) return;
     
     setIsLoading(true);
@@ -166,7 +166,7 @@ export default function AdminOrders() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -218,7 +218,7 @@ export default function AdminOrders() {
         supabase.removeChannel(channel);
       };
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchOrders]);
 
   // Filter orders by status, search, and date
   const filteredOrders = orders.filter(order => {

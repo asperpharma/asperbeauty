@@ -42,7 +42,7 @@ serve(async (req) => {
     const userId = claimsData.claims.sub;
     console.log("Authenticated user:", userId);
 
-    const { messages } = await req.json();
+    const { messages }: { messages: ChatMessage[] } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -50,11 +50,11 @@ serve(async (req) => {
     }
 
     // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
+    const lastUserMessage = messages.filter((m: ChatMessage) => m.role === "user").pop()?.content || "";
     
     // Search for relevant products based on user query
     let productContext = "";
-    let matchedProducts: any[] = [];
+    let matchedProducts: ProductMetadata[] = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -96,7 +96,7 @@ serve(async (req) => {
             matchedProducts = relevantDocs.map(doc => doc.metadata);
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
+              const m = doc.metadata as ProductMetadata;
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }
