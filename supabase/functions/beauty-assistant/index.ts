@@ -49,12 +49,28 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface ProductMetadata {
+  title: string;
+  category?: string;
+  brand?: string;
+  price?: string;
+  description?: string;
+  is_on_sale?: boolean;
+  discount_percent?: string;
+  [key: string]: unknown;
+}
+
     // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
+    const lastUserMessage = messages.filter((m: ChatMessage) => m.role === "user").pop()?.content || "";
     
     // Search for relevant products based on user query
     let productContext = "";
-    let matchedProducts: any[] = [];
+    let matchedProducts: ProductMetadata[] = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -93,10 +109,10 @@ serve(async (req) => {
 
           if (relevantDocs.length > 0) {
             // Convert document metadata to product format for cards
-            matchedProducts = relevantDocs.map(doc => doc.metadata);
+            matchedProducts = relevantDocs.map(doc => doc.metadata as ProductMetadata);
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
+              const m = doc.metadata as ProductMetadata;
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -93,7 +93,7 @@ export default function AdminAuditLogs() {
       fetchLogs();
       fetchDrivers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchLogs]);
 
   const fetchDrivers = async () => {
     try {
@@ -120,7 +120,7 @@ export default function AdminAuditLogs() {
     }
   };
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
       // Direct query with type assertion to avoid deep instantiation
@@ -159,7 +159,7 @@ export default function AdminAuditLogs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate, actionTypeFilter, driverFilter]);
 
   const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
     const driverIds = [...new Set(logs.map(l => l.driver_id))];
