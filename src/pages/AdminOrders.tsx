@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -30,30 +30,36 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Package, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  Truck, 
-  Phone, 
-  MapPin, 
-  Mail,
-  RefreshCw,
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Download,
   Eye,
   FileText,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
   Printer,
-  Download,
+  RefreshCw,
   Search,
   TrendingUp,
-  DollarSign,
-  Calendar,
-  AlertCircle
+  Truck,
+  XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { format, subDays, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import {
+  endOfDay,
+  format,
+  isWithinInterval,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import { DriverAssignment } from "@/components/DriverAssignment";
 
 interface OrderItem {
@@ -91,11 +97,31 @@ interface CODOrder {
 }
 
 const ORDER_STATUSES = [
-  { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
-  { value: "confirmed", label: "Confirmed", color: "bg-blue-100 text-blue-800" },
-  { value: "preparing", label: "Preparing", color: "bg-purple-100 text-purple-800" },
-  { value: "shipped", label: "Shipped", color: "bg-indigo-100 text-indigo-800" },
-  { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800" },
+  {
+    value: "pending",
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  {
+    value: "confirmed",
+    label: "Confirmed",
+    color: "bg-blue-100 text-blue-800",
+  },
+  {
+    value: "preparing",
+    label: "Preparing",
+    color: "bg-purple-100 text-purple-800",
+  },
+  {
+    value: "shipped",
+    label: "Shipped",
+    color: "bg-indigo-100 text-indigo-800",
+  },
+  {
+    value: "delivered",
+    label: "Delivered",
+    color: "bg-green-100 text-green-800",
+  },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
 
@@ -121,14 +147,14 @@ export default function AdminOrders() {
       }
 
       const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking admin status:', error);
+        console.error("Error checking admin status:", error);
         setIsAdmin(false);
       } else {
         setIsAdmin(!!data);
@@ -143,26 +169,28 @@ export default function AdminOrders() {
   // Fetch orders
   const fetchOrders = async () => {
     if (!isAdmin) return;
-    
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('cod_orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("cod_orders")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
+
       // Parse the items JSON for each order
-      const parsedOrders = (data || []).map(order => ({
+      const parsedOrders = (data || []).map((order) => ({
         ...order,
-        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+        items: typeof order.items === "string"
+          ? JSON.parse(order.items)
+          : order.items,
       })) as CODOrder[];
-      
+
       setOrders(parsedOrders);
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Failed to load orders');
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders");
     } finally {
       setIsLoading(false);
     }
@@ -171,46 +199,46 @@ export default function AdminOrders() {
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
-      
+
       // Subscribe to realtime updates
       const channel = supabase
-        .channel('cod_orders_changes')
+        .channel("cod_orders_changes")
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'cod_orders'
+            event: "*",
+            schema: "public",
+            table: "cod_orders",
           },
           (payload) => {
-            console.log('Order change received:', payload);
-            if (payload.eventType === 'INSERT') {
+            console.log("Order change received:", payload);
+            if (payload.eventType === "INSERT") {
               const newOrder = {
                 ...payload.new,
-                items: typeof payload.new.items === 'string' 
-                  ? JSON.parse(payload.new.items) 
+                items: typeof payload.new.items === "string"
+                  ? JSON.parse(payload.new.items)
                   : payload.new.items,
               } as CODOrder;
-              setOrders(prev => [newOrder, ...prev]);
+              setOrders((prev) => [newOrder, ...prev]);
               toast.info(`New order received: ${newOrder.order_number}`);
-            } else if (payload.eventType === 'UPDATE') {
+            } else if (payload.eventType === "UPDATE") {
               const updatedOrder = {
                 ...payload.new,
-                items: typeof payload.new.items === 'string' 
-                  ? JSON.parse(payload.new.items) 
+                items: typeof payload.new.items === "string"
+                  ? JSON.parse(payload.new.items)
                   : payload.new.items,
               } as CODOrder;
-              setOrders(prev => 
-                prev.map(order => 
+              setOrders((prev) =>
+                prev.map((order) =>
                   order.id === updatedOrder.id ? updatedOrder : order
                 )
               );
-            } else if (payload.eventType === 'DELETE') {
-              setOrders(prev => 
-                prev.filter(order => order.id !== payload.old.id)
+            } else if (payload.eventType === "DELETE") {
+              setOrders((prev) =>
+                prev.filter((order) => order.id !== payload.old.id)
               );
             }
-          }
+          },
         )
         .subscribe();
 
@@ -221,100 +249,106 @@ export default function AdminOrders() {
   }, [isAdmin]);
 
   // Filter orders by status, search, and date
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     // Status filter
     if (statusFilter !== "all" && order.status !== statusFilter) {
       return false;
     }
-    
+
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesSearch = 
-        order.order_number.toLowerCase().includes(query) ||
+      const matchesSearch = order.order_number.toLowerCase().includes(query) ||
         order.customer_name.toLowerCase().includes(query) ||
         order.customer_phone.includes(query) ||
-        (order.customer_email && order.customer_email.toLowerCase().includes(query)) ||
+        (order.customer_email &&
+          order.customer_email.toLowerCase().includes(query)) ||
         order.city.toLowerCase().includes(query);
       if (!matchesSearch) return false;
     }
-    
+
     // Date filter
     if (dateFilter !== "all") {
       const orderDate = new Date(order.created_at);
       const now = new Date();
-      
+
       switch (dateFilter) {
         case "today":
-          if (!isWithinInterval(orderDate, { 
-            start: startOfDay(now), 
-            end: endOfDay(now) 
-          })) return false;
+          if (
+            !isWithinInterval(orderDate, {
+              start: startOfDay(now),
+              end: endOfDay(now),
+            })
+          ) return false;
           break;
         case "week":
-          if (!isWithinInterval(orderDate, { 
-            start: startOfDay(subDays(now, 7)), 
-            end: endOfDay(now) 
-          })) return false;
+          if (
+            !isWithinInterval(orderDate, {
+              start: startOfDay(subDays(now, 7)),
+              end: endOfDay(now),
+            })
+          ) return false;
           break;
         case "month":
-          if (!isWithinInterval(orderDate, { 
-            start: startOfDay(subDays(now, 30)), 
-            end: endOfDay(now) 
-          })) return false;
+          if (
+            !isWithinInterval(orderDate, {
+              start: startOfDay(subDays(now, 30)),
+              end: endOfDay(now),
+            })
+          ) return false;
           break;
       }
     }
-    
+
     return true;
   });
 
   // Export orders to CSV
   const exportToCSV = useCallback(() => {
     const headers = [
-      'Order Number',
-      'Date',
-      'Customer Name',
-      'Phone',
-      'Email',
-      'City',
-      'Address',
-      'Items',
-      'Subtotal',
-      'Shipping',
-      'Total',
-      'Status',
-      'Notes'
+      "Order Number",
+      "Date",
+      "Customer Name",
+      "Phone",
+      "Email",
+      "City",
+      "Address",
+      "Items",
+      "Subtotal",
+      "Shipping",
+      "Total",
+      "Status",
+      "Notes",
     ];
-    
-    const rows = filteredOrders.map(order => [
+
+    const rows = filteredOrders.map((order) => [
       order.order_number,
-      format(new Date(order.created_at), 'yyyy-MM-dd HH:mm'),
+      format(new Date(order.created_at), "yyyy-MM-dd HH:mm"),
       order.customer_name,
       order.customer_phone,
-      order.customer_email || '',
+      order.customer_email || "",
       order.city,
-      order.delivery_address.replace(/,/g, ';'),
-      order.items.map(i => `${i.productTitle} x${i.quantity}`).join('; '),
+      order.delivery_address.replace(/,/g, ";"),
+      order.items.map((i) => `${i.productTitle} x${i.quantity}`).join("; "),
       order.subtotal.toFixed(2),
       order.shipping_cost.toFixed(2),
       order.total.toFixed(2),
       order.status,
-      order.notes?.replace(/,/g, ';') || ''
+      order.notes?.replace(/,/g, ";") || "",
     ]);
-    
+
     const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `orders-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.download = `orders-${format(new Date(), "yyyy-MM-dd")}.csv`;
     link.click();
-    
-    toast.success('Orders exported successfully');
+
+    toast.success("Orders exported successfully");
   }, [filteredOrders]);
 
   // Update order status
@@ -322,16 +356,16 @@ export default function AdminOrders() {
     setIsUpdating(orderId);
     try {
       const { error } = await supabase
-        .from('cod_orders')
+        .from("cod_orders")
         .update({ status: newStatus })
-        .eq('id', orderId);
+        .eq("id", orderId);
 
       if (error) throw error;
-      
+
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update order status');
+      console.error("Error updating order status:", error);
+      toast.error("Failed to update order status");
     } finally {
       setIsUpdating(null);
     }
@@ -339,22 +373,24 @@ export default function AdminOrders() {
 
   // HTML escape function to prevent XSS attacks
   const escapeHtml = (text: string | null | undefined): string => {
-    if (!text) return '';
-    const div = document.createElement('div');
+    if (!text) return "";
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   };
 
   // Print invoice
   const printInvoice = (order: CODOrder) => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      toast.error('Please allow popups to print invoices');
+      toast.error("Please allow popups to print invoices");
       return;
     }
 
-    const statusLabel = ORDER_STATUSES.find(s => s.value === order.status)?.label || order.status;
-    
+    const statusLabel =
+      ORDER_STATUSES.find((s) => s.value === order.status)?.label ||
+      order.status;
+
     const invoiceHTML = `
       <!DOCTYPE html>
       <html>
@@ -397,7 +433,7 @@ export default function AdminOrders() {
           <div class="invoice-title">
             <h1>INVOICE</h1>
             <p>${escapeHtml(order.order_number)}</p>
-            <p>${format(new Date(order.created_at), 'MMMM d, yyyy')}</p>
+            <p>${format(new Date(order.created_at), "MMMM d, yyyy")}</p>
           </div>
         </div>
 
@@ -408,7 +444,9 @@ export default function AdminOrders() {
             <p>${escapeHtml(order.delivery_address)}</p>
             <p>${escapeHtml(order.city)}</p>
             <p>${escapeHtml(order.customer_phone)}</p>
-            ${order.customer_email ? `<p>${escapeHtml(order.customer_email)}</p>` : ''}
+            ${
+      order.customer_email ? `<p>${escapeHtml(order.customer_email)}</p>` : ""
+    }
           </div>
           <div class="info-block" style="text-align: right;">
             <h3>Order Status</h3>
@@ -416,12 +454,16 @@ export default function AdminOrders() {
           </div>
         </div>
 
-        ${order.notes ? `
+        ${
+      order.notes
+        ? `
         <div class="notes">
           <h3>Order Notes</h3>
           <p>${escapeHtml(order.notes)}</p>
         </div>
-        ` : ''}
+        `
+        : ""
+    }
 
         <table class="items-table">
           <thead>
@@ -433,17 +475,29 @@ export default function AdminOrders() {
             </tr>
           </thead>
           <tbody>
-            ${order.items.map(item => `
+            ${
+      order.items.map((item) => `
               <tr>
                 <td>
                   <div class="item-name">${escapeHtml(item.productTitle)}</div>
-                  ${item.variantTitle !== "Default Title" ? `<div class="item-variant">${item.selectedOptions.map(o => escapeHtml(o.value)).join(' / ')}</div>` : ''}
+                  ${
+        item.variantTitle !== "Default Title"
+          ? `<div class="item-variant">${
+            item.selectedOptions.map((o) => escapeHtml(o.value)).join(" / ")
+          }</div>`
+          : ""
+      }
                 </td>
-                <td class="text-right">${parseFloat(item.price).toFixed(2)} JOD</td>
+                <td class="text-right">${
+        parseFloat(item.price).toFixed(2)
+      } JOD</td>
                 <td class="text-right">${item.quantity}</td>
-                <td class="text-right">${(parseFloat(item.price) * item.quantity).toFixed(2)} JOD</td>
+                <td class="text-right">${
+        (parseFloat(item.price) * item.quantity).toFixed(2)
+      } JOD</td>
               </tr>
-            `).join('')}
+            `).join("")
+    }
           </tbody>
         </table>
 
@@ -454,7 +508,9 @@ export default function AdminOrders() {
           </div>
           <div class="totals-row">
             <span>Shipping</span>
-            <span>${order.shipping_cost > 0 ? order.shipping_cost.toFixed(2) + ' JOD' : 'Free'}</span>
+            <span>${
+      order.shipping_cost > 0 ? order.shipping_cost.toFixed(2) + " JOD" : "Free"
+    }</span>
           </div>
           <div class="totals-row total">
             <span>Total</span>
@@ -480,7 +536,8 @@ export default function AdminOrders() {
 
   // Get status badge
   const getStatusBadge = (status: string) => {
-    const statusConfig = ORDER_STATUSES.find(s => s.value === status) || ORDER_STATUSES[0];
+    const statusConfig = ORDER_STATUSES.find((s) => s.value === status) ||
+      ORDER_STATUSES[0];
     return <Badge className={statusConfig.color}>{statusConfig.label}</Badge>;
   };
 
@@ -507,8 +564,10 @@ export default function AdminOrders() {
         <main className="container mx-auto px-4 py-8">
           <Card className="max-w-md mx-auto">
             <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground mb-4">Please sign in to access this page.</p>
-              <Button onClick={() => navigate('/auth')}>Sign In</Button>
+              <p className="text-muted-foreground mb-4">
+                Please sign in to access this page.
+              </p>
+              <Button onClick={() => navigate("/auth")}>Sign In</Button>
             </CardContent>
           </Card>
         </main>
@@ -526,7 +585,9 @@ export default function AdminOrders() {
           <Card className="max-w-md mx-auto">
             <CardContent className="pt-6 text-center">
               <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <p className="text-muted-foreground">You do not have permission to access this page.</p>
+              <p className="text-muted-foreground">
+                You do not have permission to access this page.
+              </p>
             </CardContent>
           </Card>
         </main>
@@ -538,29 +599,31 @@ export default function AdminOrders() {
   // Order stats
   const stats = {
     total: orders.length,
-    pending: orders.filter(o => o.status === 'pending').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length,
-    shipped: orders.filter(o => o.status === 'shipped').length,
-    delivered: orders.filter(o => o.status === 'delivered').length,
-    cancelled: orders.filter(o => o.status === 'cancelled').length,
+    pending: orders.filter((o) => o.status === "pending").length,
+    confirmed: orders.filter((o) => o.status === "confirmed").length,
+    shipped: orders.filter((o) => o.status === "shipped").length,
+    delivered: orders.filter((o) => o.status === "delivered").length,
+    cancelled: orders.filter((o) => o.status === "cancelled").length,
     totalRevenue: orders
-      .filter(o => o.status === 'delivered')
+      .filter((o) => o.status === "delivered")
       .reduce((sum, o) => sum + o.total, 0),
-    todayOrders: orders.filter(o => 
-      isWithinInterval(new Date(o.created_at), { 
-        start: startOfDay(new Date()), 
-        end: endOfDay(new Date()) 
+    todayOrders: orders.filter((o) =>
+      isWithinInterval(new Date(o.created_at), {
+        start: startOfDay(new Date()),
+        end: endOfDay(new Date()),
       })
     ).length,
     pendingValue: orders
-      .filter(o => ['pending', 'confirmed', 'preparing', 'shipped'].includes(o.status))
+      .filter((o) =>
+        ["pending", "confirmed", "preparing", "shipped"].includes(o.status)
+      )
       .reduce((sum, o) => sum + o.total, 0),
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -602,7 +665,9 @@ export default function AdminOrders() {
               <div className="flex items-center gap-3">
                 <Clock className="w-8 h-8 text-yellow-500" />
                 <div>
-                  <p className="text-2xl font-bold text-yellow-700">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-yellow-700">
+                    {stats.pending}
+                  </p>
                   <p className="text-xs text-muted-foreground">Pending</p>
                 </div>
               </div>
@@ -624,7 +689,9 @@ export default function AdminOrders() {
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-8 h-8 text-green-500" />
                 <div>
-                  <p className="text-2xl font-bold text-green-700">{stats.delivered}</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    {stats.delivered}
+                  </p>
                   <p className="text-xs text-muted-foreground">Delivered</p>
                 </div>
               </div>
@@ -635,7 +702,9 @@ export default function AdminOrders() {
               <div className="flex items-center gap-3">
                 <DollarSign className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold">{stats.totalRevenue.toFixed(0)}</p>
+                  <p className="text-2xl font-bold">
+                    {stats.totalRevenue.toFixed(0)}
+                  </p>
                   <p className="text-xs text-muted-foreground">Revenue (JOD)</p>
                 </div>
               </div>
@@ -684,7 +753,7 @@ export default function AdminOrders() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {ORDER_STATUSES.map(status => (
+                {ORDER_STATUSES.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
                   </SelectItem>
@@ -705,112 +774,128 @@ export default function AdminOrders() {
         {/* Orders Table */}
         <Card>
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-6 space-y-4">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            ) : filteredOrders.length === 0 ? (
-              <div className="p-12 text-center">
-                <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No orders found</p>
-              </div>
-            ) : (
-              <ScrollArea className="w-full">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Order #</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>City</TableHead>
-                      <TableHead>Items</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Driver</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-mono text-sm">
-                          {order.order_number}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{order.customer_name}</p>
-                            <p className="text-xs text-muted-foreground">{order.customer_phone}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.city}</TableCell>
-                        <TableCell>
-                          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {order.total.toFixed(2)} JOD
-                        </TableCell>
-                        <TableCell>
-                          <Select 
-                            value={order.status} 
-                            onValueChange={(value) => updateOrderStatus(order.id, value)}
-                            disabled={isUpdating === order.id}
-                          >
-                            <SelectTrigger className="w-[130px] h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORDER_STATUSES.map(status => (
-                                <SelectItem key={status.value} value={status.value}>
-                                  {status.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <DriverAssignment 
-                            orderId={order.id} 
-                            currentDriverId={order.driver_id}
-                            onAssigned={fetchOrders}
-                          />
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(order.created_at), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedOrder(order)}
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => printInvoice(order)}
-                              title="Print Invoice"
-                            >
-                              <Printer className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+            {isLoading
+              ? (
+                <div className="p-6 space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              )
+              : filteredOrders.length === 0
+              ? (
+                <div className="p-12 text-center">
+                  <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No orders found</p>
+                </div>
+              )
+              : (
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Order #</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>City</TableHead>
+                        <TableHead>Items</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Driver</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            )}
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOrders.map((order) => (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-mono text-sm">
+                            {order.order_number}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">
+                                {order.customer_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {order.customer_phone}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>{order.city}</TableCell>
+                          <TableCell>
+                            {order.items.length}{" "}
+                            item{order.items.length !== 1 ? "s" : ""}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {order.total.toFixed(2)} JOD
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) =>
+                                updateOrderStatus(order.id, value)}
+                              disabled={isUpdating === order.id}
+                            >
+                              <SelectTrigger className="w-[130px] h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUSES.map((status) => (
+                                  <SelectItem
+                                    key={status.value}
+                                    value={status.value}
+                                  >
+                                    {status.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <DriverAssignment
+                              orderId={order.id}
+                              currentDriverId={order.driver_id}
+                              onAssigned={fetchOrders}
+                            />
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(order.created_at), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedOrder(order)}
+                                title="View Details"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => printInvoice(order)}
+                                title="Print Invoice"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
           </CardContent>
         </Card>
       </main>
 
       {/* Order Details Dialog */}
-      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+      <Dialog
+        open={!!selectedOrder}
+        onOpenChange={() => setSelectedOrder(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedOrder && (
             <>
@@ -838,26 +923,36 @@ export default function AdminOrders() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-muted-foreground" />
-                      <a href={`tel:${selectedOrder.customer_phone}`} className="text-primary hover:underline">
+                      <a
+                        href={`tel:${selectedOrder.customer_phone}`}
+                        className="text-primary hover:underline"
+                      >
                         {selectedOrder.customer_phone}
                       </a>
                     </div>
                     {selectedOrder.customer_email && (
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-muted-foreground" />
-                        <a href={`mailto:${selectedOrder.customer_email}`} className="text-primary hover:underline">
+                        <a
+                          href={`mailto:${selectedOrder.customer_email}`}
+                          className="text-primary hover:underline"
+                        >
                           {selectedOrder.customer_email}
                         </a>
                       </div>
                     )}
                     <div className="flex items-start gap-2 col-span-full">
                       <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                      <span>{selectedOrder.delivery_address}, {selectedOrder.city}</span>
+                      <span>
+                        {selectedOrder.delivery_address}, {selectedOrder.city}
+                      </span>
                     </div>
                   </div>
                   {selectedOrder.notes && (
                     <div className="pt-2 border-t">
-                      <p className="text-sm text-muted-foreground">Notes: {selectedOrder.notes}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Notes: {selectedOrder.notes}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -865,14 +960,17 @@ export default function AdminOrders() {
                 {/* Driver Assignment */}
                 <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
                   <h4 className="font-medium mb-3">Driver Assignment</h4>
-                  <DriverAssignment 
-                    orderId={selectedOrder.id} 
+                  <DriverAssignment
+                    orderId={selectedOrder.id}
                     currentDriverId={selectedOrder.driver_id}
                     onAssigned={fetchOrders}
                   />
                   {selectedOrder.assigned_at && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Assigned on {format(new Date(selectedOrder.assigned_at), 'MMM d, yyyy at h:mm a')}
+                      Assigned on {format(
+                        new Date(selectedOrder.assigned_at),
+                        "MMM d, yyyy at h:mm a",
+                      )}
                     </p>
                   )}
                   {selectedOrder.delivery_notes && (
@@ -881,34 +979,45 @@ export default function AdminOrders() {
                     </p>
                   )}
                 </div>
-863: 
-864:                 {/* Order Items */}
-865:                 <div>
+                863: 864: {/* Order Items */}
+                865:{" "}
+                <div>
                   <h4 className="font-medium mb-3">Order Items</h4>
                   <div className="space-y-3">
                     {selectedOrder.items.map((item, index) => (
-                      <div key={index} className="flex gap-3 p-3 bg-muted/30 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex gap-3 p-3 bg-muted/30 rounded-lg"
+                      >
                         {item.imageUrl && (
-                          <img 
-                            src={item.imageUrl} 
+                          <img
+                            src={item.imageUrl}
                             alt={item.productTitle}
                             className="w-16 h-16 object-cover rounded"
                           />
                         )}
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{item.productTitle}</p>
+                          <p className="font-medium text-sm">
+                            {item.productTitle}
+                          </p>
                           {item.variantTitle !== "Default Title" && (
                             <p className="text-xs text-muted-foreground">
-                              {item.selectedOptions.map(o => o.value).join(' / ')}
+                              {item.selectedOptions.map((o) => o.value).join(
+                                " / ",
+                              )}
                             </p>
                           )}
                           <p className="text-sm mt-1">
-                            {item.currency} {parseFloat(item.price).toFixed(2)} × {item.quantity}
+                            {item.currency} {parseFloat(item.price).toFixed(2)}
+                            {" "}
+                            × {item.quantity}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="font-medium">
-                            {(parseFloat(item.price) * item.quantity).toFixed(2)} JOD
+                            {(parseFloat(item.price) * item.quantity).toFixed(
+                              2,
+                            )} JOD
                           </p>
                         </div>
                       </div>
@@ -924,20 +1033,32 @@ export default function AdminOrders() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span>{selectedOrder.shipping_cost > 0 ? `${selectedOrder.shipping_cost.toFixed(2)} JOD` : 'Free'}</span>
+                    <span>
+                      {selectedOrder.shipping_cost > 0
+                        ? `${selectedOrder.shipping_cost.toFixed(2)} JOD`
+                        : "Free"}
+                    </span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
                     <span>Total</span>
-                    <span className="text-burgundy">{selectedOrder.total.toFixed(2)} JOD</span>
+                    <span className="text-burgundy">
+                      {selectedOrder.total.toFixed(2)} JOD
+                    </span>
                   </div>
                 </div>
 
                 {/* Order Date */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Order placed on {format(new Date(selectedOrder.created_at), 'MMMM d, yyyy at h:mm a')}
+                    Order placed on {format(
+                      new Date(selectedOrder.created_at),
+                      "MMMM d, yyyy at h:mm a",
+                    )}
                   </span>
-                  <Button onClick={() => printInvoice(selectedOrder)} className="gap-2">
+                  <Button
+                    onClick={() => printInvoice(selectedOrder)}
+                    className="gap-2"
+                  >
                     <Printer className="w-4 h-4" />
                     Print Invoice
                   </Button>

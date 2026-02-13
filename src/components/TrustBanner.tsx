@@ -4,28 +4,28 @@ import { AnimatedSection } from "./AnimatedSection";
 
 const trustItems = [
   {
-    id: 'authentic',
+    id: "authentic",
     icon: ShieldCheck,
-    title: 'Guaranteed Authentic',
-    titleAr: 'أصالة مضمونة',
-    description: 'We compete against fakes',
-    descriptionAr: 'نحارب المنتجات المقلدة',
+    title: "Guaranteed Authentic",
+    titleAr: "أصالة مضمونة",
+    description: "We compete against fakes",
+    descriptionAr: "نحارب المنتجات المقلدة",
   },
   {
-    id: 'pharmacist',
+    id: "pharmacist",
     icon: Stethoscope,
-    title: 'Pharmacist Verified',
-    titleAr: 'معتمد من الصيدلي',
-    description: 'We are experts',
-    descriptionAr: 'خبراء متخصصون',
+    title: "Pharmacist Verified",
+    titleAr: "معتمد من الصيدلي",
+    description: "We are experts",
+    descriptionAr: "خبراء متخصصون",
   },
   {
-    id: 'delivery',
+    id: "delivery",
     icon: Truck,
-    title: 'Amman Concierge Delivery',
-    titleAr: 'توصيل سريع في عمّان',
-    description: 'We are fast',
-    descriptionAr: 'سرعة فائقة',
+    title: "Amman Concierge Delivery",
+    titleAr: "توصيل سريع في عمّان",
+    description: "We are fast",
+    descriptionAr: "سرعة فائقة",
   },
 ];
 
@@ -37,20 +37,26 @@ export const TrustBanner = () => {
     <section className="py-10 md:py-12 bg-gradient-to-r from-burgundy via-burgundy to-burgundy-light overflow-hidden relative">
       {/* Top gold accent line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-      
+
       {/* Decorative gold glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-gold/5 pointer-events-none" />
-      
+
       <div className="luxury-container relative">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 lg:gap-16">
           {trustItems.map((item, index) => (
-            <AnimatedSection 
-              key={item.id} 
-              animation={index === 0 ? "fade-left" : index === 2 ? "fade-right" : "fade-up"}
+            <AnimatedSection
+              key={item.id}
+              animation={index === 0
+                ? "fade-left"
+                : index === 2
+                ? "fade-right"
+                : "fade-up"}
               delay={index * 150}
             >
-              <div 
-                className={`group flex items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''} 
+              <div
+                className={`group flex items-center gap-4 ${
+                  isArabic ? "flex-row-reverse" : ""
+                } 
                   px-6 py-4 rounded-xl
                   bg-gradient-to-br from-gold/10 via-gold/5 to-transparent
                   border border-gold/20 hover:border-gold/40
@@ -64,8 +70,9 @@ export const TrustBanner = () => {
                 <div className="relative flex-shrink-0">
                   {/* Glow ring */}
                   <div className="absolute inset-0 rounded-full bg-gold/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-150" />
-                  
-                  <div className={`
+
+                  <div
+                    className={`
                     relative w-14 h-14 rounded-full 
                     bg-gradient-to-br from-gold/30 via-gold/20 to-gold/10
                     border-2 border-gold/40 group-hover:border-gold/60
@@ -74,18 +81,19 @@ export const TrustBanner = () => {
                     group-hover:shadow-[0_4px_20px_rgba(212,175,55,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]
                     transition-all duration-500
                     group-hover:scale-110
-                  `}>
-                    <item.icon 
+                  `}
+                  >
+                    <item.icon
                       className="w-7 h-7 text-gold drop-shadow-[0_2px_4px_rgba(212,175,55,0.5)] 
                         group-hover:drop-shadow-[0_4px_8px_rgba(212,175,55,0.7)]
-                        transition-all duration-500" 
-                      strokeWidth={1.5} 
+                        transition-all duration-500"
+                      strokeWidth={1.5}
                     />
                   </div>
                 </div>
-                
+
                 {/* Text content */}
-                <div className={`${isArabic ? 'text-right' : 'text-left'}`}>
+                <div className={`${isArabic ? "text-right" : "text-left"}`}>
                   <h3 className="font-display text-sm lg:text-base text-cream font-medium 
                     drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]
                     group-hover:text-gold transition-colors duration-500">
@@ -96,7 +104,7 @@ export const TrustBanner = () => {
                     {isArabic ? item.descriptionAr : item.description}
                   </p>
                 </div>
-                
+
                 {/* Separator - hidden on last item and mobile */}
                 {index < trustItems.length - 1 && (
                   <div className="hidden lg:block absolute -right-6 top-1/2 -translate-y-1/2">
@@ -109,7 +117,7 @@ export const TrustBanner = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Bottom gold accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
     </section>

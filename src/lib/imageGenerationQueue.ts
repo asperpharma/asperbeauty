@@ -41,7 +41,14 @@ const DEFAULT_CONFIG: QueueConfig = {
   requestDelay: 2000, // 2 seconds between requests
 };
 
-type QueueEventType = "itemUpdate" | "statsUpdate" | "batchComplete" | "queueComplete" | "error" | "paused" | "resumed";
+type QueueEventType =
+  | "itemUpdate"
+  | "statsUpdate"
+  | "batchComplete"
+  | "queueComplete"
+  | "error"
+  | "paused"
+  | "resumed";
 type QueueEventCallback = (data: any) => void;
 
 class ImageGenerationQueue {
@@ -77,13 +84,13 @@ class ImageGenerationQueue {
   private emit(event: QueueEventType, data: any) {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
-      listeners.forEach(callback => callback(data));
+      listeners.forEach((callback) => callback(data));
     }
   }
 
   // Queue management
   addItems(items: Omit<QueueItem, "status" | "retryCount" | "addedAt">[]) {
-    items.forEach(item => {
+    items.forEach((item) => {
       const queueItem: QueueItem = {
         ...item,
         status: "queued",
@@ -105,22 +112,26 @@ class ImageGenerationQueue {
 
   getStats(): QueueStats {
     const items = this.getAllItems();
-    const completed = items.filter(i => i.status === "completed");
-    
+    const completed = items.filter((i) => i.status === "completed");
+
     const avgTime = this.processingTimes.length > 0
-      ? this.processingTimes.reduce((a, b) => a + b, 0) / this.processingTimes.length
+      ? this.processingTimes.reduce((a, b) => a + b, 0) /
+        this.processingTimes.length
       : 3000; // Default estimate: 3 seconds
 
-    const remaining = items.filter(i => ["queued", "retrying"].includes(i.status)).length;
-    const estimatedTime = Math.ceil((remaining * avgTime) / this.config.batchSize / 1000);
+    const remaining =
+      items.filter((i) => ["queued", "retrying"].includes(i.status)).length;
+    const estimatedTime = Math.ceil(
+      (remaining * avgTime) / this.config.batchSize / 1000,
+    );
 
     return {
       total: items.length,
-      queued: items.filter(i => i.status === "queued").length,
-      processing: items.filter(i => i.status === "processing").length,
+      queued: items.filter((i) => i.status === "queued").length,
+      processing: items.filter((i) => i.status === "processing").length,
       completed: completed.length,
-      failed: items.filter(i => i.status === "failed").length,
-      retrying: items.filter(i => i.status === "retrying").length,
+      failed: items.filter((i) => i.status === "failed").length,
+      retrying: items.filter((i) => i.status === "retrying").length,
       estimatedTimeRemaining: estimatedTime,
       averageProcessingTime: avgTime / 1000,
     };
@@ -143,18 +154,18 @@ class ImageGenerationQueue {
   // Processing
   async start() {
     if (this.isProcessing) return;
-    
+
     this.isProcessing = true;
     this.isPaused = false;
     this.abortController = new AbortController();
-    
+
     console.log("Queue started");
-    
+
     while (this.isProcessing && !this.isPaused) {
       const pendingItems = this.getAllItems().filter(
-        i => i.status === "queued" || i.status === "retrying"
+        (i) => i.status === "queued" || i.status === "retrying",
       );
-      
+
       if (pendingItems.length === 0) {
         this.emit("queueComplete", this.getStats());
         break;
@@ -163,27 +174,27 @@ class ImageGenerationQueue {
       // Process batch
       const batch = pendingItems.slice(0, this.config.batchSize);
       await this.processBatch(batch);
-      
+
       // Delay between batches
       if (!this.isPaused && pendingItems.length > this.config.batchSize) {
         await this.delay(this.config.requestDelay);
       }
     }
-    
+
     this.isProcessing = false;
   }
 
   private async processBatch(batch: QueueItem[]) {
     console.log(`Processing batch of ${batch.length} items`);
-    
+
     // Mark all as processing
-    batch.forEach(item => {
+    batch.forEach((item) => {
       this.updateItem(item.id, { status: "processing" });
     });
 
     // Process concurrently
     const results = await Promise.allSettled(
-      batch.map(item => this.processItem(item))
+      batch.map((item) => this.processItem(item)),
     );
 
     // Handle results
@@ -191,7 +202,7 @@ class ImageGenerationQueue {
       const item = batch[index];
       if (result.status === "fulfilled") {
         const { success, imageUrl, error, rateLimited } = result.value;
-        
+
         if (success && imageUrl) {
           this.updateItem(item.id, {
             status: "completed",
@@ -242,26 +253,32 @@ class ImageGenerationQueue {
     rateLimited?: boolean;
   }> {
     const startTime = Date.now();
-    
+
     try {
       // Get current session for authentication
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session?.access_token) {
-        return { success: false, error: "Not authenticated. Please log in as admin." };
+        return {
+          success: false,
+          error: "Not authenticated. Please log in as admin.",
+        };
       }
 
-      const { data, error } = await supabase.functions.invoke("bulk-product-upload", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
+      const { data, error } = await supabase.functions.invoke(
+        "bulk-product-upload",
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: {
+            action: "generate-image",
+            productName: item.name,
+            category: item.category,
+            imagePrompt: item.imagePrompt,
+          },
         },
-        body: {
-          action: "generate-image",
-          productName: item.name,
-          category: item.category,
-          imagePrompt: item.imagePrompt,
-        },
-      });
+      );
 
       const processingTime = Date.now() - startTime;
       this.processingTimes.push(processingTime);
@@ -272,9 +289,17 @@ class ImageGenerationQueue {
 
       if (error) {
         console.error(`Error generating image for ${item.name}:`, error);
-        const isRateLimited = error.message?.includes("429") || error.message?.includes("rate");
-        const isAuthError = error.message?.includes("401") || error.message?.includes("403") || error.message?.includes("Unauthorized") || error.message?.includes("Forbidden");
-        return { success: false, error: error.message, rateLimited: isRateLimited && !isAuthError };
+        const isRateLimited = error.message?.includes("429") ||
+          error.message?.includes("rate");
+        const isAuthError = error.message?.includes("401") ||
+          error.message?.includes("403") ||
+          error.message?.includes("Unauthorized") ||
+          error.message?.includes("Forbidden");
+        return {
+          success: false,
+          error: error.message,
+          rateLimited: isRateLimited && !isAuthError,
+        };
       }
 
       if (data?.imageUrl) {
@@ -288,7 +313,8 @@ class ImageGenerationQueue {
       return { success: false, error: "No image URL returned" };
     } catch (err: any) {
       console.error(`Exception processing ${item.name}:`, err);
-      const isRateLimited = err.message?.includes("429") || err.message?.includes("rate");
+      const isRateLimited = err.message?.includes("429") ||
+        err.message?.includes("rate");
       return { success: false, error: err.message, rateLimited: isRateLimited };
     }
   }
@@ -296,7 +322,7 @@ class ImageGenerationQueue {
   private async handleRateLimit(item: QueueItem) {
     console.log("Rate limited, pausing queue...");
     this.emit("error", { type: "rateLimit", item });
-    
+
     // Mark item for retry
     this.updateItem(item.id, {
       status: "retrying",
@@ -307,9 +333,9 @@ class ImageGenerationQueue {
     // Pause and wait
     this.isPaused = true;
     this.emit("paused", { reason: "rateLimit" });
-    
+
     await this.delay(this.config.rateLimitDelay);
-    
+
     // Resume automatically
     if (this.isProcessing) {
       this.isPaused = false;
@@ -348,8 +374,8 @@ class ImageGenerationQueue {
 
   retryFailed() {
     this.getAllItems()
-      .filter(i => i.status === "failed")
-      .forEach(item => {
+      .filter((i) => i.status === "failed")
+      .forEach((item) => {
         this.updateItem(item.id, {
           status: "retrying",
           retryCount: 0,
@@ -359,7 +385,7 @@ class ImageGenerationQueue {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // Configuration
@@ -380,7 +406,7 @@ class ImageGenerationQueue {
 export const imageQueue = new ImageGenerationQueue();
 
 // React hook for queue state
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useImageQueue() {
   const [stats, setStats] = useState<QueueStats>(imageQueue.getStats());
@@ -418,11 +444,14 @@ export function useImageQueue() {
     };
   }, []);
 
-  const addItems = useCallback((newItems: Omit<QueueItem, "status" | "retryCount" | "addedAt">[]) => {
-    imageQueue.addItems(newItems);
-    setItems([...imageQueue.getAllItems()]);
-    setStats(imageQueue.getStats());
-  }, []);
+  const addItems = useCallback(
+    (newItems: Omit<QueueItem, "status" | "retryCount" | "addedAt">[]) => {
+      imageQueue.addItems(newItems);
+      setItems([...imageQueue.getAllItems()]);
+      setStats(imageQueue.getStats());
+    },
+    [],
+  );
 
   const start = useCallback(() => {
     imageQueue.start();
