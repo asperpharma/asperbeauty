@@ -125,6 +125,31 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 📖 Documentation
+
+Comprehensive documentation for monitoring, deploying, and maintaining the system is available in the `/docs` directory:
+
+- **[SYSTEM_MONITOR.md](./docs/SYSTEM_MONITOR.md)** - Central monitoring reference for orders, support, and system health
+- **[HEALTH-CHECK-PROTOCOL.md](./docs/HEALTH-CHECK-PROTOCOL.md)** - Automated health checks and verification procedures
+- **[LAUNCH_EXECUTION_PLAN.md](./docs/LAUNCH_EXECUTION_PLAN.md)** - Complete launch guide with secrets, imports, and testing
+- **[NEXT_STEPS.md](./docs/NEXT_STEPS.md)** - Deployment checklist and PR templates
+- **[SHOPIFY_TAGGING_PROTOCOL.md](./docs/SHOPIFY_TAGGING_PROTOCOL.md)** - Product tagging standards for AI recommendations
+- **[BEAUTY_ASSISTANT_DEPLOY.md](./docs/BEAUTY_ASSISTANT_DEPLOY.md)** - AI chatbot deployment and testing guide
+
+See the [docs README](./docs/README.md) for a complete documentation index.
+
+### Health Checks
+
+Run automated health checks from the project root:
+
+```bash
+# Windows PowerShell
+.\scripts\health-checks.ps1
+
+# macOS/Linux
+./scripts/health-checks.sh
+```
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
