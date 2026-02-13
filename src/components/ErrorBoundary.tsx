@@ -40,8 +40,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-muted-foreground mb-6">
               {this.state.error?.message || "An unexpected error occurred."}
             </p>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               className="w-full gap-2"
             >
               <RefreshCcw className="w-4 h-4" />

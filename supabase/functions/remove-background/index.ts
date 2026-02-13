@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -31,57 +32,74 @@ serve(async (req) => {
     console.log(`   Source image: ${imageUrl}`);
 
     // Use Lovable AI to remove the background
-    const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Remove the background from this product image. Make the background completely pure white (#FFFFFF). Keep only the product itself with clean, professional edges. The result should look like a professional e-commerce product photo on a pure white background. Do not add any shadows, reflections, or other elements.",
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageUrl,
+    const imageResponse = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text:
+                    "Remove the background from this product image. Make the background completely pure white (#FFFFFF). Keep only the product itself with clean, professional edges. The result should look like a professional e-commerce product photo on a pure white background. Do not add any shadows, reflections, or other elements.",
                 },
-              },
-            ],
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageUrl,
+                  },
+                },
+              ],
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      },
+    );
 
     if (!imageResponse.ok) {
       const errorText = await imageResponse.text();
       console.error(`❌ AI API Error: ${imageResponse.status} - ${errorText}`);
-      
+
       if (imageResponse.status === 429) {
         return new Response(
-          JSON.stringify({ success: false, error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            success: false,
+            error: "Rate limit exceeded. Please try again later.",
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
       if (imageResponse.status === 402) {
         return new Response(
-          JSON.stringify({ success: false, error: "AI credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            success: false,
+            error: "AI credits exhausted. Please add credits to continue.",
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
-      
+
       throw new Error(`AI processing failed: ${imageResponse.status}`);
     }
 
     const imageData = await imageResponse.json();
-    const generatedImage = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const generatedImage = imageData.choices?.[0]?.message?.images?.[0]
+      ?.image_url?.url;
 
     if (!generatedImage) {
       console.log(`⚠️ No processed image returned from AI`);
@@ -91,7 +109,9 @@ serve(async (req) => {
     console.log(`✅ Background removed successfully`);
 
     // Extract base64 data from data URI
-    const base64Match = generatedImage.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+    const base64Match = generatedImage.match(
+      /^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/,
+    );
     if (!base64Match) {
       throw new Error("Invalid image format returned from AI");
     }
@@ -122,7 +142,9 @@ serve(async (req) => {
 
     if (uploadError) {
       console.error(`❌ Upload Error: ${uploadError.message}`);
-      throw new Error(`Failed to upload processed image: ${uploadError.message}`);
+      throw new Error(
+        `Failed to upload processed image: ${uploadError.message}`,
+      );
     }
 
     // Get public URL
@@ -152,14 +174,19 @@ serve(async (req) => {
         originalUrl: imageUrl,
         newImageUrl,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Background removal error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error
+      ? error.message
+      : "Unknown error";
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

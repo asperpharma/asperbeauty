@@ -1,19 +1,23 @@
 # GitHub Issue Templates Guide
 
-This repository includes structured issue templates to help organize work with sub-tasks and hierarchical issues.
+This repository includes structured issue templates to help organize work with
+sub-tasks and hierarchical issues.
 
 ## Available Templates
 
 ### 🐛 Bug Report
+
 Use this template to report bugs or issues with the application.
 
 **Key Features:**
+
 - Structured bug reporting with severity levels
 - Browser and device information
 - Built-in sub-task checklist for bug resolution
 - Support for screenshots and videos
 
 **Sub-task Template Included:**
+
 ```markdown
 - [ ] Investigate root cause
 - [ ] Write failing test
@@ -23,15 +27,18 @@ Use this template to report bugs or issues with the application.
 ```
 
 ### ✨ Feature Request
+
 Use this template to suggest new features for the application.
 
 **Key Features:**
+
 - Problem statement and proposed solution fields
 - Priority and area categorization
 - Acceptance criteria section
 - Implementation sub-tasks breakdown
 
 **Sub-task Template Included:**
+
 ```markdown
 - [ ] Design database schema
 - [ ] Create API endpoints
@@ -43,15 +50,18 @@ Use this template to suggest new features for the application.
 ```
 
 ### 🔧 Enhancement
+
 Use this template for improving existing functionality.
 
 **Key Features:**
+
 - Current vs. proposed behavior comparison
 - Benefits analysis
 - Technical implementation notes
 - Area-specific categorization (UI/UX, Performance, etc.)
 
 **Sub-task Template Included:**
+
 ```markdown
 - [ ] Research and design
 - [ ] Update components
@@ -62,9 +72,11 @@ Use this template for improving existing functionality.
 ```
 
 ### 📊 Epic / Large Feature
+
 Use this template for tracking large initiatives with multiple sub-issues.
 
 **Key Features:**
+
 - Business value and user stories
 - Success metrics definition
 - Dependency tracking
@@ -72,23 +84,28 @@ Use this template for tracking large initiatives with multiple sub-issues.
 - Multi-phase implementation planning
 
 **Sub-task Structure:**
+
 - Links to related issues
 - Phase-based breakdown
 - Comprehensive tracking of large features
 
 **Example Sub-Issue Structure:**
+
 ```markdown
 ## Phase 1: Planning & Design
+
 - [ ] Requirements gathering
 - [ ] Technical design
 - [ ] UI/UX mockups
 
 ## Phase 2: Development
+
 - [ ] Backend implementation
 - [ ] Frontend implementation
 - [ ] Integration
 
 ## Phase 3: Testing & Launch
+
 - [ ] QA testing
 - [ ] Bug fixes
 - [ ] Deployment
@@ -99,7 +116,8 @@ Use this template for tracking large initiatives with multiple sub-issues.
 
 ### Creating an Issue
 
-1. Go to the [Issues](https://github.com/Asper-Beauty-Shop/asperbeauty/issues) page
+1. Go to the [Issues](https://github.com/Asper-Beauty-Shop/asperbeauty/issues)
+   page
 2. Click "New Issue"
 3. Select the appropriate template
 4. Fill out all required fields
@@ -108,8 +126,8 @@ Use this template for tracking large initiatives with multiple sub-issues.
 
 ### Working with Sub-Tasks
 
-**Markdown Task Lists:**
-GitHub supports task lists in issue descriptions. Simply use the following syntax:
+**Markdown Task Lists:** GitHub supports task lists in issue descriptions.
+Simply use the following syntax:
 
 ```markdown
 - [ ] Incomplete task
@@ -117,6 +135,7 @@ GitHub supports task lists in issue descriptions. Simply use the following synta
 ```
 
 **Benefits:**
+
 - Track progress visually in the issue
 - See completion percentage
 - Convert sub-tasks to separate issues if needed
@@ -143,7 +162,8 @@ For complex sub-tasks, you can convert them to full issues:
 
 ## Template Customization
 
-The templates can be customized by editing the YAML files in `.github/ISSUE_TEMPLATE/`:
+The templates can be customized by editing the YAML files in
+`.github/ISSUE_TEMPLATE/`:
 
 - `bug_report.yml` - Bug report template
 - `feature_request.yml` - Feature request template
@@ -175,10 +195,12 @@ The templates can be customized by editing the YAML files in `.github/ISSUE_TEMP
 3. Break down into phases:
    ```markdown
    ## Phase 1: Planning
+
    - [ ] #150 - Research currency conversion APIs
    - [ ] #151 - Design database schema
-   
+
    ## Phase 2: Implementation
+
    - [ ] #152 - Backend currency service
    - [ ] #153 - Frontend currency selector
    - [ ] #154 - Update product pricing display
@@ -195,4 +217,5 @@ The templates can be customized by editing the YAML files in `.github/ISSUE_TEMP
 
 ## Support
 
-For questions or issues with the templates themselves, please create an issue or discussion in the repository.
+For questions or issues with the templates themselves, please create an issue or
+discussion in the repository.

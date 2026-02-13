@@ -38,7 +38,7 @@ export const BestSellersSection = () => {
               {isAr ? "الأكثر مبيعاً" : "Global Best Sellers"}
             </h2>
           </div>
-          <Link 
+          <Link
             to="/best-sellers"
             className="group flex items-center gap-2 font-sans text-sm font-medium uppercase tracking-widest text-luxury-black transition-colors hover:text-gold-500"
           >
@@ -49,38 +49,40 @@ export const BestSellersSection = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex flex-col">
-                <Skeleton className="aspect-[3/4] w-full bg-cream-dark" />
-                <div className="p-4">
-                  <Skeleton className="mb-2 h-3 w-16 bg-cream-dark" />
-                  <Skeleton className="mb-3 h-5 w-full bg-cream-dark" />
-                  <Skeleton className="h-4 w-20 bg-cream-dark" />
+          {isLoading
+            ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col">
+                  <Skeleton className="aspect-[3/4] w-full bg-cream-dark" />
+                  <div className="p-4">
+                    <Skeleton className="mb-2 h-3 w-16 bg-cream-dark" />
+                    <Skeleton className="mb-3 h-5 w-full bg-cream-dark" />
+                    <Skeleton className="h-4 w-20 bg-cream-dark" />
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            products?.map((product) => (
-              <LuxuryProductCard
-                key={product.id}
-                product={{
-                  id: product.id,
-                  title: product.title,
-                  category: product.category,
-                  brand: product.brand || undefined,
-                  price: product.price,
-                  original_price: product.original_price,
-                  discount_percent: product.discount_percent,
-                  image_url: product.image_url || "/placeholder.svg",
-                  description: product.description || undefined,
-                  volume_ml: product.volume_ml || undefined,
-                  is_new: false,
-                  is_on_sale: product.is_on_sale || false,
-                }}
-              />
-            ))
-          )}
+              ))
+            )
+            : (
+              products?.map((product) => (
+                <LuxuryProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    title: product.title,
+                    category: product.category,
+                    brand: product.brand || undefined,
+                    price: product.price,
+                    original_price: product.original_price,
+                    discount_percent: product.discount_percent,
+                    image_url: product.image_url || "/placeholder.svg",
+                    description: product.description || undefined,
+                    volume_ml: product.volume_ml || undefined,
+                    is_new: false,
+                    is_on_sale: product.is_on_sale || false,
+                  }}
+                />
+              ))
+            )}
         </div>
       </div>
     </section>
