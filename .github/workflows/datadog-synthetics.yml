@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Datadog Synthetic tests
-        uses: DataDog/synthetics-ci-github-action@v1
+        uses: DataDog/synthetics-ci-github-action@v3.8.2
         with:
           api_key: ${{ secrets.DATADOG_API_KEY }}
           app_key: ${{ secrets.DATADOG_APP_KEY }}
