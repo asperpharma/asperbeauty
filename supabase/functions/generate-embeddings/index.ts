@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -23,19 +24,20 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: authHeader } } },
     );
 
     // Verify user is admin
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth
+      .getClaims(token);
+
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -44,7 +46,7 @@ serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
-    
+
     // Check if user has admin role
     const { data: roleData } = await supabaseAdmin
       .from("user_roles")
@@ -80,7 +82,7 @@ serve(async (req) => {
       // Create rich content for AI understanding
       const skinConcerns = product.skin_concerns?.join(", ") || "";
       const tags = product.tags?.join(", ") || "";
-      
+
       const content = `
 Product: ${product.title}
 Brand: ${product.brand || "Unknown"}
@@ -91,7 +93,11 @@ Skin Concerns: ${skinConcerns || "General skincare"}
 Tags: ${tags}
 Volume: ${product.volume_ml || "Standard size"}
 Price: ${product.price} JOD
-${product.is_on_sale ? `On Sale: ${product.discount_percent}% off (Original: ${product.original_price} JOD)` : ""}
+${
+        product.is_on_sale
+          ? `On Sale: ${product.discount_percent}% off (Original: ${product.original_price} JOD)`
+          : ""
+      }
       `.trim();
 
       const metadata = {
@@ -112,7 +118,7 @@ ${product.is_on_sale ? `On Sale: ${product.discount_percent}% off (Original: ${p
       // Generate a simple embedding placeholder (1536 dimensions of zeros)
       // In production, you would use OpenAI's embedding API
       const embedding = new Array(1536).fill(0);
-      
+
       // Create weighted embedding based on keywords
       // This is a simplified approach - in production use proper embedding API
       const keywords = [
@@ -131,8 +137,9 @@ ${product.is_on_sale ? `On Sale: ${product.discount_percent}% off (Original: ${p
       });
 
       // Normalize the embedding
-      const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0)) || 1;
-      const normalizedEmbedding = embedding.map(val => val / magnitude);
+      const magnitude = Math.sqrt(embedding.reduce((sum, val) =>
+        sum + val * val, 0)) || 1;
+      const normalizedEmbedding = embedding.map((val) => val / magnitude);
 
       documents.push({
         content,
@@ -144,7 +151,7 @@ ${product.is_on_sale ? `On Sale: ${product.discount_percent}% off (Original: ${p
     // Insert documents in batches
     const batchSize = 50;
     let inserted = 0;
-    
+
     for (let i = 0; i < documents.length; i += batchSize) {
       const batch = documents.slice(i, i + batchSize);
       const { error: insertError } = await supabaseAdmin
@@ -155,25 +162,29 @@ ${product.is_on_sale ? `On Sale: ${product.discount_percent}% off (Original: ${p
         console.error(`Batch insert error:`, insertError);
         throw new Error(`Failed to insert documents: ${insertError.message}`);
       }
-      
+
       inserted += batch.length;
       console.log(`Inserted ${inserted}/${documents.length} documents`);
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: `Successfully populated ${documents.length} product documents`,
-        count: documents.length 
+        count: documents.length,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-
   } catch (error) {
     console.error("Generate embeddings error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

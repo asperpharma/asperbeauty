@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -32,7 +32,19 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Upload, Loader2, Image as ImageIcon, ShieldCheck, Wand2, RefreshCw, Sparkles, Eraser } from "lucide-react";
+import {
+  Eraser,
+  Image as ImageIcon,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Upload,
+  Wand2,
+} from "lucide-react";
 import { getProductImage } from "@/lib/productImageUtils";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -64,7 +76,9 @@ const ManageProducts = () => {
   const [isEnriching, setIsEnriching] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [removingBgId, setRemovingBgId] = useState<string | null>(null);
-  const [enrichResults, setEnrichResults] = useState<{ id: string; title: string; status: string; image_url?: string }[] | null>(null);
+  const [enrichResults, setEnrichResults] = useState<
+    { id: string; title: string; status: string; image_url?: string }[] | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -81,29 +95,29 @@ const ManageProducts = () => {
     const checkAdminStatus = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
-          navigate('/auth');
+          navigate("/auth");
           return;
         }
 
         const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
           .maybeSingle();
 
         if (!roles) {
-          toast.error('Access denied. Admin privileges required.');
-          navigate('/');
+          toast.error("Access denied. Admin privileges required.");
+          navigate("/");
           return;
         }
 
         setIsAdmin(true);
       } catch (error) {
-        console.error('Auth check error:', error);
-        navigate('/auth');
+        console.error("Auth check error:", error);
+        navigate("/auth");
       } finally {
         setAuthChecked(true);
       }
@@ -119,15 +133,15 @@ const ManageProducts = () => {
     const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
 
         if (error) throw error;
         setProducts(data || []);
       } catch (err: any) {
-        console.error('Error fetching products:', err);
-        toast.error('Failed to load products');
+        console.error("Error fetching products:", err);
+        toast.error("Failed to load products");
       } finally {
         setIsLoading(false);
       }
@@ -167,38 +181,40 @@ const ManageProducts = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error("Image must be less than 5MB");
       return;
     }
 
     try {
       setUploadingImage(true);
-      
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${
+        Math.random().toString(36).substring(7)
+      }.${fileExt}`;
       const filePath = `products/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('product-images')
+        .from("product-images")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
+        .from("product-images")
         .getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      toast.success('Image uploaded successfully');
+      setFormData((prev) => ({ ...prev, image_url: publicUrl }));
+      toast.success("Image uploaded successfully");
     } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
     } finally {
       setUploadingImage(false);
     }
@@ -206,15 +222,15 @@ const ManageProducts = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim() || !formData.price) {
-      toast.error('Title and price are required');
+      toast.error("Title and price are required");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       const productData = {
         title: formData.title.trim(),
         price: parseFloat(formData.price),
@@ -225,55 +241,57 @@ const ManageProducts = () => {
 
       if (editingProduct) {
         const { error } = await supabase
-          .from('products')
+          .from("products")
           .update(productData)
-          .eq('id', editingProduct.id);
+          .eq("id", editingProduct.id);
 
         if (error) throw error;
-        
-        setProducts(prev => 
-          prev.map(p => p.id === editingProduct.id ? { ...p, ...productData } : p)
+
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === editingProduct.id ? { ...p, ...productData } : p
+          )
         );
-        toast.success('Product updated successfully');
+        toast.success("Product updated successfully");
       } else {
         const { data, error } = await supabase
-          .from('products')
+          .from("products")
           .insert([productData])
           .select()
           .single();
 
         if (error) throw error;
-        
-        setProducts(prev => [data, ...prev]);
-        toast.success('Product created successfully');
+
+        setProducts((prev) => [data, ...prev]);
+        toast.success("Product created successfully");
       }
 
       setIsDialogOpen(false);
       resetForm();
     } catch (error: any) {
-      console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to save product');
+      console.error("Submit error:", error);
+      toast.error(error.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
       const { error } = await supabase
-        .from('products')
+        .from("products")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
-      
-      setProducts(prev => prev.filter(p => p.id !== id));
-      toast.success('Product deleted successfully');
+
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Product deleted successfully");
     } catch (error: any) {
-      console.error('Delete error:', error);
-      toast.error('Failed to delete product');
+      console.error("Delete error:", error);
+      toast.error("Failed to delete product");
     }
   };
 
@@ -281,29 +299,33 @@ const ManageProducts = () => {
     try {
       setIsEnriching(true);
       setEnrichResults(null);
-      
-      const { data, error } = await supabase.functions.invoke('enrich-products');
-      
+
+      const { data, error } = await supabase.functions.invoke(
+        "enrich-products",
+      );
+
       if (error) throw error;
-      
+
       setEnrichResults(data.results || []);
-      
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
-      
+
+      const successCount = data.results?.filter((r: any) =>
+        r.status === "success"
+      ).length || 0;
+
       if (successCount > 0) {
         toast.success(`Enriched ${successCount} products with images`);
         // Refresh products list
         const { data: refreshedProducts } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
         if (refreshedProducts) setProducts(refreshedProducts);
       } else {
-        toast.info('No new images found. Try adding source URLs to products.');
+        toast.info("No new images found. Try adding source URLs to products.");
       }
     } catch (error: any) {
-      console.error('Enrichment error:', error);
-      toast.error('Failed to enrich products');
+      console.error("Enrichment error:", error);
+      toast.error("Failed to enrich products");
     } finally {
       setIsEnriching(false);
     }
@@ -313,35 +335,42 @@ const ManageProducts = () => {
     try {
       setIsGeneratingAI(true);
       setEnrichResults(null);
-      
-      toast.info('Generating AI images for products without images...');
-      
-      const { data, error } = await supabase.functions.invoke('generate-product-images', {
-        body: { limit: 5 }
-      });
-      
+
+      toast.info("Generating AI images for products without images...");
+
+      const { data, error } = await supabase.functions.invoke(
+        "generate-product-images",
+        {
+          body: { limit: 5 },
+        },
+      );
+
       if (error) throw error;
-      
+
       setEnrichResults(data.results || []);
-      
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
-      
+
+      const successCount = data.results?.filter((r: any) =>
+        r.status === "success"
+      ).length || 0;
+
       if (successCount > 0) {
         toast.success(`Generated ${successCount} AI product images`);
         // Refresh products list
         const { data: refreshedProducts } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
         if (refreshedProducts) setProducts(refreshedProducts);
       } else if (data.total === 0) {
-        toast.info('All products already have images!');
+        toast.info("All products already have images!");
       } else {
-        toast.warning('AI image generation had issues. Check console for details.');
+        toast.warning(
+          "AI image generation had issues. Check console for details.",
+        );
       }
     } catch (error: any) {
-      console.error('AI Generation error:', error);
-      toast.error('Failed to generate AI images');
+      console.error("AI Generation error:", error);
+      toast.error("Failed to generate AI images");
     } finally {
       setIsGeneratingAI(false);
     }
@@ -349,42 +378,45 @@ const ManageProducts = () => {
 
   const handleRemoveBackground = async (product: Product) => {
     if (!product.image_url) {
-      toast.error('Product has no image to process');
+      toast.error("Product has no image to process");
       return;
     }
 
     try {
       setRemovingBgId(product.id);
-      toast.info('Removing background with AI...', { duration: 5000 });
-      
-      const { data, error } = await supabase.functions.invoke('remove-background', {
-        body: { 
-          productId: product.id, 
-          imageUrl: product.image_url 
-        }
-      });
-      
+      toast.info("Removing background with AI...", { duration: 5000 });
+
+      const { data, error } = await supabase.functions.invoke(
+        "remove-background",
+        {
+          body: {
+            productId: product.id,
+            imageUrl: product.image_url,
+          },
+        },
+      );
+
       if (error) throw error;
-      
+
       if (data.success) {
-        toast.success('Background removed successfully!');
+        toast.success("Background removed successfully!");
         // Refresh products list
         const { data: refreshedProducts } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
         if (refreshedProducts) setProducts(refreshedProducts);
       } else {
-        throw new Error(data.error || 'Background removal failed');
+        throw new Error(data.error || "Background removal failed");
       }
     } catch (error: any) {
-      console.error('Background removal error:', error);
-      if (error.message?.includes('Rate limit')) {
-        toast.error('Rate limit exceeded. Please wait and try again.');
-      } else if (error.message?.includes('credits')) {
-        toast.error('AI credits exhausted. Please add credits.');
+      console.error("Background removal error:", error);
+      if (error.message?.includes("Rate limit")) {
+        toast.error("Rate limit exceeded. Please wait and try again.");
+      } else if (error.message?.includes("credits")) {
+        toast.error("AI credits exhausted. Please add credits.");
       } else {
-        toast.error('Failed to remove background');
+        toast.error("Failed to remove background");
       }
     } finally {
       setRemovingBgId(null);
@@ -409,13 +441,15 @@ const ManageProducts = () => {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <ShieldCheck className="w-5 h-5 text-gold" />
-                <span className="text-xs uppercase tracking-widest text-gold font-body">Admin Panel</span>
+                <span className="text-xs uppercase tracking-widest text-gold font-body">
+                  Admin Panel
+                </span>
               </div>
               <h1 className="luxury-heading text-3xl md:text-4xl font-semibold">
-                {language === 'ar' ? 'إدارة المنتجات' : 'Manage Products'}
+                {language === "ar" ? "إدارة المنتجات" : "Manage Products"}
               </h1>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleGenerateAIImages}
@@ -423,31 +457,27 @@ const ManageProducts = () => {
                 variant="outline"
                 className="border-primary/30 text-primary hover:bg-primary/10"
               >
-                {isGeneratingAI ? (
-                  <RefreshCw className="w-4 h-4 me-2 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4 me-2" />
-                )}
-                {isGeneratingAI ? 'Generating...' : 'Generate AI Images'}
+                {isGeneratingAI
+                  ? <RefreshCw className="w-4 h-4 me-2 animate-spin" />
+                  : <Sparkles className="w-4 h-4 me-2" />}
+                {isGeneratingAI ? "Generating..." : "Generate AI Images"}
               </Button>
-              
+
               <Button
                 onClick={handleEnrichProducts}
                 disabled={isEnriching || isGeneratingAI}
                 variant="outline"
                 className="border-gold/30 text-gold hover:bg-gold/10"
               >
-                {isEnriching ? (
-                  <RefreshCw className="w-4 h-4 me-2 animate-spin" />
-                ) : (
-                  <Wand2 className="w-4 h-4 me-2" />
-                )}
-                {isEnriching ? 'Enriching...' : 'Auto-Enrich'}
+                {isEnriching
+                  ? <RefreshCw className="w-4 h-4 me-2 animate-spin" />
+                  : <Wand2 className="w-4 h-4 me-2" />}
+                {isEnriching ? "Enriching..." : "Auto-Enrich"}
               </Button>
-              
+
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button 
+                  <Button
                     onClick={() => handleOpenDialog()}
                     className="bg-burgundy hover:bg-burgundy-light text-white font-body uppercase tracking-wider"
                   >
@@ -455,145 +485,169 @@ const ManageProducts = () => {
                     Add Product
                   </Button>
                 </DialogTrigger>
-              
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle className="font-display text-xl">
-                    {editingProduct ? 'Edit Product' : 'Add New Product'}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {editingProduct 
-                      ? 'Update the product details below.' 
-                      : 'Fill in the details to add a new product.'}
-                  </DialogDescription>
-                </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Product title"
-                      required
-                    />
-                  </div>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="font-display text-xl">
+                      {editingProduct ? "Edit Product" : "Add New Product"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingProduct
+                        ? "Update the product details below."
+                        : "Fill in the details to add a new product."}
+                    </DialogDescription>
+                  </DialogHeader>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <Label htmlFor="price">Price (JOD) *</Label>
+                      <Label htmlFor="title">Title *</Label>
                       <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.price}
-                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                        placeholder="0.00"
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))}
+                        placeholder="Product title"
                         required
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="category">Category</Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Product description..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Product Image</Label>
-                    <div className="mt-2 space-y-3">
-                      {formData.image_url && (
-                        <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gold/20">
-                          <img 
-                            src={formData.image_url} 
-                            alt="Preview" 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-3">
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="price">Price (JOD) *</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formData.price}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              price: e.target.value,
+                            }))}
+                          placeholder="0.00"
+                          required
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingImage}
-                          className="border-gold/30"
-                        >
-                          {uploadingImage ? (
-                            <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4 me-2" />
-                          )}
-                          Upload Image
-                        </Button>
-                        
-                        <span className="text-xs text-muted-foreground">
-                          or leave empty for auto-placeholder
-                        </span>
                       </div>
 
-                      <Input
-                        value={formData.image_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                        placeholder="Or paste image URL..."
-                        className="text-sm"
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Select
+                          value={formData.category}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              category: value,
+                            }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))}
+                        placeholder="Product description..."
+                        rows={3}
                       />
                     </div>
-                  </div>
 
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-burgundy hover:bg-burgundy-light text-white"
-                    >
-                      {isSubmitting && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
-                      {editingProduct ? 'Update' : 'Create'} Product
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    <div>
+                      <Label>Product Image</Label>
+                      <div className="mt-2 space-y-3">
+                        {formData.image_url && (
+                          <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-gold/20">
+                            <img
+                              src={formData.image_url}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingImage}
+                            className="border-gold/30"
+                          >
+                            {uploadingImage
+                              ? (
+                                <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                              )
+                              : <Upload className="w-4 h-4 me-2" />}
+                            Upload Image
+                          </Button>
+
+                          <span className="text-xs text-muted-foreground">
+                            or leave empty for auto-placeholder
+                          </span>
+                        </div>
+
+                        <Input
+                          value={formData.image_url}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              image_url: e.target.value,
+                            }))}
+                          placeholder="Or paste image URL..."
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="bg-burgundy hover:bg-burgundy-light text-white"
+                      >
+                        {isSubmitting && (
+                          <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                        )}
+                        {editingProduct ? "Update" : "Create"} Product
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -613,12 +667,23 @@ const ManageProducts = () => {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {enrichResults.map((result) => (
-                  <div key={result.id} className="flex items-center gap-2 text-sm p-2 rounded bg-cream/50">
+                  <div
+                    key={result.id}
+                    className="flex items-center gap-2 text-sm p-2 rounded bg-cream/50"
+                  >
                     <Badge
-                      variant={result.status === 'success' ? 'default' : 'secondary'}
-                      className={result.status === 'success' ? 'bg-green-500' : ''}
+                      variant={result.status === "success"
+                        ? "default"
+                        : "secondary"}
+                      className={result.status === "success"
+                        ? "bg-green-500"
+                        : ""}
                     >
-                      {result.status === 'success' ? '✓' : result.status === 'fetch_failed' ? '⚠' : '✗'}
+                      {result.status === "success"
+                        ? "✓"
+                        : result.status === "fetch_failed"
+                        ? "⚠"
+                        : "✗"}
                     </Badge>
                     <span className="truncate text-xs">{result.title}</span>
                   </div>
@@ -632,95 +697,107 @@ const ManageProducts = () => {
 
           {/* Products Table */}
           <div className="bg-white rounded-xl border border-gold/20 shadow-gold-sm overflow-hidden">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-gold animate-spin" />
-              </div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-20">
-                <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No products yet. Add your first product!</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-cream/50">
-                    <TableHead className="w-16">Image</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="w-24 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id} className="group">
-                      <TableCell>
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-cream">
-                          <img
-                            src={getProductImage(product.image_url, product.category, product.title)}
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-foreground">{product.title}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {product.description || 'No description'}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                          {product.category}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-burgundy">
-                        JOD {Number(product.price).toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {product.image_url && (
+            {isLoading
+              ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-gold animate-spin" />
+                </div>
+              )
+              : products.length === 0
+              ? (
+                <div className="text-center py-20">
+                  <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    No products yet. Add your first product!
+                  </p>
+                </div>
+              )
+              : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-cream/50">
+                      <TableHead className="w-16">Image</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product) => (
+                      <TableRow key={product.id} className="group">
+                        <TableCell>
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-cream">
+                            <img
+                              src={getProductImage(
+                                product.image_url,
+                                product.category,
+                                product.title,
+                              )}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {product.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {product.description || "No description"}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {product.category}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-burgundy">
+                          JOD {Number(product.price).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {product.image_url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveBackground(product)}
+                                disabled={removingBgId === product.id}
+                                className="text-muted-foreground hover:text-primary"
+                                title="Remove Background"
+                              >
+                                {removingBgId === product.id
+                                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                                  : <Eraser className="w-4 h-4" />}
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleRemoveBackground(product)}
-                              disabled={removingBgId === product.id}
-                              className="text-muted-foreground hover:text-primary"
-                              title="Remove Background"
+                              onClick={() =>
+                                handleOpenDialog(product)}
+                              className="text-muted-foreground hover:text-burgundy"
                             >
-                              {removingBgId === product.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Eraser className="w-4 h-4" />
-                              )}
+                              <Pencil className="w-4 h-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenDialog(product)}
-                            className="text-muted-foreground hover:text-burgundy"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(product.id)}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleDelete(product.id)}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
           </div>
         </div>
       </main>

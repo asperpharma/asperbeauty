@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, ImgHTMLAttributes } from "react";
+import { ImgHTMLAttributes, useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface BlurUpImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'onLoad' | 'onError'> {
+interface BlurUpImageProps
+  extends Omit<ImgHTMLAttributes<HTMLImageElement>, "onLoad" | "onError"> {
   /** Full-resolution image URL */
   src: string;
   /** Alt text for accessibility */
@@ -39,19 +40,19 @@ export const BlurUpImage = ({
   // Generate a tiny placeholder URL for Shopify CDN images
   const getPlaceholder = useCallback((url: string): string => {
     if (placeholderSrc) return placeholderSrc;
-    
+
     // For Shopify CDN, request a tiny version
-    if (url?.includes('cdn.shopify.com')) {
+    if (url?.includes("cdn.shopify.com")) {
       try {
         const urlObj = new URL(url);
-        urlObj.searchParams.set('width', '20');
-        urlObj.searchParams.set('height', '20');
+        urlObj.searchParams.set("width", "20");
+        urlObj.searchParams.set("height", "20");
         return urlObj.toString();
       } catch {
         return url;
       }
     }
-    
+
     // Return original for non-Shopify images
     return url;
   }, [placeholderSrc]);
@@ -83,9 +84,9 @@ export const BlurUpImage = ({
         className={cn(
           "absolute inset-0 w-full h-full",
           "transition-opacity",
-          isLoaded ? "opacity-0" : "opacity-100"
+          isLoaded ? "opacity-0" : "opacity-100",
         )}
-        style={{ 
+        style={{
           transitionDuration: `${transitionDuration}ms`,
         }}
       >
@@ -95,18 +96,18 @@ export const BlurUpImage = ({
           aria-hidden="true"
           className={cn(
             "w-full h-full object-cover scale-110",
-            className
+            className,
           )}
-          style={{ 
+          style={{
             filter: `blur(${blurAmount}px)`,
-            transform: 'scale(1.1)', // Prevent blur edges from showing
+            transform: "scale(1.1)", // Prevent blur edges from showing
           }}
         />
         {/* Subtle shimmer overlay during load */}
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"
           style={{
-            backgroundSize: '200% 100%',
+            backgroundSize: "200% 100%",
           }}
         />
       </div>
@@ -118,9 +119,9 @@ export const BlurUpImage = ({
         className={cn(
           "w-full h-full transition-opacity",
           isLoaded && !isError ? "opacity-100" : "opacity-0",
-          className
+          className,
         )}
-        style={{ 
+        style={{
           transitionDuration: `${transitionDuration}ms`,
         }}
         onLoad={handleLoad}

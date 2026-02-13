@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Loader2, Minus, Plus, Heart, Star, ShieldCheck, Droplets, Sparkles, ShoppingBag } from "lucide-react";
+import {
+  Droplets,
+  Heart,
+  Loader2,
+  Minus,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { ShareButtons } from "@/components/ShareButtons";
 import { toast } from "sonner";
-import { getLocalizedDescription, getLocalizedCategory, translateTitle } from "@/lib/productUtils";
+import {
+  getLocalizedCategory,
+  getLocalizedDescription,
+  translateTitle,
+} from "@/lib/productUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Accordion,
@@ -40,7 +54,7 @@ interface SupabaseProduct {
 const ProductDetail = () => {
   const { handle } = useParams<{ handle: string }>();
   const { language } = useLanguage();
-  const isArabic = language === 'ar';
+  const isArabic = language === "ar";
   const [product, setProduct] = useState<SupabaseProduct | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<SupabaseProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,9 +69,9 @@ const ProductDetail = () => {
       if (!handle) return;
       try {
         const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', handle)
+          .from("products")
+          .select("*")
+          .eq("id", handle)
           .maybeSingle();
 
         if (error) throw error;
@@ -65,12 +79,12 @@ const ProductDetail = () => {
 
         if (data?.category) {
           const { data: related } = await supabase
-            .from('products')
-            .select('*')
-            .eq('category', data.category)
-            .neq('id', handle)
+            .from("products")
+            .select("*")
+            .eq("category", data.category)
+            .neq("id", handle)
             .limit(4);
-          
+
           setRelatedProducts(related || []);
         }
       } catch (error) {
@@ -96,12 +110,19 @@ const ProductDetail = () => {
           handle: product.id,
           description: product.description || "",
           priceRange: {
-            minVariantPrice: { amount: product.price.toString(), currencyCode: "JOD" },
+            minVariantPrice: {
+              amount: product.price.toString(),
+              currencyCode: "JOD",
+            },
           },
-          images: { edges: [{ node: { url: product.image_url || "", altText: product.title } }] },
+          images: {
+            edges: [{
+              node: { url: product.image_url || "", altText: product.title },
+            }],
+          },
           variants: { edges: [] },
           options: [],
-        }
+        },
       },
       variantId: product.id,
       variantTitle: "Default",
@@ -111,10 +132,13 @@ const ProductDetail = () => {
     };
 
     addItem(cartItem);
-    toast.success(isArabic ? "تمت الإضافة إلى الحقيبة" : "Added to your ritual", {
-      description: product.title,
-      position: "top-center",
-    });
+    toast.success(
+      isArabic ? "تمت الإضافة إلى الحقيبة" : "Added to your ritual",
+      {
+        description: product.title,
+        position: "top-center",
+      },
+    );
     setCartOpen(true);
   };
 
@@ -126,25 +150,38 @@ const ProductDetail = () => {
         title: product.title,
         handle: product.id,
         description: product.description || "",
-        priceRange: { minVariantPrice: { amount: product.price.toString(), currencyCode: "JOD" } },
-        images: { edges: [{ node: { url: product.image_url || "", altText: product.title } }] },
+        priceRange: {
+          minVariantPrice: {
+            amount: product.price.toString(),
+            currencyCode: "JOD",
+          },
+        },
+        images: {
+          edges: [{
+            node: { url: product.image_url || "", altText: product.title },
+          }],
+        },
         variants: { edges: [] },
         options: [],
-      }
+      },
     };
     toggleItem(shopifyFormat);
     if (!isInWishlist(product.id)) {
-      toast.success(isArabic ? "تمت الإضافة إلى المفضلة" : "Added to wishlist", {
-        description: product.title,
-        position: "top-center",
-      });
+      toast.success(
+        isArabic ? "تمت الإضافة إلى المفضلة" : "Added to wishlist",
+        {
+          description: product.title,
+          position: "top-center",
+        },
+      );
     }
   };
 
   const isWishlisted = product ? isInWishlist(product.id) : false;
   const currentPrice = product?.price || 0;
   const originalPrice = product?.original_price || null;
-  const isOnSale = product?.is_on_sale && originalPrice && originalPrice > currentPrice;
+  const isOnSale = product?.is_on_sale && originalPrice &&
+    originalPrice > currentPrice;
   const discountPercent = product?.discount_percent || 0;
 
   // 💎 LUXURY LOADING STATE
@@ -173,10 +210,10 @@ const ProductDetail = () => {
         <Header />
         <div className="flex flex-col items-center justify-center min-h-[60vh] pt-36">
           <h1 className="font-serif text-2xl text-foreground mb-4">
-            {isArabic ? 'المنتج غير موجود' : 'Product Not Found'}
+            {isArabic ? "المنتج غير موجود" : "Product Not Found"}
           </h1>
           <Link to="/" className="text-primary hover:underline text-sm">
-            {isArabic ? 'العودة للمتجر' : 'Return to Shop'}
+            {isArabic ? "العودة للمتجر" : "Return to Shop"}
           </Link>
         </div>
         <Footer />
@@ -185,32 +222,39 @@ const ProductDetail = () => {
   }
 
   // Smart Defaults for Scraped Data
-  const brandName = product.brand || (isArabic ? "مجموعة حصرية" : "Exclusive Collection");
-  const textureInfo = product.texture 
-    || (product.volume_ml 
-      ? `${product.volume_ml}ml - ${isArabic ? "قوام حريري سريع الامتصاص" : "Silky, fast-absorbing formula"}`
-      : (isArabic ? "قوام حريري سريع الامتصاص" : "Silky, fast-absorbing formula"));
-  const scentInfo = product.scent || (isArabic ? "خالٍ من العطور / طبيعي" : "Fragrance-free / Natural");
-  
+  const brandName = product.brand ||
+    (isArabic ? "مجموعة حصرية" : "Exclusive Collection");
+  const textureInfo = product.texture ||
+    (product.volume_ml
+      ? `${product.volume_ml}ml - ${
+        isArabic ? "قوام حريري سريع الامتصاص" : "Silky, fast-absorbing formula"
+      }`
+      : (isArabic
+        ? "قوام حريري سريع الامتصاص"
+        : "Silky, fast-absorbing formula"));
+  const scentInfo = product.scent ||
+    (isArabic ? "خالٍ من العطور / طبيعي" : "Fragrance-free / Natural");
+
   // If we only have 1 image, duplicate it for gallery effect
-  const galleryImages = product.image_url 
-    ? [product.image_url, product.image_url] 
-    : ["https://images.unsplash.com/photo-1571781535014-53bd44f29186?q=80&w=1200"];
+  const galleryImages = product.image_url
+    ? [product.image_url, product.image_url]
+    : [
+      "https://images.unsplash.com/photo-1571781535014-53bd44f29186?q=80&w=1200",
+    ];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Split Screen Layout */}
       <div className="grid lg:grid-cols-2 min-h-screen pt-20">
-        
         {/* LEFT: The Gallery (Cinematic Scroll) */}
         <div className="bg-muted/30 lg:overflow-y-auto">
           <div className="space-y-1">
             {galleryImages.map((img, idx) => (
               <div key={idx} className="relative aspect-[4/5] overflow-hidden">
-                <img 
-                  src={img} 
+                <img
+                  src={img}
                   alt={`${product.title} - View ${idx + 1}`}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
@@ -230,14 +274,19 @@ const ProductDetail = () => {
         {/* RIGHT: The Editorial Details */}
         <div className="lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto bg-background">
           <div className="p-8 lg:p-16 flex flex-col justify-center min-h-full">
-            
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-2 text-sm mb-6">
-              <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                {isArabic ? 'الرئيسية' : 'Home'}
+              <Link
+                to="/"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isArabic ? "الرئيسية" : "Home"}
               </Link>
               <span className="text-muted-foreground">/</span>
-              <Link to="/collections" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                to="/collections"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 {getLocalizedCategory(product.category, language)}
               </Link>
             </nav>
@@ -250,7 +299,7 @@ const ProductDetail = () => {
               <h1 className="font-serif text-3xl lg:text-4xl text-foreground leading-tight mb-6">
                 {translateTitle(product.title, language)}
               </h1>
-              
+
               {/* Price & Rating */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
@@ -266,7 +315,10 @@ const ProductDetail = () => {
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                      <Star
+                        key={i}
+                        className="w-4 h-4 fill-primary text-primary"
+                      />
                     ))}
                   </div>
                   <span className="text-sm text-muted-foreground">
@@ -278,12 +330,10 @@ const ProductDetail = () => {
 
             {/* Description */}
             <p className="text-muted-foreground leading-relaxed mb-8 font-light">
-              {getLocalizedDescription(product.description, language, 300) || 
-                (isArabic 
-                  ? 'منتج تجميل فاخر من مجموعتنا المختارة، مصنوع بأجود المكونات للحصول على بشرة مشرقة ونضرة.'
-                  : 'A premium beauty product from our curated collection, crafted with the finest ingredients for radiant and youthful skin.'
-                )
-              }
+              {getLocalizedDescription(product.description, language, 300) ||
+                (isArabic
+                  ? "منتج تجميل فاخر من مجموعتنا المختارة، مصنوع بأجود المكونات للحصول على بشرة مشرقة ونضرة."
+                  : "A premium beauty product from our curated collection, crafted with the finest ingredients for radiant and youthful skin.")}
             </p>
 
             {/* Sensory Details */}
@@ -307,14 +357,16 @@ const ProductDetail = () => {
             {/* Quantity & Add to Bag */}
             <div className="space-y-6 mb-10">
               <div className="flex items-center justify-center gap-8 py-4 border border-border">
-                <button 
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-3 hover:text-primary transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="text-lg font-medium w-8 text-center">{quantity}</span>
-                <button 
+                <span className="text-lg font-medium w-8 text-center">
+                  {quantity}
+                </span>
+                <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="p-3 hover:text-primary transition-colors"
                 >
@@ -323,33 +375,40 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex gap-4">
-                <Button 
+                <Button
                   onClick={handleAddToCart}
                   className="flex-1 py-6 text-base font-medium tracking-wide bg-primary hover:bg-primary/90 text-primary-foreground rounded-none"
                 >
                   <ShoppingBag className="w-5 h-5 mr-3" />
-                  {isArabic ? "أضف إلى الحقيبة" : "Add to Ritual"} — {(currentPrice * quantity).toFixed(3)} JOD
+                  {isArabic ? "أضف إلى الحقيبة" : "Add to Ritual"} —{" "}
+                  {(currentPrice * quantity).toFixed(3)} JOD
                 </Button>
                 <button
                   onClick={handleWishlistToggle}
                   className={`w-14 h-14 flex items-center justify-center border transition-all ${
                     isWishlisted
-                      ? 'bg-primary border-primary text-primary-foreground'
-                      : 'border-border text-foreground hover:border-primary'
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "border-border text-foreground hover:border-primary"
                   }`}
                 >
-                  <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                  <Heart
+                    className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
+                  />
                 </button>
               </div>
-              
+
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                {isArabic ? "موزع معتمد • منتج أصلي 100%" : "Authorized Retailer • 100% Authentic"}
+                {isArabic
+                  ? "موزع معتمد • منتج أصلي 100%"
+                  : "Authorized Retailer • 100% Authentic"}
               </div>
 
-              <ShareButtons 
-                url={window.location.href} 
-                title={`${isArabic ? 'اكتشف' : 'Check out'} ${product.title} ${isArabic ? 'من آسبر بيوتي' : 'from Asper Beauty'}`}
+              <ShareButtons
+                url={window.location.href}
+                title={`${isArabic ? "اكتشف" : "Check out"} ${product.title} ${
+                  isArabic ? "من آسبر بيوتي" : "from Asper Beauty"
+                }`}
               />
             </div>
 
@@ -363,10 +422,9 @@ const ProductDetail = () => {
                   <div className="flex items-start gap-3 py-2">
                     <Sparkles className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {isArabic 
+                      {isArabic
                         ? "ضعيه صباحاً ومساءً على بشرة نظيفة قبل المرطب. استخدمي كمية مناسبة ووزعيها بلطف على الوجه والرقبة."
-                        : "Apply AM and PM on clean skin before your moisturizer. Gently smooth over face and throat."
-                      }
+                        : "Apply AM and PM on clean skin before your moisturizer. Gently smooth over face and throat."}
                     </p>
                   </div>
                 </AccordionContent>
@@ -378,10 +436,9 @@ const ProductDetail = () => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {isArabic 
+                    {isArabic
                       ? "مكونات طبيعية فاخرة تعمل على ترطيب البشرة وتجديدها. تحتوي على فيتامين سي وحمض الهيالورونيك والنياسيناميد."
-                      : "Premium natural ingredients that hydrate and rejuvenate. Contains Vitamin C, Hyaluronic Acid, and Niacinamide."
-                    }
+                      : "Premium natural ingredients that hydrate and rejuvenate. Contains Vitamin C, Hyaluronic Acid, and Niacinamide."}
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -392,15 +449,13 @@ const ProductDetail = () => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {isArabic 
+                    {isArabic
                       ? "شحن مجاني للطلبات فوق 50 دينار. التوصيل خلال 24-48 ساعة في عمان. 3 دينار للتوصيل داخل عمان، 5 دينار للمحافظات."
-                      : "Free shipping on all orders over 50 JOD. Delivered within 24-48 hours in Amman. 3 JOD for Amman, 5 JOD for Governorates."
-                    }
+                      : "Free shipping on all orders over 50 JOD. Delivered within 24-48 hours in Amman. 3 JOD for Amman, 5 JOD for Governorates."}
                   </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-
           </div>
         </div>
       </div>
@@ -414,14 +469,14 @@ const ProductDetail = () => {
             </h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((related) => (
-                <Link 
-                  key={related.id} 
+                <Link
+                  key={related.id}
                   to={`/product/${related.id}`}
                   className="group bg-background rounded-lg overflow-hidden border border-border hover:border-primary transition-all"
                 >
                   <div className="aspect-square overflow-hidden">
-                    <img 
-                      src={related.image_url || "/placeholder.svg"} 
+                    <img
+                      src={related.image_url || "/placeholder.svg"}
                       alt={related.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -451,11 +506,13 @@ const ProductDetail = () => {
             onClick={handleWishlistToggle}
             className={`w-12 h-12 flex-shrink-0 flex items-center justify-center border transition-all ${
               isWishlisted
-                ? 'bg-primary border-primary text-primary-foreground'
-                : 'border-border text-foreground'
+                ? "bg-primary border-primary text-primary-foreground"
+                : "border-border text-foreground"
             }`}
           >
-            <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+            <Heart
+              className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
+            />
           </button>
           <div className="flex-shrink-0">
             <p className="text-xl text-primary font-medium">
@@ -466,7 +523,7 @@ const ProductDetail = () => {
             onClick={handleAddToCart}
             className="flex-1 py-3 bg-primary text-primary-foreground font-medium rounded-none"
           >
-            {isArabic ? 'أضف إلى الحقيبة' : 'Add to Bag'}
+            {isArabic ? "أضف إلى الحقيبة" : "Add to Bag"}
           </Button>
         </div>
       </div>

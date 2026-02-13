@@ -1,11 +1,15 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Globe } from "lucide-react";
 
-export const LanguageSwitcher = ({ variant = "default" }: { variant?: "default" | "mobile" | "announcement" | "header" }) => {
+export const LanguageSwitcher = (
+  { variant = "default" }: {
+    variant?: "default" | "mobile" | "announcement" | "header";
+  },
+) => {
   const { language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'ar' : 'en');
+    setLanguage(language === "en" ? "ar" : "en");
   };
 
   if (variant === "announcement") {
@@ -16,7 +20,7 @@ export const LanguageSwitcher = ({ variant = "default" }: { variant?: "default" 
         aria-label="Toggle language"
       >
         <Globe className="w-3.5 h-3.5" />
-        <span>{language === 'en' ? 'AR' : 'EN'}</span>
+        <span>{language === "en" ? "AR" : "EN"}</span>
       </button>
     );
   }
@@ -29,7 +33,7 @@ export const LanguageSwitcher = ({ variant = "default" }: { variant?: "default" 
         aria-label="Toggle language"
       >
         <Globe className="w-3.5 h-3.5" />
-        <span>{language === 'en' ? 'العربية' : 'EN'}</span>
+        <span>{language === "en" ? "العربية" : "EN"}</span>
       </button>
     );
   }
@@ -42,7 +46,7 @@ export const LanguageSwitcher = ({ variant = "default" }: { variant?: "default" 
         aria-label="Toggle language"
       >
         <Globe className="w-4 h-4" />
-        <span>{language === 'en' ? 'العربية' : 'English'}</span>
+        <span>{language === "en" ? "العربية" : "English"}</span>
       </button>
     );
   }
@@ -54,8 +58,10 @@ export const LanguageSwitcher = ({ variant = "default" }: { variant?: "default" 
       aria-label="Toggle language"
     >
       <Globe className="w-4 h-4" />
-      <span className="hidden sm:inline">{language === 'en' ? 'العربية' : 'EN'}</span>
-      <span className="sm:hidden">{language === 'en' ? 'ع' : 'EN'}</span>
+      <span className="hidden sm:inline">
+        {language === "en" ? "العربية" : "EN"}
+      </span>
+      <span className="sm:hidden">{language === "en" ? "ع" : "EN"}</span>
     </button>
   );
 };

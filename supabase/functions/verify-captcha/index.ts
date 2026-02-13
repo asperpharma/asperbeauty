@@ -2,7 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -17,7 +18,10 @@ serve(async (req) => {
     if (!token) {
       return new Response(
         JSON.stringify({ success: false, error: "No captcha token provided" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -25,8 +29,14 @@ serve(async (req) => {
     if (!secretKey) {
       console.error("HCAPTCHA_SECRET_KEY not configured");
       return new Response(
-        JSON.stringify({ success: false, error: "Captcha verification unavailable" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          error: "Captcha verification unavailable",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -42,20 +52,29 @@ serve(async (req) => {
     if (result.success) {
       return new Response(
         JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     } else {
       console.log("hCaptcha verification failed:", result["error-codes"]);
       return new Response(
-        JSON.stringify({ success: false, error: "Captcha verification failed" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          error: "Captcha verification failed",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
   } catch (error) {
     console.error("Captcha verification error:", error);
     return new Response(
       JSON.stringify({ success: false, error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

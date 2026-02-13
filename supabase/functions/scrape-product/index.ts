@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface FirecrawlResponse {
@@ -32,42 +33,60 @@ serve(async (req) => {
     if (!url) {
       return new Response(
         JSON.stringify({ success: false, error: "URL is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlApiKey) {
       return new Response(
-        JSON.stringify({ success: false, error: "Firecrawl API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          error: "Firecrawl API key not configured",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     console.log(`🔍 Scraping product details from: ${url}`);
 
     // Use Firecrawl with markdown and links to extract product data
-    const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${firecrawlApiKey}`,
-        "Content-Type": "application/json",
+    const firecrawlResponse = await fetch(
+      "https://api.firecrawl.dev/v1/scrape",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${firecrawlApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url,
+          formats: ["markdown", "links"],
+          onlyMainContent: true,
+          waitFor: 2000,
+        }),
       },
-      body: JSON.stringify({
-        url,
-        formats: ["markdown", "links"],
-        onlyMainContent: true,
-        waitFor: 2000,
-      }),
-    });
+    );
 
     const data: FirecrawlResponse = await firecrawlResponse.json();
 
     if (!data.success) {
       console.error("Firecrawl error:", data.error);
       return new Response(
-        JSON.stringify({ success: false, error: data.error || "Scrape failed" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          error: data.error || "Scrape failed",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -84,39 +103,54 @@ serve(async (req) => {
     ];
 
     let productImage = metadata?.ogImage;
-    
+
     // Try to find a better product image from links
     for (const link of links) {
-      if (productImagePatterns.some(pattern => pattern.test(link)) && 
-          !link.includes('logo') && 
-          !link.includes('icon') &&
-          !link.includes('avatar')) {
+      if (
+        productImagePatterns.some((pattern) => pattern.test(link)) &&
+        !link.includes("logo") &&
+        !link.includes("icon") &&
+        !link.includes("avatar")
+      ) {
         productImage = link;
         break;
       }
     }
 
     // Extract price from markdown using regex
-    const priceMatch = markdown.match(/(?:JOD|JD|USD|\$|€|£)\s*(\d+(?:[.,]\d{1,3})?)/i) ||
-                       markdown.match(/(\d+(?:[.,]\d{1,3})?)\s*(?:JOD|JD|USD|\$|€|£)/i);
-    const price = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : null;
+    const priceMatch =
+      markdown.match(/(?:JOD|JD|USD|\$|€|£)\s*(\d+(?:[.,]\d{1,3})?)/i) ||
+      markdown.match(/(\d+(?:[.,]\d{1,3})?)\s*(?:JOD|JD|USD|\$|€|£)/i);
+    const price = priceMatch
+      ? parseFloat(priceMatch[1].replace(",", "."))
+      : null;
 
     // Extract description - first paragraph that's long enough
-    const descMatch = markdown.match(/([A-Z][^.!?]*(?:[.!?][^.!?]*){0,3}[.!?])/);
-    const description = descMatch ? descMatch[1].substring(0, 500) : metadata?.description;
+    const descMatch = markdown.match(
+      /([A-Z][^.!?]*(?:[.!?][^.!?]*){0,3}[.!?])/,
+    );
+    const description = descMatch
+      ? descMatch[1].substring(0, 500)
+      : metadata?.description;
 
-    console.log("📦 Extracted data:", { productImage, price, hasDescription: !!description });
+    console.log("📦 Extracted data:", {
+      productImage,
+      price,
+      hasDescription: !!description,
+    });
 
     // If productId is provided, update the product in database
     if (productId) {
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
 
       const updates: Record<string, any> = {};
-      
-      if (description && description.length > 20) updates.description = description;
+
+      if (description && description.length > 20) {
+        updates.description = description;
+      }
       if (price && price > 0) updates.price = price;
       if (productImage) updates.image_url = productImage;
 
@@ -129,7 +163,10 @@ serve(async (req) => {
         if (updateError) {
           console.error("Database update error:", updateError);
         } else {
-          console.log("✅ Product updated in database with:", Object.keys(updates));
+          console.log(
+            "✅ Product updated in database with:",
+            Object.keys(updates),
+          );
         }
       }
     }
@@ -146,14 +183,19 @@ serve(async (req) => {
           markdown_preview: markdown.substring(0, 300),
         },
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Scrape error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error
+      ? error.message
+      : "Unknown error";
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
