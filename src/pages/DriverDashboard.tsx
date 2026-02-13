@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,36 +78,7 @@ export default function DriverDashboard() {
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const hasLoggedListView = useRef(false);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    fetchOrders();
-    
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('driver-orders')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cod_orders',
-          filter: `driver_id=eq.${user.id}`,
-        },
-        () => {
-          fetchOrders();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, navigate]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -139,7 +110,36 @@ export default function DriverDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, logOrdersListView]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchOrders();
+    
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('driver-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cod_orders',
+          filter: `driver_id=eq.${user.id}`,
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, navigate, fetchOrders]);
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(true);
