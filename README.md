@@ -125,6 +125,41 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+| Document | Description |
+|----------|-------------|
+| [System Monitor](./docs/SYSTEM_MONITOR.md) | Central reference for monitoring the Digital Concierge ecosystem |
+| [Health Check Protocol](./docs/HEALTH_CHECK_PROTOCOL.md) | Build, lint, database, and Edge Function health checks |
+| [Next Steps](./docs/NEXT_STEPS.md) | Deployment checklist and procedures |
+| [Launch Execution Plan](./docs/LAUNCH_EXECUTION_PLAN.md) | Bulk import, secrets, and live-fire testing |
+| [Shopify Tagging Protocol](./docs/SHOPIFY_TAGGING_PROTOCOL.md) | Product tagging guidelines for AI recommendations |
+| [Beauty Assistant Deploy](./docs/BEAUTY_ASSISTANT_DEPLOY.md) | Edge Function deployment guide |
+
+### Health Checks
+
+Run automated health checks to verify system integrity:
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\health-checks.ps1
+```
+
+**Linux/Mac (Bash):**
+```bash
+./scripts/health-checks.sh
+```
+
+The health check script verifies:
+- ✅ Build succeeds
+- ✅ Linting passes
+- ✅ TypeScript compiles
+- ✅ Environment variables are set
+- ✅ Frontend is accessible (optional)
+- ✅ Edge Functions respond (optional)
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
