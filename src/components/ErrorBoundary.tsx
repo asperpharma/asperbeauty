@@ -25,8 +25,9 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("Uncaught error:", error, errorInfo);
     
     // Log error to Supabase for tracking
+    // Note: This uses the anon key which is safe for client-side error logging
+    // For production, consider using a dedicated error tracking service like Sentry
     try {
-      // Use fetch instead of importing supabase to avoid circular dependencies
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
@@ -36,12 +37,12 @@ export class ErrorBoundary extends Component<Props, State> {
           headers: {
             'Content-Type': 'application/json',
             'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
+            'Prefer': 'return=minimal', // Don't return the inserted row
           },
           body: JSON.stringify({
             error_message: error.message,
-            error_stack: error.stack,
-            component_stack: errorInfo.componentStack,
+            error_stack: error.stack?.substring(0, 5000), // Truncate to prevent large payloads
+            component_stack: errorInfo.componentStack?.substring(0, 5000),
             timestamp: new Date().toISOString(),
             user_agent: navigator.userAgent,
             url: window.location.href,
