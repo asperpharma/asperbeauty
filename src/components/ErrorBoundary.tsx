@@ -23,7 +23,38 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
-    // TODO: Send this to your logging service (e.g., Supabase / Sentry)
+    
+    // Log error to Supabase for tracking
+    try {
+      // Use fetch instead of importing supabase to avoid circular dependencies
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      if (supabaseUrl && supabaseKey) {
+        fetch(`${supabaseUrl}/rest/v1/error_logs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({
+            error_message: error.message,
+            error_stack: error.stack,
+            component_stack: errorInfo.componentStack,
+            timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
+            url: window.location.href,
+          }),
+        }).catch(err => {
+          // Silently fail - don't want error logging to break the app
+          console.error('Failed to log error to Supabase:', err);
+        });
+      }
+    } catch (loggingError) {
+      // Silently fail error logging
+      console.error('Error logging failed:', loggingError);
+    }
   }
 
   public render() {

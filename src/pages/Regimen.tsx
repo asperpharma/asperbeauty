@@ -15,7 +15,7 @@ import { CheckCircle2, ShoppingBag, Trash2, Plus, Minus, Package } from "lucide-
 export default function Regimen() {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotalPrice, getCheckoutUrl } = useCartStore();
 
   const isRTL = language === 'ar';
 
@@ -27,11 +27,17 @@ export default function Regimen() {
   }, [items.length, navigate]);
 
   const handleCheckout = () => {
-    // TODO: Replace with Shopify checkout API call using checkout.webUrl
-    // This should create a checkout session and redirect to Shopify's hosted checkout page
-    // Example: const checkoutUrl = await createCheckout(items);
-    // window.location.href = checkoutUrl;
-    window.location.href = '/'; // Placeholder
+    const checkoutUrl = getCheckoutUrl();
+    
+    if (!checkoutUrl) {
+      console.error('No checkout URL available. Cart may not be synced with Shopify.');
+      // Fallback: try to sync cart first
+      navigate('/');
+      return;
+    }
+    
+    // Redirect to Shopify hosted checkout
+    window.location.href = checkoutUrl;
   };
 
   const totalPrice = getTotalPrice();
