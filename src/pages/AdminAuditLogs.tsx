@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -64,38 +64,35 @@ export default function AdminAuditLogs() {
   const [driverFilter, setDriverFilter] = useState<string>('all');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check admin status
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-      setIsAdmin(!!data);
-    };
-    checkAdmin();
-  }, [user]);
+  // Define callback functions first
+  const enrichLogs = useCallback(async (logs: AuditLog[]): Promise<AuditLog[]> => {
+    const driverIds = [...new Set(logs.map(l => l.driver_id))];
+    const orderIds = [...new Set(logs.filter(l => l.order_id).map(l => l.order_id!))];
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
+    const [profilesResult, ordersResult] = await Promise.all([
+      driverIds.length > 0
+        ? supabase.from('profiles').select('id, email').in('id', driverIds)
+        : Promise.resolve({ data: [] }),
+      orderIds.length > 0
+        ? supabase.from('cod_orders').select('id, order_number').in('id', orderIds)
+        : Promise.resolve({ data: [] }),
+    ]);
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchLogs();
-      fetchDrivers();
-    }
-  }, [isAdmin]);
+    const profileMap = new Map(
+      (profilesResult.data || []).map(p => [p.id, p.email])
+    );
+    const orderMap = new Map(
+      (ordersResult.data || []).map(o => [o.id, o.order_number])
+    );
 
-  const fetchDrivers = async () => {
+    return logs.map(log => ({
+      ...log,
+      driver_email: profileMap.get(log.driver_id) || 'Unknown',
+      order_number: log.order_id ? orderMap.get(log.order_id) || 'N/A' : 'N/A',
+    }));
+  }, []);
+
+  const fetchDrivers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -118,9 +115,36 @@ export default function AdminAuditLogs() {
     } catch (error) {
       console.error('Error fetching drivers:', error);
     }
-  };
+  }, []);
 
-  const fetchLogs = async () => {
+  const enrichLogs = useCallback(async (logs: AuditLog[]): Promise<AuditLog[]> => {
+    const driverIds = [...new Set(logs.map(l => l.driver_id))];
+    const orderIds = [...new Set(logs.filter(l => l.order_id).map(l => l.order_id!))];
+
+    const [profilesResult, ordersResult] = await Promise.all([
+      driverIds.length > 0
+        ? supabase.from('profiles').select('id, email').in('id', driverIds)
+        : Promise.resolve({ data: [] }),
+      orderIds.length > 0
+        ? supabase.from('cod_orders').select('id, order_number').in('id', orderIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const profileMap = new Map(
+      (profilesResult.data || []).map(p => [p.id, p.email])
+    );
+    const orderMap = new Map(
+      (ordersResult.data || []).map(o => [o.id, o.order_number])
+    );
+
+    return logs.map(log => ({
+      ...log,
+      driver_email: profileMap.get(log.driver_id) || 'Unknown',
+      order_number: log.order_id ? orderMap.get(log.order_id) || 'N/A' : 'N/A',
+    }));
+  }, []);
+
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
       // Direct query with type assertion to avoid deep instantiation
@@ -159,34 +183,38 @@ export default function AdminAuditLogs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate, actionTypeFilter, driverFilter, enrichLogs]);
 
-  const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
-    const driverIds = [...new Set(logs.map(l => l.driver_id))];
-    const orderIds = [...new Set(logs.filter(l => l.order_id).map(l => l.order_id!))];
+  // Check admin status
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user]);
 
-    const [profilesResult, ordersResult] = await Promise.all([
-      driverIds.length > 0
-        ? supabase.from('profiles').select('id, email').in('id', driverIds)
-        : Promise.resolve({ data: [] }),
-      orderIds.length > 0
-        ? supabase.from('cod_orders').select('id, order_number').in('id', orderIds)
-        : Promise.resolve({ data: [] }),
-    ]);
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
-    const profileMap = new Map(
-      (profilesResult.data || []).map(p => [p.id, p.email])
-    );
-    const orderMap = new Map(
-      (ordersResult.data || []).map(o => [o.id, o.order_number])
-    );
-
-    return logs.map(log => ({
-      ...log,
-      driver_email: profileMap.get(log.driver_id) || 'Unknown',
-      order_number: log.order_id ? orderMap.get(log.order_id) || 'N/A' : 'N/A',
-    }));
-  };
+  useEffect(() => {
+    if (isAdmin) {
+      fetchLogs();
+      fetchDrivers();
+    }
+  }, [isAdmin, fetchLogs, fetchDrivers]);
 
   const handleSearch = () => {
     fetchLogs();

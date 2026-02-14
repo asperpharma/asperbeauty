@@ -42,7 +42,7 @@ serve(async (req) => {
     const userId = claimsData.claims.sub;
     console.log("Authenticated user:", userId);
 
-    const { messages } = await req.json();
+    const { messages } = await req.json() as { messages: Array<{ role: string; content: string }> };
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -50,11 +50,20 @@ serve(async (req) => {
     }
 
     // Extract the latest user message to find relevant products
-    const lastUserMessage = messages.filter((m: any) => m.role === "user").pop()?.content || "";
+    const lastUserMessage = (messages as Array<{ role: string; content: string }>).filter((m: { role: string; content: string }) => m.role === "user").pop()?.content || "";
     
     // Search for relevant products based on user query
     let productContext = "";
-    let matchedProducts: any[] = [];
+    interface ProductRecord {
+      title: string;
+      brand?: string;
+      price: number;
+      is_on_sale?: boolean;
+      discount_percent?: number;
+      category: string;
+      skin_concerns?: string[];
+    }
+    let matchedProducts: ProductRecord[] = [];
     
     if (lastUserMessage) {
       // Extract keywords from user message
@@ -93,10 +102,10 @@ serve(async (req) => {
 
           if (relevantDocs.length > 0) {
             // Convert document metadata to product format for cards
-            matchedProducts = relevantDocs.map(doc => doc.metadata);
+            matchedProducts = relevantDocs.map(doc => doc.metadata) as ProductRecord[];
             
             productContext = `\n\n**Recommended Products:**\n${relevantDocs.map(doc => {
-              const m = doc.metadata as any;
+              const m = doc.metadata as ProductRecord;
               return `- **${m.title}** (${m.brand || 'Asper'}) - ${m.price} JOD${m.is_on_sale ? ` (${m.discount_percent}% OFF!)` : ''} - ${m.category}`;
             }).join('\n')}`;
           }

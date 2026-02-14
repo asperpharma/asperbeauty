@@ -38,13 +38,71 @@ export default function Recommend() {
     setAnalysis(JSON.parse(storedAnalysis));
   }, [navigate]);
 
-  // Filter products based on skin concern
-  // TODO: Implement real filtering logic based on:
-  // - analysis.skinType (normal, dry, oily, combination, sensitive)
-  // - analysis.concern (aging, acne, hydration, brightening, sensitivity, dark-spots)
-  // - analysis.age (18-25, 26-35, 36-45, 46-55, 56+)
-  // For now, showing first 6 products as demo
-  const recommendedProducts = productsData?.slice(0, 6) || [];
+  // Filter products based on skin concern and type
+  const recommendedProducts = (() => {
+    if (!productsData || productsData.length === 0) return [];
+    
+    // Define keywords for each concern and skin type
+    const concernKeywords: Record<string, string[]> = {
+      'aging': ['retinol', 'anti-aging', 'wrinkle', 'collagen', 'peptide', 'vitamin c', 'firming'],
+      'acne': ['acne', 'salicylic', 'bha', 'benzoyl', 'niacinamide', 'clay', 'purifying'],
+      'hydration': ['hyaluronic', 'hydrating', 'moisturizer', 'aqua', 'water', 'moisture'],
+      'brightening': ['vitamin c', 'brightening', 'glow', 'radiance', 'luminous', 'even tone'],
+      'sensitivity': ['sensitive', 'soothing', 'calming', 'gentle', 'fragrance-free', 'hypoallergenic'],
+      'dark-spots': ['dark spot', 'pigment', 'vitamin c', 'brightening', 'even tone', 'niacinamide'],
+    };
+
+    const skinTypeKeywords: Record<string, string[]> = {
+      'dry': ['dry', 'rich', 'nourishing', 'cream', 'oil', 'butter'],
+      'oily': ['oily', 'matte', 'oil-free', 'gel', 'lightweight', 'sebum'],
+      'combination': ['combination', 'balance', 'normal', 'all skin'],
+      'sensitive': ['sensitive', 'gentle', 'soothing', 'fragrance-free'],
+      'normal': ['normal', 'all skin', 'balance'],
+    };
+
+    // Score products based on relevance
+    const scoredProducts = productsData.map(product => {
+      const title = product.node.title.toLowerCase();
+      const description = product.node.description.toLowerCase();
+      const productType = product.node.productType?.toLowerCase() || '';
+      const nodeWithTags = product.node as typeof product.node & { tags?: string | string[] };
+      const tags = Array.isArray(nodeWithTags.tags) 
+        ? nodeWithTags.tags.join(' ').toLowerCase()
+        : typeof nodeWithTags.tags === 'string' 
+          ? nodeWithTags.tags.toLowerCase() 
+          : '';
+      
+      const searchText = `${title} ${description} ${productType} ${tags}`;
+      
+      let score = 0;
+      
+      // Score based on concern (highest priority)
+      const concernWords = concernKeywords[analysis.concern] || [];
+      concernWords.forEach(keyword => {
+        if (searchText.includes(keyword)) score += 3;
+      });
+      
+      // Score based on skin type (medium priority)
+      const skinTypeWords = skinTypeKeywords[analysis.skinType] || [];
+      skinTypeWords.forEach(keyword => {
+        if (searchText.includes(keyword)) score += 2;
+      });
+      
+      // Bonus for essential products (cleanser, moisturizer, serum)
+      if (searchText.includes('cleanser') || searchText.includes('wash')) score += 1;
+      if (searchText.includes('moisturizer') || searchText.includes('cream')) score += 1;
+      if (searchText.includes('serum')) score += 1;
+      if (searchText.includes('sunscreen') || searchText.includes('spf')) score += 1;
+      
+      return { product, score };
+    });
+
+    // Sort by score (highest first) and return top 6
+    return scoredProducts
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map(item => item.product);
+  })();
 
   const handleProceedToRegimen = () => {
     navigate('/regimen');
