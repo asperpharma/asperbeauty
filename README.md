@@ -117,13 +117,52 @@ Language switching is available in the header.
 
 ## 🔧 Development
 
-This project is built with [Lovable](https://lovable.dev). You can:
+This project is built with [Lovable](https://lovable.dev) and syncs automatically with GitHub.
 
-1. **Edit in Lovable**: Visit the project and start prompting
-2. **Edit locally**: Clone the repo and push changes
-3. **Edit in GitHub**: Use the web editor or Codespaces
+### Development Options
 
-Changes sync automatically between Lovable and GitHub.
+1. **Cursor/VS Code (Recommended for development)**:
+   - Clone the repo
+   - Make changes locally
+   - Push to GitHub → Lovable auto-syncs and deploys
+
+2. **Lovable Editor** (Great for UI/prompting):
+   - Make changes via AI prompts
+   - Changes auto-commit to GitHub
+   - Pull changes locally
+
+3. **GitHub Web Editor**:
+   - Edit directly in GitHub
+   - Lovable syncs automatically
+
+### Quick Start with Cursor
+
+```bash
+# Clone and setup
+git clone https://github.com/asperpharma/asperbeauty.git
+cd asperbeauty
+npm install
+
+# Develop
+npm run dev
+
+# Push changes (triggers Lovable deployment)
+git add .
+git commit -m "feat: your changes"
+git push origin main
+```
+
+### ⚙️ Enable Lovable Git Sync
+
+**Important**: Ensure Git sync is enabled in your Lovable project:
+
+1. Open [Lovable Dashboard](https://lovable.dev)
+2. Go to **Settings** → **Git Integration**
+3. Enable **"Sync with GitHub"**
+4. Select repository: `asperpharma/asperbeauty`
+5. Select branch: `main` (or your working branch)
+
+📖 **Full workflow guide**: See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed setup instructions.
 
 ## 📄 License
 

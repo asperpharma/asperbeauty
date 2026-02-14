@@ -9,8 +9,13 @@ Thank you for your interest in contributing to Asper Beauty Shop! This document 
 - Node.js 18+ or Bun
 - npm, yarn, or bun
 - Git
+- (Optional) [Cursor IDE](https://cursor.sh) or VS Code
 
-### Setup
+### Development Environment Setup
+
+This project uses **Lovable** for deployment and syncs automatically with GitHub. You can contribute in three ways:
+
+#### Option 1: Cursor/VS Code (Recommended)
 
 1. Fork the repository
 2. Clone your fork:
@@ -26,6 +31,37 @@ Thank you for your interest in contributing to Asper Beauty Shop! This document 
    ```bash
    npm run dev
    ```
+5. Make changes and push to your fork
+6. Create a Pull Request to the main repository
+
+#### Option 2: Lovable Editor
+
+If you have access to the Lovable project:
+
+1. Open the project in [Lovable](https://lovable.dev)
+2. Use AI prompts to make changes
+3. Changes auto-commit to GitHub
+4. Create a Pull Request if working on a fork
+
+#### Option 3: GitHub Web Editor
+
+1. Fork the repository
+2. Use GitHub's web editor to make changes
+3. Commit directly through GitHub UI
+4. Create a Pull Request
+
+### 🔄 Understanding the Workflow
+
+```
+Your Changes → GitHub (PR) → Review → Merge → Lovable Auto-Deploy
+```
+
+- **Work locally** in Cursor/VS Code for complex changes
+- **Push to GitHub** to share changes
+- **Create PR** for review
+- **After merge** → Lovable automatically deploys to production
+
+📖 **Detailed workflow**: See [DEVELOPMENT.md](./DEVELOPMENT.md) for complete Git sync setup.
 
 ## 📝 Development Workflow
 
