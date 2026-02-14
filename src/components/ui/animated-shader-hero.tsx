@@ -430,6 +430,7 @@ const useShaderBackground = () => {
         rendererRef.current.reset();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return canvasRef;
