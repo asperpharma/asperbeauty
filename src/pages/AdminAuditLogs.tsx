@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -82,45 +82,8 @@ export default function AdminAuditLogs() {
     checkAdmin();
   }, [user]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchLogs();
-      fetchDrivers();
-    }
-  }, [isAdmin]);
-
-  const fetchDrivers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'driver');
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        const userIds = data.map(d => d.user_id);
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, email')
-          .in('id', userIds);
-
-        if (profileError) throw profileError;
-        
-        setDrivers(profiles?.map(p => ({ id: p.id, email: p.email || 'Unknown' })) || []);
-      }
-    } catch (error) {
-      console.error('Error fetching drivers:', error);
-    }
-  };
-
-  const fetchLogs = async () => {
+  // Define fetchLogs before useEffect that depends on it
+  const fetchLogs = React.useCallback(async () => {
     setLoading(true);
     try {
       // Direct query with type assertion to avoid deep instantiation
@@ -159,7 +122,45 @@ export default function AdminAuditLogs() {
     } finally {
       setLoading(false);
     }
+  }, [startDate, endDate, actionTypeFilter, driverFilter]);
+
+  const fetchDrivers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'driver');
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const userIds = data.map(d => d.user_id);
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+
+        if (profileError) throw profileError;
+        
+        setDrivers(profiles?.map(p => ({ id: p.id, email: p.email || 'Unknown' })) || []);
+      }
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+    }
   };
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchLogs();
+      fetchDrivers();
+    }
+  }, [isAdmin, fetchLogs]);
 
   const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
     const driverIds = [...new Set(logs.map(l => l.driver_id))];

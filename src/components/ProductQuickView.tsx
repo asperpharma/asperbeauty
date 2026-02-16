@@ -7,6 +7,7 @@ import { ShoppingBag, Minus, Plus, Star, Sparkles, X, Percent, Truck, Shield, Pa
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { useCartStore } from "@/stores/cartStore";
+import { ShopifyProduct } from "@/lib/shopify";
 
 interface Product {
   id: string;
@@ -45,7 +46,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
 
   const handleAddToCart = () => {
     // Create a mock product for cart compatibility
-    const cartProduct = {
+    const cartProduct: ShopifyProduct = {
       node: {
         id: product.id,
         title: product.title,
@@ -71,16 +72,18 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
               id: product.id,
               title: 'Default',
               price: { amount: product.price.toString(), currencyCode: 'JOD' },
+              availableForSale: true,
               selectedOptions: []
             }
           }]
-        }
+        },
+        options: []
       }
     };
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        product: cartProduct as any,
+        product: cartProduct,
         variantId: product.id,
         variantTitle: 'Default',
         price: { amount: product.price.toString(), currencyCode: 'JOD' },

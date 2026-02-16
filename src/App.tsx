@@ -30,6 +30,9 @@ import AdminAuditLogs from "./pages/AdminAuditLogs";
 import Analyze from "./pages/Analyze";
 import Recommend from "./pages/Recommend";
 import Regimen from "./pages/Regimen";
+import Shipping from "./pages/Shipping";
+import Returns from "./pages/Returns";
+import Consultation from "./pages/Consultation";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +75,10 @@ const App = () => (
               <Route path="/analyze" element={<Analyze />} />
               <Route path="/recommend" element={<Recommend />} />
               <Route path="/regimen" element={<Regimen />} />
+              <Route path="/shipping" element={<Shipping />} />
+              <Route path="/returns" element={<Returns />} />
+              <Route path="/consultation" element={<Consultation />} />
+              <Route path="/tracking" element={<TrackOrder />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
