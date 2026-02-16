@@ -125,6 +125,26 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 🚀 Deployment
+
+This project is ready for deployment on Vercel with Supabase integration. 
+
+**Quick Deploy:**
+1. Import this repository to Vercel
+2. Configure environment variables (see `.env.example`)
+3. Deploy!
+
+For detailed deployment instructions, see [DEPLOYMENT.md](/DEPLOYMENT.md).
+
+### Supabase Edge Functions
+
+All Supabase Edge Functions are formatted with Deno and ready to deploy:
+
+```bash
+deno fmt supabase/functions/  # Already done!
+supabase functions deploy     # Deploy all functions
+```
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
