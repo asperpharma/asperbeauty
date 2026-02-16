@@ -85,9 +85,10 @@ export default function BrandVichy() {
     
     return products.filter(product => {
       const title = product.node.title.toLowerCase();
-      const tags = (product.node as any).tags?.toLowerCase() || '';
+      const tags = product.node.tags;
+      const tagsStr = Array.isArray(tags) ? tags.join(' ').toLowerCase() : (typeof tags === 'string' ? tags.toLowerCase() : '');
       return range.keywords!.some(keyword => 
-        title.includes(keyword.toLowerCase()) || tags.includes(keyword.toLowerCase())
+        title.includes(keyword.toLowerCase()) || tagsStr.includes(keyword.toLowerCase())
       );
     });
   }, [products, activeRange]);

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Lazy load below-the-fold components for better initial load performance
 const FeaturedBrands = lazy(() => import("@/components/FeaturedBrands").then(m => ({ default: m.FeaturedBrands })));
 const Testimonials = lazy(() => import("@/components/Testimonials").then(m => ({ default: m.Testimonials })));
+const InstagramFeed = lazy(() => import("@/components/InstagramFeed").then(m => ({ default: m.InstagramFeed })));
 const Newsletter = lazy(() => import("@/components/Newsletter").then(m => ({ default: m.Newsletter })));
 const TrustBanner = lazy(() => import("@/components/TrustBanner").then(m => ({ default: m.TrustBanner })));
 const BeautyAssistant = lazy(() => import("@/components/BeautyAssistant").then(m => ({ default: m.BeautyAssistant })));
@@ -73,6 +74,10 @@ const Index = () => {
         
         <Suspense fallback={<SectionSkeleton height="h-96" />}>
           <Testimonials />
+        </Suspense>
+        
+        <Suspense fallback={<SectionSkeleton height="h-64" />}>
+          <InstagramFeed />
         </Suspense>
         
         <Suspense fallback={<SectionSkeleton height="h-48" />}>
