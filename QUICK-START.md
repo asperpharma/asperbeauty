@@ -54,7 +54,7 @@ You are connected to **3 main services**:
 
 **Use Shopify Admin:**
 
-1. Log into Shopify admin: [your-store.myshopify.com/admin](https://lovable-project-milns.myshopify.com/admin)
+1. Log into Shopify admin: [lovable-project-milns.myshopify.com/admin](https://lovable-project-milns.myshopify.com/admin)
 2. Go to **Products**
 3. Add, edit, or remove products
 4. **Products automatically appear on your website!**

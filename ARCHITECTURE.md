@@ -50,10 +50,9 @@
 
 ### 1. Product Display Flow
 ```
-Shopify Store → Storefront API → Website → User's Browser
-     ↑                                           │
-     │                                           │
-     └────────── Admin Updates Product ──────────┘
+Admin Updates Product
+         ↓
+   Shopify Store → Storefront API → Website → User's Browser
 ```
 
 ### 2. Deployment Flow
