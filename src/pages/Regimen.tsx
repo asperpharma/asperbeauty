@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCartStore } from "@/stores/cartStore";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CheckCircle2, ShoppingBag, Trash2, Plus, Minus, Package } from "lucide-react";
+import { CheckCircle2, ShoppingBag, Trash2, Plus, Minus, Package, Loader2 } from "lucide-react";
+import { createStorefrontCheckout } from "@/lib/shopify";
+import { toast } from "sonner";
 
 /**
  * Regimen Page - Step 3 of 3-Click Solution
@@ -16,6 +18,7 @@ export default function Regimen() {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const isRTL = language === 'ar';
 
@@ -26,12 +29,30 @@ export default function Regimen() {
     }
   }, [items.length, navigate]);
 
-  const handleCheckout = () => {
-    // TODO: Replace with Shopify checkout API call using checkout.webUrl
-    // This should create a checkout session and redirect to Shopify's hosted checkout page
-    // Example: const checkoutUrl = await createCheckout(items);
-    // window.location.href = checkoutUrl;
-    window.location.href = '/'; // Placeholder
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    
+    try {
+      // Prepare cart items for Shopify checkout
+      const checkoutItems = items.map(item => ({
+        variantId: item.variantId,
+        quantity: item.quantity
+      }));
+      
+      // Create Shopify checkout and get checkout URL
+      const checkoutUrl = await createStorefrontCheckout(checkoutItems);
+      
+      // Redirect to Shopify hosted checkout page
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(
+        isRTL 
+          ? 'حدث خطأ أثناء إنشاء الدفع. يرجى المحاولة مرة أخرى.' 
+          : 'An error occurred while creating checkout. Please try again.'
+      );
+      setIsCheckingOut(false);
+    }
   };
 
   const totalPrice = getTotalPrice();
@@ -225,10 +246,20 @@ export default function Regimen() {
                   {/* Checkout Button */}
                   <Button
                     onClick={handleCheckout}
+                    disabled={isCheckingOut}
                     className="w-full bg-luxury-maroon hover:bg-luxury-maroon/90 text-white font-body text-base py-6 rounded-lg transition-all duration-300"
                   >
-                    <ShoppingBag className="w-5 h-5 me-2" />
-                    {isRTL ? 'المتابعة إلى الدفع' : 'Proceed to Checkout'}
+                    {isCheckingOut ? (
+                      <>
+                        <Loader2 className="w-5 h-5 me-2 animate-spin" />
+                        {isRTL ? 'جاري التحميل...' : 'Loading...'}
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-5 h-5 me-2" />
+                        {isRTL ? 'المتابعة إلى الدفع' : 'Proceed to Checkout'}
+                      </>
+                    )}
                   </Button>
                   
                   <Button

@@ -38,13 +38,75 @@ export default function Recommend() {
     setAnalysis(JSON.parse(storedAnalysis));
   }, [navigate]);
 
-  // Filter products based on skin concern
-  // TODO: Implement real filtering logic based on:
-  // - analysis.skinType (normal, dry, oily, combination, sensitive)
-  // - analysis.concern (aging, acne, hydration, brightening, sensitivity, dark-spots)
-  // - analysis.age (18-25, 26-35, 36-45, 46-55, 56+)
-  // For now, showing first 6 products as demo
-  const recommendedProducts = productsData?.slice(0, 6) || [];
+  // Filter products based on skin analysis
+  const recommendedProducts = (() => {
+    if (!productsData || !analysis) return [];
+    
+    // Map concern keywords for product filtering
+    const concernKeywords: Record<string, string[]> = {
+      'aging': ['anti-aging', 'anti aging', 'retinol', 'wrinkle', 'firming', 'lift', 'age', 'mature'],
+      'acne': ['acne', 'blemish', 'clear', 'purifying', 'salicylic', 'spot', 'anti-blemish'],
+      'hydration': ['hydrat', 'moisture', 'hyaluronic', 'aqua', 'replenish', 'plump'],
+      'brightening': ['bright', 'vitamin c', 'radiance', 'glow', 'illuminate', 'even tone', 'dark spot'],
+      'sensitivity': ['sensitive', 'soothing', 'calm', 'gentle', 'tolerance', 'repair', 'comfort'],
+      'dark-spots': ['dark spot', 'pigment', 'bright', 'even', 'vitamin c', 'niacinamide', 'hyperpigmentation']
+    };
+    
+    // Map skin type keywords
+    const skinTypeKeywords: Record<string, string[]> = {
+      'normal': ['normal', 'balance', 'all skin'],
+      'dry': ['dry', 'moisture', 'hydrat', 'nourish', 'rich', 'comfort'],
+      'oily': ['oily', 'oil control', 'mattifying', 'pore', 'sebum', 'shine'],
+      'combination': ['combination', 'balance', 'normalize', 'all skin'],
+      'sensitive': ['sensitive', 'gentle', 'soothing', 'hypoallergenic', 'fragrance-free', 'tolerance']
+    };
+    
+    const concernWords = concernKeywords[analysis.concern] || [];
+    const skinTypeWords = skinTypeKeywords[analysis.skinType] || [];
+    const allKeywords = [...concernWords, ...skinTypeWords];
+    
+    // Score and filter products
+    const scoredProducts = productsData.map(product => {
+      const searchText = [
+        product.node.title,
+        product.node.description,
+        product.node.productType,
+        ...(product.node.tags || [])
+      ].join(' ').toLowerCase();
+      
+      let score = 0;
+      
+      // Score based on concern keywords (higher priority)
+      concernWords.forEach(keyword => {
+        if (searchText.includes(keyword.toLowerCase())) {
+          score += 3;
+        }
+      });
+      
+      // Score based on skin type keywords
+      skinTypeWords.forEach(keyword => {
+        if (searchText.includes(keyword.toLowerCase())) {
+          score += 2;
+        }
+      });
+      
+      // Bonus for specific product types
+      if (analysis.concern === 'aging' && searchText.includes('serum')) score += 1;
+      if (analysis.concern === 'hydration' && searchText.includes('cream')) score += 1;
+      if (analysis.concern === 'acne' && (searchText.includes('cleanser') || searchText.includes('gel'))) score += 1;
+      
+      return { product, score };
+    });
+    
+    // Sort by score and return top products
+    const filtered = scoredProducts
+      .filter(p => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(p => p.product);
+    
+    // If we have filtered results, return top 6, otherwise return first 6 products as fallback
+    return filtered.length > 0 ? filtered.slice(0, 6) : productsData.slice(0, 6);
+  })();
 
   const handleProceedToRegimen = () => {
     navigate('/regimen');
