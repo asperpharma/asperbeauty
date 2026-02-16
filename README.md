@@ -2,7 +2,11 @@
 
 A luxury e-commerce storefront for premium skincare and beauty products, built with modern web technologies.
 
-🔗 **Live Site**: [asperbeauty.lovable.app](https://asperbeautyshop.lovable.app)
+🔗 **Live Site**: [asperbeautyshop.lovable.app](https://asperbeautyshop.lovable.app)
+
+📚 **Quick Links**: 
+- [Quick Start Guide](./QUICK-START.md) - How to publish and update your website
+- [Deployment Guide](./DEPLOYMENT.md) - Detailed technical documentation
 
 ## ✨ Features
 
@@ -124,6 +128,17 @@ This project is built with [Lovable](https://lovable.dev). You can:
 3. **Edit in GitHub**: Use the web editor or Codespaces
 
 Changes sync automatically between Lovable and GitHub.
+
+## 🚀 Deployment & Integrations
+
+For detailed information about:
+- Connected services (Lovable, Shopify, Supabase)
+- How to publish and deploy your website
+- Environment configuration
+- CI/CD pipelines
+- Custom domain setup
+
+See the **[DEPLOYMENT.md](./DEPLOYMENT.md)** guide.
 
 ## 📄 License
 
