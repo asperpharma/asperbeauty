@@ -115,6 +115,41 @@ The app supports:
 
 Language switching is available in the header.
 
+## 🚀 CI/CD & Monitoring
+
+### GitHub Actions Workflows
+
+The project includes several automated workflows:
+
+#### Datadog Synthetics CI
+- **File**: `.github/workflows/datadog-synthetics.yml`
+- **Triggers**: Push to main/develop, PRs, hourly schedule
+- **Purpose**: Runs Datadog synthetic tests to monitor application uptime and performance
+- **Required Secrets**:
+  - `DATADOG_API_KEY` - Your Datadog API key
+  - `DATADOG_APP_KEY` - Your Datadog application key
+- **Configuration**: 
+  - Fails on critical errors
+  - Polls test results
+  - Uploads results to artifacts
+
+To set up Datadog monitoring:
+1. Create a Datadog account at [datadoghq.com](https://www.datadoghq.com/)
+2. Generate API and App keys from Datadog dashboard
+3. Add keys to GitHub repository secrets:
+   - Go to Settings → Secrets and variables → Actions
+   - Add `DATADOG_API_KEY` and `DATADOG_APP_KEY`
+4. Configure synthetic tests in Datadog dashboard
+5. (Optional) Update workflow with specific test IDs in `public_ids`
+
+#### CodeQL Security Scanning
+- **File**: `.github/workflows/codeql.yml`
+- **Purpose**: Automated security vulnerability scanning
+
+#### Shopify Oxygen Deployments
+- **Files**: Multiple `oxygen-deployment-*.yml` files
+- **Purpose**: Automated deployments to Shopify Oxygen hosting
+
 ## 🔧 Development
 
 This project is built with [Lovable](https://lovable.dev). You can:
