@@ -8,11 +8,15 @@ const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${
 const SHOPIFY_STOREFRONT_TOKEN = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
 
 // Validate required environment variables
-if (!SHOPIFY_STORE_PERMANENT_DOMAIN) {
-  console.error('Missing required environment variable: VITE_SHOPIFY_STORE');
-}
-if (!SHOPIFY_STOREFRONT_TOKEN) {
-  console.error('Missing required environment variable: VITE_SHOPIFY_STOREFRONT_TOKEN');
+if (!SHOPIFY_STORE_PERMANENT_DOMAIN || !SHOPIFY_STOREFRONT_TOKEN) {
+  const missing = [];
+  if (!SHOPIFY_STORE_PERMANENT_DOMAIN) missing.push('VITE_SHOPIFY_STORE');
+  if (!SHOPIFY_STOREFRONT_TOKEN) missing.push('VITE_SHOPIFY_STOREFRONT_TOKEN');
+  
+  throw new Error(
+    `Missing required Shopify environment variables: ${missing.join(', ')}. ` +
+    'Please check your .env file and ensure all required variables are set.'
+  );
 }
 
 // Sanitize search input to prevent GraphQL injection
