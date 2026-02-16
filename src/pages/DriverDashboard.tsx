@@ -78,6 +78,41 @@ export default function DriverDashboard() {
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const hasLoggedListView = useRef(false);
 
+  // Define fetchOrders before useEffect that depends on it
+  const fetchOrders = React.useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('cod_orders')
+        .select('*')
+        .eq('driver_id', user.id)
+        .order('assigned_at', { ascending: false});
+
+      if (error) throw error;
+      
+      const typedOrders: DriverOrder[] = (data || []).map(order => ({
+        ...order,
+        items: Array.isArray(order.items) 
+          ? (order.items as unknown as OrderItem[])
+          : JSON.parse(order.items as string) as OrderItem[],
+      }));
+      
+      setOrders(typedOrders);
+      
+      // Log orders list view (only once per session to avoid spam)
+      if (!hasLoggedListView.current && typedOrders.length > 0) {
+        hasLoggedListView.current = true;
+        logOrdersListView(typedOrders.length);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, logOrdersListView]);
+
   useEffect(() => {
     if (!user) {
       navigate('/auth');
@@ -106,40 +141,6 @@ export default function DriverDashboard() {
       supabase.removeChannel(channel);
     };
   }, [user, navigate, fetchOrders]);
-
-  const fetchOrders = React.useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('cod_orders')
-        .select('*')
-        .eq('driver_id', user.id)
-        .order('assigned_at', { ascending: false });
-
-      if (error) throw error;
-      
-      const typedOrders: DriverOrder[] = (data || []).map(order => ({
-        ...order,
-        items: Array.isArray(order.items) 
-          ? (order.items as unknown as OrderItem[])
-          : JSON.parse(order.items as string) as OrderItem[],
-      }));
-      
-      setOrders(typedOrders);
-      
-      // Log orders list view (only once per session to avoid spam)
-      if (!hasLoggedListView.current && typedOrders.length > 0) {
-        hasLoggedListView.current = true;
-        logOrdersListView(typedOrders.length);
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  }, [user, logOrdersListView]);
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(true);

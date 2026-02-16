@@ -82,44 +82,7 @@ export default function AdminAuditLogs() {
     checkAdmin();
   }, [user]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchLogs();
-      fetchDrivers();
-    }
-  }, [isAdmin, fetchLogs]);
-
-  const fetchDrivers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'driver');
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        const userIds = data.map(d => d.user_id);
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, email')
-          .in('id', userIds);
-
-        if (profileError) throw profileError;
-        
-        setDrivers(profiles?.map(p => ({ id: p.id, email: p.email || 'Unknown' })) || []);
-      }
-    } catch (error) {
-      console.error('Error fetching drivers:', error);
-    }
-  };
-
+  // Define fetchLogs before useEffect that depends on it
   const fetchLogs = React.useCallback(async () => {
     setLoading(true);
     try {
@@ -160,6 +123,44 @@ export default function AdminAuditLogs() {
       setLoading(false);
     }
   }, [startDate, endDate, actionTypeFilter, driverFilter]);
+
+  const fetchDrivers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'driver');
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const userIds = data.map(d => d.user_id);
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+
+        if (profileError) throw profileError;
+        
+        setDrivers(profiles?.map(p => ({ id: p.id, email: p.email || 'Unknown' })) || []);
+      }
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchLogs();
+      fetchDrivers();
+    }
+  }, [isAdmin, fetchLogs]);
 
   const enrichLogs = async (logs: AuditLog[]): Promise<AuditLog[]> => {
     const driverIds = [...new Set(logs.map(l => l.driver_id))];

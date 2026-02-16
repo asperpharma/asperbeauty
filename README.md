@@ -76,9 +76,35 @@ cd asperbeauty
 # Install dependencies
 npm install
 
+# Configure environment variables (see Configuration section below)
+cp .env.example .env  # If available, or edit .env directly
+
 # Start development server
 npm run dev
 ```
+
+### Configuration
+
+Before running the application, ensure your `.env` file is properly configured with the following variables:
+
+#### Required Variables
+
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon/public key
+- `VITE_SHOPIFY_STORE` - Your Shopify store domain (e.g., `your-store.myshopify.com`)
+- `VITE_SHOPIFY_STOREFRONT_TOKEN` - Shopify Storefront API access token
+
+#### Optional Variables
+
+- `VITE_HCAPTCHA_SITE_KEY` - hCaptcha site key for form protection
+  - **⚠️ Important**: If not configured, forms requiring CAPTCHA verification may fail
+  - Get your keys from [hcaptcha.com](https://hcaptcha.com)
+  - Add your domains: `asperbeautyshop.com` and `asperbeautyshop.lovable.app`
+
+#### Server-Side Variables (Supabase Secrets)
+
+These should be added to your Supabase project secrets, NOT in the `.env` file:
+- `RESEND_API_KEY` - For sending transactional emails via Resend
 
 ### Build for Production
 
@@ -97,15 +123,27 @@ npm run preview
 | Route | Description |
 |-------|-------------|
 | `/` | Home page with hero, featured products, and categories |
+| `/shop` | Main shopping page |
 | `/brands` | Browse all available brands |
 | `/brands/vichy` | Vichy brand showcase page |
 | `/collections` | Product collections |
 | `/collections/:handle` | Individual collection page |
-| `/products/:handle` | Product detail page |
+| `/product/:handle` | Product detail page |
 | `/skin-concerns` | Shop by skin concern |
 | `/offers` | Special offers and promotions |
 | `/best-sellers` | Best selling products |
 | `/contact` | Contact information |
+| `/shipping` | Shipping & delivery policy |
+| `/returns` | Return & exchange policy |
+| `/consultation` | Beauty consultation services |
+| `/analyze` | AI skin analysis (Step 1 of 3-Click Solution) |
+| `/recommend` | Personalized product recommendations (Step 2) |
+| `/regimen` | Digital tray and checkout (Step 3) |
+| `/wishlist` | Saved favorite products |
+| `/track-order` | Order tracking |
+| `/auth` | Authentication (login/signup) |
+| `/account` | User account dashboard |
+| `/philosophy` | Brand philosophy and story |
 
 ## 🌐 Internationalization
 
