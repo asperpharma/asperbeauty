@@ -37,6 +37,10 @@ import { getProductImage } from "@/lib/productImageUtils";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+interface BulkResult {
+  status: string;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -288,9 +292,6 @@ const ManageProducts = () => {
       
       const { data, error } = await supabase.functions.invoke('enrich-products');
       
-      if (error) throw error;
-      
-      setEnrichResults(data.results || []);
       
       interface BulkResult {
         status: string;
@@ -328,9 +329,6 @@ const ManageProducts = () => {
         body: { limit: 5 }
       });
       
-      if (error) throw error;
-      
-      setEnrichResults(data.results || []);
       
       interface BulkResult {
         status: string;
