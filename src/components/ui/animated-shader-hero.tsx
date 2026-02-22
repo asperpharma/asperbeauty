@@ -292,8 +292,8 @@ void main(){gl_Position=position;}`;
     
     if (this.uniforms.resolution) gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
     if (this.uniforms.time) gl.uniform1f(this.uniforms.time, now * 1e-3);
-    if (this.uniforms.move) gl.uniform2f(this.uniforms.move, ...this.mouseMove as [number, number]);
-    if (this.uniforms.touch) gl.uniform2f(this.uniforms.touch, ...this.mouseCoords as [number, number]);
+    if (this.uniforms.move) gl.uniform2f(this.uniforms.move, ...this.mouseMove);
+    if (this.uniforms.touch) gl.uniform2f(this.uniforms.touch, ...this.mouseCoords);
     if (this.uniforms.pointerCount) gl.uniform1i(this.uniforms.pointerCount, this.nbrOfPointers);
     if (this.uniforms.pointers) gl.uniform2fv(this.uniforms.pointers, this.pointerCoords);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

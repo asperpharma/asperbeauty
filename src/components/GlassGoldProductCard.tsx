@@ -33,9 +33,8 @@ export const GlassGoldProductCard = ({ product }: GlassGoldProductCardProps) => 
   const isBestseller = tags.some((tag: string) => tag.toLowerCase().includes('bestseller'));
   
   // Check if product is new (created within last 30 days)
-  const createdAt = node.createdAt;
-  const isNewArrival = createdAt 
-    ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
+  const isNewArrival = node.createdAt
+    ? (Date.now() - new Date(node.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
     : false;
     
   // Check for sale/discount
