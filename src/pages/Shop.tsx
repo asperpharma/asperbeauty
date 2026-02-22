@@ -11,6 +11,7 @@ import { ProductSearchFilters, FilterState } from "@/components/ProductSearchFil
 import { useCartStore } from "@/stores/cartStore";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import type { ShopifyProductExtended } from "@/types/product";
 
 // Extended Product type with new columns
 interface Product {
@@ -67,7 +68,7 @@ const ShopProductCard = ({
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct as unknown as ShopifyProductExtended,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
