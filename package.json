@@ -8,7 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check-deployment": "node scripts/check-deployment.cjs"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^2.0.1",
