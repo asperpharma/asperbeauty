@@ -6,8 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import ChatProductCard from './ChatProductCard';
+import { ChatProduct } from '@/types/product';
 
-type Message = { role: 'user' | 'assistant'; content: string; products?: any[] };
+type Message = { role: 'user' | 'assistant'; content: string; products?: ChatProduct[] };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/beauty-assistant`;
 
@@ -90,7 +91,7 @@ export const BeautyAssistant = () => {
     const decoder = new TextDecoder();
     let textBuffer = '';
     let assistantContent = '';
-    let products: any[] = [];
+    let products: ChatProduct[] = [];
 
     while (true) {
       const { done, value } = await reader.read();

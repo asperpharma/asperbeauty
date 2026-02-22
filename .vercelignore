@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+bun.lockb
+
+# Build artifacts
+dist-ssr
+*.local
+
+# Development files
+.vscode
+.idea
+.DS_Store
+
+# Test files
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+*.md
+!README.md
+CONTRIBUTING.md
+SECURITY.md
+
+# Misc
+.git
+.github
+.devcontainer
+scripts
+
+# Excel files
+*.xlsx
+*.xls
+
+# JavaScript helper files
+shopify-admin-bulk-upload data.js

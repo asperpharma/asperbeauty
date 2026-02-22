@@ -80,7 +80,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        product: cartProduct as any,
+        product: cartProduct as Record<string, unknown>,
         variantId: product.id,
         variantTitle: 'Default',
         price: { amount: product.price.toString(), currencyCode: 'JOD' },
