@@ -20,6 +20,8 @@ export interface ShopifyProduct {
     handle: string;
     vendor?: string;
     productType?: string;
+    tags?: string[];
+    createdAt?: string;
     priceRange: {
       minVariantPrice: {
         amount: string;
