@@ -18,6 +18,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Supabase CLI temporary files
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
