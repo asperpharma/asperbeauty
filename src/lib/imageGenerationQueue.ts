@@ -42,6 +42,7 @@ const DEFAULT_CONFIG: QueueConfig = {
 };
 
 type QueueEventType = "itemUpdate" | "statsUpdate" | "batchComplete" | "queueComplete" | "error" | "paused" | "resumed";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type QueueEventCallback = (data: any) => void;
 
 class ImageGenerationQueue {
@@ -74,6 +75,7 @@ class ImageGenerationQueue {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private emit(event: QueueEventType, data: any) {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
@@ -286,10 +288,11 @@ class ImageGenerationQueue {
       }
 
       return { success: false, error: "No image URL returned" };
-    } catch (err: any) {
+    } catch (err) {
       console.error(`Exception processing ${item.name}:`, err);
-      const isRateLimited = err.message?.includes("429") || err.message?.includes("rate");
-      return { success: false, error: err.message, rateLimited: isRateLimited };
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const isRateLimited = errorMessage?.includes("429") || errorMessage?.includes("rate");
+      return { success: false, error: errorMessage, rateLimited: isRateLimited };
     }
   }
 

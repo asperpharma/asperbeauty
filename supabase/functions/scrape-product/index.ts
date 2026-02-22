@@ -114,7 +114,12 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
 
-      const updates: Record<string, any> = {};
+      interface ProductUpdate {
+        description?: string;
+        price?: number;
+        image_url?: string;
+      }
+      const updates: ProductUpdate = {};
       
       if (description && description.length > 20) updates.description = description;
       if (price && price > 0) updates.price = price;

@@ -37,6 +37,10 @@ import { getProductImage } from "@/lib/productImageUtils";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+interface BulkResult {
+  status: string;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -125,8 +129,9 @@ const ManageProducts = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('Error fetching products:', errorMessage);
         toast.error('Failed to load products');
       } finally {
         setIsLoading(false);
@@ -196,8 +201,9 @@ const ManageProducts = () => {
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       toast.success('Image uploaded successfully');
-    } catch (error: any) {
-      console.error('Upload error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Upload error:', errorMessage);
       toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
@@ -250,9 +256,10 @@ const ManageProducts = () => {
 
       setIsDialogOpen(false);
       resetForm();
-    } catch (error: any) {
-      console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to save product');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Submit error:', errorMessage);
+      toast.error(errorMessage || 'Failed to save product');
     } finally {
       setIsSubmitting(false);
     }
@@ -271,8 +278,9 @@ const ManageProducts = () => {
       
       setProducts(prev => prev.filter(p => p.id !== id));
       toast.success('Product deleted successfully');
-    } catch (error: any) {
-      console.error('Delete error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Delete error:', errorMessage);
       toast.error('Failed to delete product');
     }
   };
@@ -284,11 +292,11 @@ const ManageProducts = () => {
       
       const { data, error } = await supabase.functions.invoke('enrich-products');
       
-      if (error) throw error;
       
-      setEnrichResults(data.results || []);
-      
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      interface BulkResult {
+        status: string;
+      }
+      const successCount = data.results?.filter((r: BulkResult) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Enriched ${successCount} products with images`);
@@ -301,8 +309,9 @@ const ManageProducts = () => {
       } else {
         toast.info('No new images found. Try adding source URLs to products.');
       }
-    } catch (error: any) {
-      console.error('Enrichment error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Enrichment error:', errorMessage);
       toast.error('Failed to enrich products');
     } finally {
       setIsEnriching(false);
@@ -320,11 +329,11 @@ const ManageProducts = () => {
         body: { limit: 5 }
       });
       
-      if (error) throw error;
       
-      setEnrichResults(data.results || []);
-      
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      interface BulkResult {
+        status: string;
+      }
+      const successCount = data.results?.filter((r: BulkResult) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Generated ${successCount} AI product images`);
@@ -339,8 +348,9 @@ const ManageProducts = () => {
       } else {
         toast.warning('AI image generation had issues. Check console for details.');
       }
-    } catch (error: any) {
-      console.error('AI Generation error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('AI Generation error:', errorMessage);
       toast.error('Failed to generate AI images');
     } finally {
       setIsGeneratingAI(false);
@@ -377,11 +387,12 @@ const ManageProducts = () => {
       } else {
         throw new Error(data.error || 'Background removal failed');
       }
-    } catch (error: any) {
-      console.error('Background removal error:', error);
-      if (error.message?.includes('Rate limit')) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Background removal error:', errorMessage);
+      if (errorMessage?.includes('Rate limit')) {
         toast.error('Rate limit exceeded. Please wait and try again.');
-      } else if (error.message?.includes('credits')) {
+      } else if (errorMessage?.includes('credits')) {
         toast.error('AI credits exhausted. Please add credits.');
       } else {
         toast.error('Failed to remove background');
