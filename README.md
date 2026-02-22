@@ -24,6 +24,7 @@ A luxury e-commerce storefront for premium skincare and beauty products, built w
 - **State Management**: Zustand
 - **Routing**: React Router v6
 - **Data Fetching**: TanStack Query
+- **Backend**: Supabase (Authentication, Database, Edge Functions)
 - **E-commerce**: Shopify Storefront API
 - **Animations**: CSS animations with Tailwind
 
@@ -76,9 +77,30 @@ cd asperbeauty
 # Install dependencies
 npm install
 
+# Set up environment variables
+cp .env.example .env
+# Add your Supabase and Shopify credentials to .env
+
 # Start development server
 npm run dev
 ```
+
+### Database Setup
+
+The project uses Supabase for backend services. To set up the database:
+
+```bash
+# 1. Login to Supabase
+npx supabase login
+
+# 2. Link your project
+npx supabase link --project-ref rgehleqcubtmcwyipyvi
+
+# 3. Push the database schema
+npx supabase db push
+```
+
+For detailed database setup instructions, see [SUPABASE.md](./SUPABASE.md).
 
 ### Build for Production
 

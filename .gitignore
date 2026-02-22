@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (use .env.example as template)
+# Note: .env is currently tracked for Lovable platform integration
+# In production, store secrets in environment variables, not in .env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

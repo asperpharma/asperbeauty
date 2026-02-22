@@ -9,6 +9,7 @@ Thank you for your interest in contributing to Asper Beauty Shop! This document 
 - Node.js 18+ or Bun
 - npm, yarn, or bun
 - Git
+- A Supabase account (for database access)
 
 ### Setup
 
@@ -22,10 +23,38 @@ Thank you for your interest in contributing to Asper Beauty Shop! This document 
    ```bash
    npm install
    ```
-4. Start the development server:
+4. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Add your Supabase and Shopify credentials
+   ```
+5. Set up the database (see [Database Setup](#database-setup) below)
+6. Start the development server:
    ```bash
    npm run dev
    ```
+
+### Database Setup
+
+The project uses Supabase for backend services. Follow these steps to set up the database:
+
+```bash
+# 1. Login to Supabase
+npx supabase login
+
+# 2. Link your project
+npx supabase link --project-ref rgehleqcubtmcwyipyvi
+
+# 3. Push the database schema
+npx supabase db push
+```
+
+This will:
+- Authenticate you with Supabase
+- Connect your local environment to the remote project
+- Apply all database migrations from `supabase/migrations/`
+
+For more detailed information, see [SUPABASE.md](./SUPABASE.md).
 
 ## 📝 Development Workflow
 
