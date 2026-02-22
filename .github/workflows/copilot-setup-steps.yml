@@ -63,7 +63,7 @@ jobs:
           echo "Build completed successfully"
           ls -la dist
 
-      # Step 8: Preview build (optional - for validation)
+      # Step 8: Production build validation message
       - name: Test production build
         run: |
           echo "Production build is ready for preview"
@@ -110,10 +110,22 @@ jobs:
       - name: Validate project dependencies
         run: |
           echo "Checking critical dependencies..."
-          npm list --depth=0 react
-          npm list --depth=0 react-dom
-          npm list --depth=0 vite
-          npm list --depth=0 typescript
-          npm list --depth=0 @tanstack/react-query
-          npm list --depth=0 zustand
+          
+          # Check each dependency with error handling
+          check_dependency() {
+            if npm list --depth=0 "$1" > /dev/null 2>&1; then
+              echo "✓ $1 is installed"
+            else
+              echo "✗ Error: $1 is not installed"
+              return 1
+            fi
+          }
+          
+          check_dependency "react"
+          check_dependency "react-dom"
+          check_dependency "vite"
+          check_dependency "typescript"
+          check_dependency "@tanstack/react-query"
+          check_dependency "zustand"
+          
           echo "✓ All critical dependencies are installed"
