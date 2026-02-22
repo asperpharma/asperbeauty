@@ -141,7 +141,7 @@ export default function AdminOrders() {
   }, [user, authLoading]);
 
   // Fetch orders
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!isAdmin) return;
     
     setIsLoading(true);
@@ -166,7 +166,7 @@ export default function AdminOrders() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
