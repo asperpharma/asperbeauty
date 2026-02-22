@@ -16,7 +16,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ID="rgehleqcubtmcwyipyvi"
+# Project ID is from supabase/config.toml - can be overridden via environment variable
+PROJECT_ID="${SUPABASE_PROJECT_ID:-rgehleqcubtmcwyipyvi}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 SUPABASE_DIR="$PROJECT_ROOT/supabase"
@@ -84,7 +85,7 @@ fi
 echo ""
 echo -e "${YELLOW}[4/5]${NC} Deploying database migrations..."
 if [ -d "$SUPABASE_DIR/migrations" ] && [ "$(ls -A $SUPABASE_DIR/migrations)" ]; then
-    MIGRATION_COUNT=$(ls -1 "$SUPABASE_DIR/migrations" | wc -l)
+    MIGRATION_COUNT=$(find "$SUPABASE_DIR/migrations" -maxdepth 1 -type f -name "*.sql" | wc -l)
     echo "Found $MIGRATION_COUNT migration file(s)"
     
     supabase db push
@@ -97,12 +98,15 @@ fi
 echo ""
 echo -e "${YELLOW}[5/5]${NC} Deploying Edge Functions..."
 if [ -d "$SUPABASE_DIR/functions" ] && [ "$(ls -A $SUPABASE_DIR/functions)" ]; then
-    FUNCTION_DIRS=$(find "$SUPABASE_DIR/functions" -mindepth 1 -maxdepth 1 -type d -not -name "_*" 2>/dev/null)
-    FUNCTION_COUNT=$(echo "$FUNCTION_DIRS" | grep -c . || echo "0")
+    # Count function directories (excluding hidden/special directories)
+    FUNCTION_COUNT=0
+    while IFS= read -r -d '' func_dir; do
+        FUNCTION_COUNT=$((FUNCTION_COUNT + 1))
+    done < <(find "$SUPABASE_DIR/functions" -mindepth 1 -maxdepth 1 -type d -not -name "_*" -print0 2>/dev/null)
     
     if [ "$FUNCTION_COUNT" -gt 0 ]; then
         echo "Found $FUNCTION_COUNT Edge Function(s):"
-        echo "$FUNCTION_DIRS" | while read -r func_dir; do
+        find "$SUPABASE_DIR/functions" -mindepth 1 -maxdepth 1 -type d -not -name "_*" -print0 2>/dev/null | while IFS= read -r -d '' func_dir; do
             func_name=$(basename "$func_dir")
             echo "  - $func_name"
         done
