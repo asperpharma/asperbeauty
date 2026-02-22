@@ -30,42 +30,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js environment
+      # Step 2: Setup Node.js environment with npm caching
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      # Step 3: Cache node_modules for faster subsequent runs
-      - name: Cache node_modules
-        uses: actions/cache@v5.0.3
-        with:
-          path: |
-            node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-
-            ${{ runner.os }}-node-
-
-      # Step 4: Install project dependencies
+      # Step 3: Install project dependencies
       - name: Install dependencies
         run: npm ci
 
-      # Step 5: Run TypeScript type checking
+      # Step 4: Run TypeScript type checking
       - name: Type check
         run: npx tsc --noEmit
 
-      # Step 6: Run ESLint
+      # Step 5: Run ESLint
       - name: Lint code
         run: npm run lint
 
-      # Step 7: Build the project
+      # Step 6: Build the project
       - name: Build project
         run: npm run build
 
-      # Step 8: Verify build artifacts
+      # Step 7: Verify build artifacts
       - name: Verify build output
         run: |
           if [ ! -d "dist" ]; then
@@ -75,7 +63,7 @@ jobs:
           echo "Build completed successfully"
           ls -la dist
 
-      # Step 9: Preview build (optional - for validation)
+      # Step 8: Preview build (optional - for validation)
       - name: Test production build
         run: |
           echo "Production build is ready for preview"
@@ -122,5 +110,10 @@ jobs:
       - name: Validate project dependencies
         run: |
           echo "Checking critical dependencies..."
-          npm list react react-dom vite typescript @tanstack/react-query zustand || true
-          echo "✓ Dependency check complete"
+          npm list --depth=0 react
+          npm list --depth=0 react-dom
+          npm list --depth=0 vite
+          npm list --depth=0 typescript
+          npm list --depth=0 @tanstack/react-query
+          npm list --depth=0 zustand
+          echo "✓ All critical dependencies are installed"
