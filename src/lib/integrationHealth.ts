@@ -40,7 +40,8 @@ function checkShopifyIntegration(): HealthCheckResult {
     };
   }
   
-  if (!store.includes('.myshopify.com')) {
+  // Validate Shopify store domain format (must end with .myshopify.com)
+  if (!store.endsWith('.myshopify.com')) {
     return {
       service: 'Shopify Storefront API',
       status: 'error',
@@ -73,7 +74,8 @@ function checkSupabaseIntegration(): HealthCheckResult {
     };
   }
   
-  if (!url.includes('supabase.co')) {
+  // Validate Supabase URL format (must contain .supabase.co as the domain)
+  if (!url.includes('.supabase.co/') && !url.endsWith('.supabase.co')) {
     return {
       service: 'Supabase',
       status: 'error',
