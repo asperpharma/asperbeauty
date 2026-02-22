@@ -125,6 +125,27 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+### Supabase Deployment
+
+To deploy database migrations and Edge Functions to Supabase:
+
+```bash
+# Get your access token from https://supabase.com/dashboard/account/tokens
+export SUPABASE_ACCESS_TOKEN=your-token
+
+# Run the deployment script
+./scripts/deploy-supabase.sh
+```
+
+The script will:
+- Link to the Supabase project
+- Deploy all database migrations from `supabase/migrations/`
+- Deploy all Edge Functions from `supabase/functions/`
+
+**Prerequisites**: 
+- Install Supabase CLI: `brew install supabase/tap/supabase` or `npm install -g supabase`
+- Get your access token from [Supabase Dashboard](https://supabase.com/dashboard/account/tokens)
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
