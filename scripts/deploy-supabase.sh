@@ -84,20 +84,24 @@ fi
 # Step 4: Deploy migrations
 echo ""
 echo -e "${YELLOW}[4/5]${NC} Deploying database migrations..."
-if [ -d "$SUPABASE_DIR/migrations" ] && [ "$(ls -A $SUPABASE_DIR/migrations)" ]; then
-    MIGRATION_COUNT=$(find "$SUPABASE_DIR/migrations" -maxdepth 1 -type f -name "*.sql" | wc -l)
-    echo "Found $MIGRATION_COUNT migration file(s)"
-    
-    supabase db push
-    echo -e "${GREEN}✓ Database migrations deployed successfully${NC}"
+if [ -d "$SUPABASE_DIR/migrations" ]; then
+    MIGRATION_COUNT=$(find "$SUPABASE_DIR/migrations" -maxdepth 1 -type f -name "*.sql" 2>/dev/null | wc -l)
+    if [ "$MIGRATION_COUNT" -gt 0 ]; then
+        echo "Found $MIGRATION_COUNT migration file(s)"
+        
+        supabase db push
+        echo -e "${GREEN}✓ Database migrations deployed successfully${NC}"
+    else
+        echo -e "${YELLOW}⚠ No migrations found in $SUPABASE_DIR/migrations${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠ No migrations found in $SUPABASE_DIR/migrations${NC}"
+    echo -e "${YELLOW}⚠ Migrations directory not found${NC}"
 fi
 
 # Step 5: Deploy Edge Functions
 echo ""
 echo -e "${YELLOW}[5/5]${NC} Deploying Edge Functions..."
-if [ -d "$SUPABASE_DIR/functions" ] && [ "$(ls -A $SUPABASE_DIR/functions)" ]; then
+if [ -d "$SUPABASE_DIR/functions" ]; then
     # Count function directories (excluding hidden/special directories)
     FUNCTION_COUNT=0
     while IFS= read -r -d '' func_dir; do
