@@ -7,6 +7,7 @@ import { ShoppingBag, Minus, Plus, Star, Sparkles, X, Percent, Truck, Shield, Pa
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getProductImage, formatJOD } from "@/lib/productImageUtils";
 import { useCartStore } from "@/stores/cartStore";
+import type { ShopifyProductExtended } from "@/types/product";
 
 interface Product {
   id: string;
@@ -80,7 +81,7 @@ export const ProductQuickView = ({ product, isOpen, onClose }: ProductQuickViewP
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        product: cartProduct as any,
+        product: cartProduct as unknown as ShopifyProductExtended,
         variantId: product.id,
         variantTitle: 'Default',
         price: { amount: product.price.toString(), currencyCode: 'JOD' },

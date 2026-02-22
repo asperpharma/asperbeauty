@@ -125,8 +125,9 @@ const ManageProducts = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
+      } catch (err: unknown) {
+        const error = err as Error;
+        console.error('Error fetching products:', error);
         toast.error('Failed to load products');
       } finally {
         setIsLoading(false);
@@ -196,8 +197,9 @@ const ManageProducts = () => {
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       toast.success('Image uploaded successfully');
-    } catch (error: any) {
-      console.error('Upload error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Upload error:', err);
       toast.error('Failed to upload image');
     } finally {
       setUploadingImage(false);
@@ -250,9 +252,10 @@ const ManageProducts = () => {
 
       setIsDialogOpen(false);
       resetForm();
-    } catch (error: any) {
-      console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to save product');
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Submit error:', err);
+      toast.error(err.message || 'Failed to save product');
     } finally {
       setIsSubmitting(false);
     }
@@ -271,8 +274,9 @@ const ManageProducts = () => {
       
       setProducts(prev => prev.filter(p => p.id !== id));
       toast.success('Product deleted successfully');
-    } catch (error: any) {
-      console.error('Delete error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Delete error:', err);
       toast.error('Failed to delete product');
     }
   };
@@ -288,7 +292,7 @@ const ManageProducts = () => {
       
       setEnrichResults(data.results || []);
       
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      const successCount = data.results?.filter((r: Record<string, unknown>) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Enriched ${successCount} products with images`);
@@ -301,8 +305,9 @@ const ManageProducts = () => {
       } else {
         toast.info('No new images found. Try adding source URLs to products.');
       }
-    } catch (error: any) {
-      console.error('Enrichment error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Enrichment error:', err);
       toast.error('Failed to enrich products');
     } finally {
       setIsEnriching(false);
@@ -324,7 +329,7 @@ const ManageProducts = () => {
       
       setEnrichResults(data.results || []);
       
-      const successCount = data.results?.filter((r: any) => r.status === 'success').length || 0;
+      const successCount = data.results?.filter((r: Record<string, unknown>) => r.status === 'success').length || 0;
       
       if (successCount > 0) {
         toast.success(`Generated ${successCount} AI product images`);
@@ -339,8 +344,9 @@ const ManageProducts = () => {
       } else {
         toast.warning('AI image generation had issues. Check console for details.');
       }
-    } catch (error: any) {
-      console.error('AI Generation error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('AI Generation error:', err);
       toast.error('Failed to generate AI images');
     } finally {
       setIsGeneratingAI(false);
@@ -377,11 +383,12 @@ const ManageProducts = () => {
       } else {
         throw new Error(data.error || 'Background removal failed');
       }
-    } catch (error: any) {
-      console.error('Background removal error:', error);
-      if (error.message?.includes('Rate limit')) {
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Background removal error:', err);
+      if (err.message?.includes('Rate limit')) {
         toast.error('Rate limit exceeded. Please wait and try again.');
-      } else if (error.message?.includes('credits')) {
+      } else if (err.message?.includes('credits')) {
         toast.error('AI credits exhausted. Please add credits.');
       } else {
         toast.error('Failed to remove background');

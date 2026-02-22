@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct } from "@/lib/shopify";
+import { ShopifyProductExtended } from "@/types/product";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product }: ProductCardProps) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const { node } = product;
+  const extendedNode = node as ShopifyProductExtended;
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
   const { toggleItem, isInWishlist } = useWishlistStore();
@@ -30,13 +32,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const price = node.priceRange.minVariantPrice;
   
   // Check for badges based on tags
-  const tags = (node as any).tags || [];
+  const tags = extendedNode.tags || [];
   const isBestseller = Array.isArray(tags) 
     ? tags.some((tag: string) => tag.toLowerCase().includes('bestseller'))
     : typeof tags === 'string' && tags.toLowerCase().includes('bestseller');
   
   // Check if product is new (created within last 30 days)
-  const createdAt = (node as any).createdAt;
+  const createdAt = extendedNode.createdAt;
   const isNewArrival = createdAt 
     ? (Date.now() - new Date(createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
     : false;
@@ -51,7 +53,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     : 0;
 
   // Extract brand from vendor or title
-  const brand = (node as any).vendor || node.title.split(' ')[0];
+  const brand = extendedNode.vendor || node.title.split(' ')[0];
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -85,7 +85,10 @@ export default function BrandVichy() {
     
     return products.filter(product => {
       const title = product.node.title.toLowerCase();
-      const tags = (product.node as any).tags?.toLowerCase() || '';
+      // Note: tags may not be present in the base ShopifyProduct type, so we use Record<string, unknown>
+      const tagsValue = (product.node as Record<string, unknown>).tags;
+      const tags = typeof tagsValue === 'string' ? tagsValue.toLowerCase() : 
+                   Array.isArray(tagsValue) ? tagsValue.join(' ').toLowerCase() : '';
       return range.keywords!.some(keyword => 
         title.includes(keyword.toLowerCase()) || tags.includes(keyword.toLowerCase())
       );
