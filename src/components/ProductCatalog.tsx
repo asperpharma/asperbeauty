@@ -84,7 +84,7 @@ const ProductCard = ({
     };
 
     addItem({
-      product: cartProduct as any,
+      product: cartProduct as Record<string, unknown>,
       variantId: product.id,
       variantTitle: 'Default',
       price: { amount: product.price.toString(), currencyCode: 'JOD' },
@@ -246,9 +246,10 @@ export const ProductCatalog = () => {
 
         if (error) throw error;
         setProducts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching products:', err);
-        setError(err.message);
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        console.error('Error fetching products:', error);
+        setError(error.message);
       } finally {
         setIsLoading(false);
       }
