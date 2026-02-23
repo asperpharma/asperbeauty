@@ -33,7 +33,7 @@ export const getWhatsAppUrl = (context: WhatsAppContext, language: 'en' | 'ar' =
         if (context.cartItems) {
           message += `\n\nلدي ${context.cartItems} ${context.cartItems === 1 ? 'منتج' : 'منتجات'} في السلة`;
           if (context.cartTotal) {
-            message += ` (${context.cartTotal.toFixed(2)} دينار)`;
+            message += ` (${context.cartTotal.toFixed(3)} دينار)`;
           }
         }
       } else {
@@ -41,7 +41,7 @@ export const getWhatsAppUrl = (context: WhatsAppContext, language: 'en' | 'ar' =
         if (context.cartItems) {
           message += `\n\nI have ${context.cartItems} ${context.cartItems === 1 ? 'item' : 'items'} in my cart`;
           if (context.cartTotal) {
-            message += ` (${context.cartTotal.toFixed(2)} JOD)`;
+            message += ` (${context.cartTotal.toFixed(3)} JOD)`;
           }
         }
       }
