@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { QuickViewModal } from "./QuickViewModal";
 import { getLocalizedDescription, translateTitle } from "@/lib/productUtils";
 import { OptimizedImage } from "./OptimizedImage";
+import { ProductReviews } from "./ProductReviews";
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -193,6 +194,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <h3 className="font-display text-sm md:text-base text-foreground mb-2 line-clamp-2 leading-snug">
             {translateTitle(node.title, language)}
           </h3>
+          
+          {/* Reviews */}
+          <div className="mb-2">
+            <ProductReviews compact={true} />
+          </div>
           
           {/* Price */}
           <div className="flex items-center gap-2">

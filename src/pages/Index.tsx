@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import BrandStory from "@/components/BrandStory";
 import CelestialFeaturedCollection from "@/components/CelestialFeaturedCollection";
+import { SkinQuiz } from "@/components/SkinQuiz";
 import { Footer } from "@/components/Footer";
 import { PageLoadingSkeleton } from "@/components/PageLoadingSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,6 +60,9 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
+        
+        {/* Skin Quiz - Visual 3-step selector */}
+        <SkinQuiz />
         
         {/* Featured Collection with Glass & Gold Cards */}
         <CelestialFeaturedCollection />
