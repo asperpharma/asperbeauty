@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { useCartSync } from "@/hooks/useCartSync";
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Collections from "./pages/Collections";
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          <SpeedInsights />
         </TooltipProvider>
       </CartSyncProvider>
     </LanguageProvider>
