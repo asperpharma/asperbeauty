@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Loader2, Stethoscope } from 'lucide-react';
+import { X, Send, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,14 +19,14 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/beauty-assis
 
 const quickPrompts = {
   en: [
-    { label: 'Routine for Acne', message: 'What is the best skincare routine for acne-prone skin?' },
-    { label: 'Safe for Pregnancy?', message: 'Which skincare ingredients are safe to use during pregnancy?' },
-    { label: 'Compare Serums', message: 'Can you compare vitamin C serums vs retinol serums for anti-aging?' },
+    { label: 'Acne Concerns', message: 'I struggle with persistent acne and it really affects my confidence. Can you help me find the right routine?' },
+    { label: 'Anti-Aging Solutions', message: 'I want to address fine lines and aging concerns. What would you recommend for my complete routine?' },
+    { label: 'Glass Skin Look', message: 'I want to achieve the "glass skin" look with glowing, hydrated skin. How can I get started?' },
   ],
   ar: [
-    { label: 'روتين حب الشباب', message: 'ما هو أفضل روتين للعناية بالبشرة المعرضة لحب الشباب؟' },
-    { label: 'آمن للحمل؟', message: 'ما هي مكونات العناية بالبشرة الآمنة للاستخدام أثناء الحمل؟' },
-    { label: 'مقارنة السيروم', message: 'هل يمكنك مقارنة سيروم فيتامين سي مع سيروم الريتينول لمكافحة الشيخوخة؟' },
+    { label: 'مشاكل حب الشباب', message: 'أعاني من حب الشباب المستمر وهو يؤثر حقاً على ثقتي. هل يمكنك مساعدتي في إيجاد الروتين المناسب؟' },
+    { label: 'حلول مكافحة الشيخوخة', message: 'أريد معالجة الخطوط الدقيقة ومخاوف الشيخوخة. ماذا توصين لروتيني الكامل؟' },
+    { label: 'مظهر البشرة الزجاجية', message: 'أريد الحصول على مظهر "البشرة الزجاجية" المشرقة والرطبة. كيف يمكنني البدء؟' },
   ],
 };
 
@@ -39,18 +39,18 @@ export const BeautyAssistant = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const translations = {
     en: {
-      title: 'Asper Digital Consult',
-      subtitle: 'Clinical Skincare Expert',
-      placeholder: 'Describe your skin concern...',
-      welcome: "Hello. I am trained on clinical skincare data. Tell me your skin concern (e.g., Acne, Dryness) or ask about a specific ingredient.",
-      buttonText: 'Ask the Pharmacist',
+      title: 'Dr. Rose - Your Beauty Doctor',
+      subtitle: 'Aesthetic & Clinical Sales Consultant',
+      placeholder: 'Tell me about your skin concern...',
+      welcome: "Hello! I'm Dr. Rose, your caring beauty expert. 🌹 I'm here to understand your skin concerns and help you find the perfect solutions from our curated collection. What brings you in today? (e.g., acne, aging, dryness, or looking for a complete routine)",
+      buttonText: 'Chat with Dr. Rose',
     },
     ar: {
-      title: 'استشارة آسبر الرقمية',
-      subtitle: 'خبير العناية بالبشرة السريرية',
-      placeholder: 'صف مشكلة بشرتك...',
-      welcome: "مرحباً. أنا مدرب على بيانات العناية بالبشرة السريرية. أخبرني عن مشكلة بشرتك (مثل حب الشباب، الجفاف) أو اسأل عن مكون معين.",
-      buttonText: 'اسأل الصيدلي',
+      title: 'د. روز - طبيبة الجمال',
+      subtitle: 'استشارية الجمال السريري والتجميل',
+      placeholder: 'أخبريني عن مشكلة بشرتك...',
+      welcome: "مرحباً! أنا د. روز، خبيرة الجمال المهتمة بك. 🌹 أنا هنا لفهم مخاوف بشرتك ومساعدتك في العثور على الحلول المثالية من مجموعتنا المنتقاة. ما الذي أتى بك اليوم؟ (مثل حب الشباب، الشيخوخة، الجفاف، أو البحث عن روتين كامل)",
+      buttonText: 'تحدث مع د. روز',
     },
   };
 
@@ -204,7 +204,7 @@ export const BeautyAssistant = () => {
         aria-label="Open beauty assistant"
       >
         <div className="w-8 h-8 rounded-full bg-burgundy flex items-center justify-center">
-          <Stethoscope className="w-4 h-4 text-gold" />
+          <Sparkles className="w-4 h-4 text-gold" />
         </div>
         <span className="font-body text-sm font-medium text-burgundy whitespace-nowrap">
           {t.buttonText}
@@ -221,7 +221,7 @@ export const BeautyAssistant = () => {
         <div className="bg-burgundy p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-gold" />
+              <Sparkles className="w-5 h-5 text-gold" />
             </div>
             <div>
               <h3 className="font-display text-base font-semibold text-white">{t.title}</h3>
