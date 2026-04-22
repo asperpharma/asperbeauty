@@ -114,19 +114,25 @@ export const CartDrawer = () => {
           
           {/* Shipping Progress Bar - Only show in cart mode */}
           {checkoutMode === 'cart' && items.length > 0 && (
-            <div className="mt-4">
-              <div className="h-1 bg-muted rounded-full overflow-hidden">
+            <div className="mt-4 px-4 py-3 bg-cream/50 rounded-lg">
+              <div className="h-2 bg-muted rounded-full overflow-hidden shadow-inner">
                 <div 
-                  className="h-full bg-gold transition-all duration-500 ease-out rounded-full"
+                  className={`h-full transition-all duration-500 ease-out rounded-full ${
+                    hasFreeShipping 
+                      ? 'bg-gradient-to-r from-gold via-[#C5A028] to-gold animate-pulse' 
+                      : 'bg-gradient-to-r from-gold/60 to-gold'
+                  }`}
                   style={{ width: `${shippingProgress}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
+              <p className={`text-xs mt-2.5 text-center font-medium ${
+                hasFreeShipping ? 'text-gold' : 'text-muted-foreground'
+              }`}>
                 {hasFreeShipping 
-                  ? (isArabic ? '🎁 شحن مجاني مفعّل!' : '🎁 Complimentary Shipping Unlocked!')
+                  ? (isArabic ? '✨ تهانينا! لقد حصلت على الشحن المجاني! 🚚' : '✨ Congratulations! You have unlocked Free Shipping! 🚚')
                   : (isArabic 
-                      ? `أنت على بعد ${amountToFreeShipping.toFixed(0)} دينار من الشحن المجاني`
-                      : `You are ${amountToFreeShipping.toFixed(0)} JOD away from Complimentary Shipping`
+                      ? `أنت على بعد ${amountToFreeShipping.toFixed(0)} دينار فقط من الشحن المجاني! 🚚`
+                      : `You are only ${amountToFreeShipping.toFixed(0)} JOD away from Free Shipping! 🚚`
                     )
                 }
               </p>

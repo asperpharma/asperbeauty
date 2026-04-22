@@ -17,6 +17,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { ProductReviews } from "@/components/ProductReviews";
 
 interface SupabaseProduct {
   id: string;
@@ -45,10 +46,22 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<SupabaseProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
   const setCartOpen = useCartStore((state) => state.setOpen);
   const { toggleItem, isInWishlist } = useWishlistStore();
+
+  // Detect scroll to show/hide sticky bar on mobile
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show sticky bar when user scrolls past 400px (below the main Add to Cart button)
+      setShowStickyBar(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -247,9 +260,14 @@ const ProductDetail = () => {
               <span className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground mb-3 block">
                 {product.brand || product.category}
               </span>
-              <h1 className="font-serif text-3xl lg:text-4xl text-foreground leading-tight mb-6">
+              <h1 className="font-serif text-3xl lg:text-4xl text-foreground leading-tight mb-4">
                 {translateTitle(product.title, language)}
               </h1>
+              
+              {/* Reviews - Judge.me Style */}
+              <div className="mb-6">
+                <ProductReviews />
+              </div>
               
               {/* Price & Rating */}
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -262,16 +280,6 @@ const ProductDetail = () => {
                       {originalPrice.toFixed(3)} JOD
                     </span>
                   )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    (128 {isArabic ? "تقييم" : "Reviews"})
-                  </span>
                 </div>
               </div>
             </div>
@@ -444,8 +452,10 @@ const ProductDetail = () => {
         </section>
       )}
 
-      {/* Mobile Sticky CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-40 shadow-2xl">
+      {/* Mobile Sticky CTA - Only shows when scrolled */}
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-40 shadow-2xl transition-transform duration-300 ${
+        showStickyBar ? 'translate-y-0' : 'translate-y-full'
+      }`}>
         <div className="flex items-center gap-4">
           <button
             onClick={handleWishlistToggle}
@@ -458,14 +468,18 @@ const ProductDetail = () => {
             <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
           </button>
           <div className="flex-shrink-0">
-            <p className="text-xl text-primary font-medium">
+            <p className="text-xs text-muted-foreground leading-none mb-1">
+              {isArabic ? 'السعر' : 'Price'}
+            </p>
+            <p className="text-lg text-primary font-medium leading-none">
               {currentPrice.toFixed(3)} JOD
             </p>
           </div>
           <Button
             onClick={handleAddToCart}
-            className="flex-1 py-3 bg-primary text-primary-foreground font-medium rounded-none"
+            className="flex-1 py-3 bg-burgundy text-white hover:bg-burgundy-light font-medium rounded-none"
           >
+            <ShoppingBag className="w-4 h-4 mr-2" />
             {isArabic ? 'أضف إلى الحقيبة' : 'Add to Bag'}
           </Button>
         </div>
