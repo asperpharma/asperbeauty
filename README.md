@@ -63,6 +63,8 @@ src/
 
 - Node.js 18+ or Bun
 - npm, yarn, or bun
+- Shopify store with Storefront API access
+- Supabase project
 
 ### Installation
 
@@ -76,9 +78,23 @@ cd asperbeauty
 # Install dependencies
 npm install
 
+# Configure environment variables
+cp .env.example .env
+# Edit .env with your API keys (see INTEGRATION_GUIDE.md)
+
 # Start development server
 npm run dev
 ```
+
+### Configuration
+
+Before running the application, you need to configure the following integrations:
+
+1. **Shopify Storefront API** - Required for products and checkout
+2. **Supabase** - Required for backend services
+3. **hCaptcha** - Optional, for form protection
+
+See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) for detailed setup instructions.
 
 ### Build for Production
 
@@ -124,6 +140,17 @@ This project is built with [Lovable](https://lovable.dev). You can:
 3. **Edit in GitHub**: Use the web editor or Codespaces
 
 Changes sync automatically between Lovable and GitHub.
+
+## 🔗 Integrations
+
+This application integrates with several external services. For detailed setup instructions, see [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md).
+
+**Integrated Services:**
+- **Shopify** - Product catalog and checkout
+- **Supabase** - Backend, authentication, and Edge Functions
+- **hCaptcha** - Form protection (optional)
+
+The app includes automatic integration health checks in development mode that verify all services are properly configured.
 
 ## 📄 License
 
