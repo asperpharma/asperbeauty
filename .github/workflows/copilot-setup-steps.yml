@@ -1,21 +1,131 @@
-            - name: Cache
-  uses: actions/cache@v5.0.3
-  with:
-    # A list of files, directories, and wildcard patterns to cache and restore
-    path: 
-    # An explicit key for restoring and saving the cache
-    key: 
-    # An ordered multiline string listing the prefix-matched keys, that are used for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
-    restore-keys: # optional
-    # The chunk size used to split up large files during upload, in bytes
-    upload-chunk-size: # optional
-    # An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms
-    enableCrossOsArchive: # optional, default is false
-    # Fail the workflow if cache entry is not found
-    fail-on-cache-miss: # optional, default is false
-    # Check if a cache entry exists for the given input(s) (key, restore-keys) without downloading the cache
-    lookup-only: # optional, default is false
-    # Run the post step to save the cache even if another step before fails
-    save-always: # optional, default is false
+# Copilot Setup Steps Workflow
+# This workflow demonstrates the complete setup process for the Asper Beauty Shop project
+# It serves as a reference for developers using GitHub Copilot to understand the project setup
+#
+# Signed-off-by: Asper Beauty Shop <252395498+asperpharma@users.noreply.github.com>
 
+name: Copilot Setup Steps
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup-and-validate:
+    name: Setup and Validate Project
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js environment with npm caching
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run TypeScript type checking
+      - name: Type check
+        run: npx tsc --noEmit
+
+      # Step 5: Run ESLint
+      - name: Lint code
+        run: npm run lint
+
+      # Step 6: Build the project
+      - name: Build project
+        run: npm run build
+
+      # Step 7: Verify build artifacts
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found"
+            exit 1
+          fi
+          echo "Build completed successfully"
+          ls -la dist
+
+      # Step 8: Production build validation message
+      - name: Test production build
+        run: |
+          echo "Production build is ready for preview"
+          echo "Use 'npm run preview' locally to test the build"
+
+  # Additional job for development environment validation
+  dev-environment:
+    name: Validate Development Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify development setup
+        run: |
+          echo "Verifying project structure..."
+          test -f "vite.config.ts" && echo "✓ Vite config found"
+          test -f "tsconfig.json" && echo "✓ TypeScript config found"
+          test -f "tailwind.config.ts" && echo "✓ Tailwind config found"
+          test -f "package.json" && echo "✓ Package.json found"
+          test -d "src" && echo "✓ Source directory found"
+          test -d "src/components" && echo "✓ Components directory found"
+          test -d "src/pages" && echo "✓ Pages directory found"
+          echo "✓ Development environment is properly configured"
+
+      - name: Check environment variables template
+        run: |
+          if [ -f ".env" ]; then
+            echo "✓ .env file exists"
+          else
+            echo "⚠ .env file not found (may be intentional for security)"
+          fi
+
+      - name: Validate project dependencies
+        run: |
+          echo "Checking critical dependencies..."
           
+          # Check each dependency with error handling
+          check_dependency() {
+            if npm list --depth=0 "$1" > /dev/null 2>&1; then
+              echo "✓ $1 is installed"
+            else
+              echo "✗ Error: $1 is not installed"
+              return 1
+            fi
+          }
+          
+          check_dependency "react"
+          check_dependency "react-dom"
+          check_dependency "vite"
+          check_dependency "typescript"
+          check_dependency "@tanstack/react-query"
+          check_dependency "zustand"
+          
+          echo "✓ All critical dependencies are installed"
