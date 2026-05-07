@@ -1,10 +1,23 @@
 import { toast } from "sonner";
 
 const SHOPIFY_API_VERSION = '2025-07';
-const SHOPIFY_STORE_PERMANENT_DOMAIN = 'lovable-project-milns.myshopify.com';
+// Load Shopify configuration from environment variables
+const SHOPIFY_STORE_PERMANENT_DOMAIN = import.meta.env.VITE_SHOPIFY_STORE;
 const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
 // Note: Shopify Storefront tokens are designed for client-side use with read-only access to public data
-const SHOPIFY_STOREFRONT_TOKEN = '9daedc472c5910e742ec88bdaad108e2';
+const SHOPIFY_STOREFRONT_TOKEN = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
+
+// Validate required environment variables
+if (!SHOPIFY_STORE_PERMANENT_DOMAIN || !SHOPIFY_STOREFRONT_TOKEN) {
+  const missing = [];
+  if (!SHOPIFY_STORE_PERMANENT_DOMAIN) missing.push('VITE_SHOPIFY_STORE');
+  if (!SHOPIFY_STOREFRONT_TOKEN) missing.push('VITE_SHOPIFY_STOREFRONT_TOKEN');
+  
+  throw new Error(
+    `Missing required Shopify environment variables: ${missing.join(', ')}. ` +
+    'Please check your .env file and ensure all required variables are set.'
+  );
+}
 
 // Sanitize search input to prevent GraphQL injection
 function sanitizeSearchTerm(term: string): string {
