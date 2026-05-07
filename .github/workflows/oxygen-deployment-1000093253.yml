@@ -1,5 +1,8 @@
 name: Storefront 1000093253
-on: [push]
+# Disabled: This workflow is for Shopify Hydrogen apps, but this is a Vite+React app
+# deployed via Lovable. Enable manually if needed via workflow_dispatch.
+on:
+  workflow_dispatch:
 
 permissions:
   contents: read
