@@ -125,6 +125,16 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 📖 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs) directory:
+
+- **[Deployment Flow](./docs/DEPLOYMENT_FLOW.md)** - Complete deployment workflow and CI/CD pipeline guide
+- **[Health Check](./docs/HEALTH_CHECK.md)** - Application monitoring, diagnostics, and troubleshooting
+- **[Contributing](./CONTRIBUTING.md)** - Guidelines for contributing to the project
+
+For new team members, start with the [documentation index](./docs/README.md).
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
