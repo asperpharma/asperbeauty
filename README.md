@@ -125,6 +125,13 @@ This project is built with [Lovable](https://lovable.dev). You can:
 
 Changes sync automatically between Lovable and GitHub.
 
+## 📚 Documentation
+
+Detailed documentation is available in the [`docs/`](./docs) directory:
+
+- **[Deployment Flow](./docs/deployment-flow.md)** - Complete deployment guide covering Lovable Platform, Shopify Oxygen, CI/CD pipeline, and troubleshooting
+- **[Health Check Monitoring](./docs/health-check-monitoring.md)** - Comprehensive monitoring setup with Datadog Synthetics, alert procedures, and best practices
+
 ## 📄 License
 
 © 2025 Asper Beauty Shop. All rights reserved.
