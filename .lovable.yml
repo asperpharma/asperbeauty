@@ -1,0 +1,73 @@
+# Lovable Configuration
+# This file configures Git sync and deployment settings for Lovable
+
+# Git Sync Configuration
+git:
+  # Enable automatic sync with GitHub
+  sync_enabled: true
+  
+  # Branch to sync (set to your main branch)
+  branch: main
+  
+  # Auto-deploy on push
+  auto_deploy: true
+  
+  # Commit author for Lovable changes
+  commit_author:
+    name: "Lovable"
+    email: "hello@lovable.dev"
+
+# Build Configuration
+build:
+  # Build command
+  command: "npm run build"
+  
+  # Output directory
+  output_directory: "dist"
+  
+  # Node version
+  node_version: "18"
+  
+  # Install command
+  install_command: "npm install"
+
+# Environment Variables
+# Note: Actual values should be set in Lovable Dashboard
+# This section documents required environment variables
+environment:
+  # Supabase configuration
+  - VITE_SUPABASE_URL
+  - VITE_SUPABASE_ANON_KEY
+  
+  # Shopify configuration (if needed)
+  - VITE_SHOPIFY_DOMAIN
+  - VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+
+# Deployment Settings
+deployment:
+  # Production URL
+  url: "https://asperbeautyshop.lovable.app"
+  
+  # Preview deployments for branches
+  preview_branches: true
+  
+  # Deploy on pull request
+  deploy_on_pr: true
+
+# Ignored paths (won't trigger rebuild)
+ignore:
+  - "*.md"
+  - "docs/**"
+  - ".github/**"
+  - ".vscode/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+
+# File watching (for live reload in Lovable editor)
+watch:
+  - "src/**/*.tsx"
+  - "src/**/*.ts"
+  - "src/**/*.css"
+  - "index.html"
+  - "vite.config.ts"
+  - "tailwind.config.ts"
