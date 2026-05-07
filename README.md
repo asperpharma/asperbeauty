@@ -57,6 +57,30 @@ src/
 └── stores/          # Zustand state stores
 ```
 
+## 📝 Code Templates
+
+Ready-to-use templates for consistent development:
+
+```bash
+# Quick scaffold with script
+./scripts/scaffold.sh component ProductFilter
+./scripts/scaffold.sh page AboutUs
+./scripts/scaffold.sh hook useProductSearch
+
+# Or manually copy templates
+cp .templates/component.template.tsx src/components/MyComponent.tsx
+```
+
+Available templates:
+- **Component** - React components with TypeScript & RTL support
+- **Page** - Full page layouts with SEO & routing
+- **Hook** - Custom React hooks with TypeScript
+- **Store** - Zustand stores with persistence
+- **Form** - Forms with React Hook Form + Zod validation
+- **Utility** - Helper functions with JSDoc
+
+📖 See [.templates/README.md](.templates/README.md) for full documentation.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
