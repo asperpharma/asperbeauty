@@ -1,0 +1,34 @@
+{
+  "tasks": {
+    "test": "deno test --allow-read --allow-net --allow-env",
+    "check": "deno check supabase/functions/*/index.ts"
+  },
+  "fmt": {
+    "files": {
+      "include": ["supabase/functions/"],
+      "exclude": []
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "singleQuote": false,
+      "proseWrap": "preserve"
+    }
+  },
+  "lint": {
+    "files": {
+      "include": ["supabase/functions/"],
+      "exclude": []
+    },
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": []
+    }
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.ns", "deno.unstable"],
+    "strict": true
+  }
+}
